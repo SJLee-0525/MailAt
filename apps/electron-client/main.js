@@ -9,7 +9,7 @@ import ImapService from "./src/services/imap.js"; // imap 서비스 import 추�
 
 // C++ 애드온 로딩 (createRequire 사용 권장)
 const require = createRequire(import.meta.url);
-const addon = require('./build/Release/addon.node'); // .node 확장자 명시 권장
+const addon = require("./build/Release/addon.node"); // .node 확장자 명시 권장
 
 // __dirname 대신 사용할 현재 디렉토리 경로
 const __filename = fileURLToPath(import.meta.url);
@@ -37,6 +37,23 @@ function createWindow() {
     },
   });
 
+  // if (process.env.NODE_ENV === "development") {
+  //   // Vite dev 서버가 켜져 있는 주소로 바꿔주세요
+  //   mainWindow.loadURL("http://localhost:5173");
+  // } else {
+  //   // 프로덕션 빌드 시 dist/index.html 경로를 정확히 지정
+  //   mainWindow.loadFile(path.join(__dirname, "dist", "index.html"));
+  // }
+
+  if (process.env.NODE_ENV === "development") {
+    console.log("Dev 모드");
+    mainWindow.loadURL("http://localhost:5173");
+  } else {
+    console.log("Production 모드");
+    mainWindow.loadFile(
+      path.join(__dirname, "dist", "renderer", "renderer.html")
+    );
+  }
   // mainWindow.loadFile("renderer/index.html"); // 경로 확인 필요: 'src/dist/index.html' 또는 Vite 설정에 따라 다름
   // Vite 개발 서버를 사용하거나 빌드된 결과물의 경로를 정확히 지정해야 합니다.
   // 예: mainWindow.loadFile(path.join(__dirname, 'src', 'dist', 'index.html'));
@@ -79,7 +96,7 @@ app.whenReady().then(() => {
   registerHandler("emails:fetchHeaders", async (event, params) => {
     try {
       const { accountId, folderPath, page, pageSize } = params;
-// 이 메소드는 mailController에 구현되어 있어야 함
+      // 이 메소드는 mailController에 구현되어 있어야 함
       return await mailController.fetchEmailHeaders(
         accountId,
         folderPath,
@@ -95,7 +112,7 @@ app.whenReady().then(() => {
   registerHandler("emails:fetchBody", async (event, params) => {
     try {
       const { accountId, uid, folderPath } = params;
-// 이 메소드는 mailController에 구현되어 있어야 함
+      // 이 메소드는 mailController에 구현되어 있어야 함
       return await mailController.fetchEmailBody(accountId, uid, folderPath);
     } catch (error) {
       console.error("이메일 본문 가져오기 에러:", error);

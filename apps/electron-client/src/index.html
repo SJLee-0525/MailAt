@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
@@ -210,7 +210,7 @@
   </head>
   <body>
     <div class="container">
-      <h1>IMAP 테스트 클라이언트</h1>
+      <h1>in IMAP 테스트 클라이언트</h1>
 
       <!-- 계정 선택 UI -->
       <div id="account-selector" class="account-selector" style="display: none">
@@ -435,6 +435,12 @@
         window.composeSection = composeSection;
         window.accountSection = accountSection;
         window.accountSelector = accountSelector;
+        // 로그 출력 함수를 전역으로 선언
+        window.log = function (message) {
+          const timestamp = new Date().toLocaleTimeString();
+          resultArea.textContent += `[${timestamp}] ${message}\n`;
+          resultArea.scrollTop = resultArea.scrollHeight;
+        };
 
         // localStorage에서 계정 ID 가져오거나 초기화
         const initAccount = () => {
@@ -715,9 +721,8 @@
           }
 
           pagination.style.display = "flex";
-          document.getElementById(
-            "page-info"
-          ).textContent = `${currentPage} / ${totalPages} 페이지`;
+          document.getElementById("page-info").textContent =
+            `${currentPage} / ${totalPages} 페이지`;
 
           // 이전 페이지 버튼 상태 업데이트
           const prevBtn = document.getElementById("prev-page");
@@ -766,19 +771,16 @@
             // 상세 정보 렌더링
             document.getElementById("detail-subject").textContent =
               email.subject || "(제목 없음)";
-            document.getElementById(
-              "detail-sender"
-            ).textContent = `보낸사람: ${email.sender}`;
-            document.getElementById(
-              "detail-recipient"
-            ).textContent = `받는사람: ${email.recipient}`;
+            document.getElementById("detail-sender").textContent =
+              `보낸사람: ${email.sender}`;
+            document.getElementById("detail-recipient").textContent =
+              `받는사람: ${email.recipient}`;
 
             const date = new Date(
               email.receivedDate || email.sentDate || email.date
             );
-            document.getElementById(
-              "detail-date"
-            ).textContent = `날짜: ${formatDate(date)}`;
+            document.getElementById("detail-date").textContent =
+              `날짜: ${formatDate(date)}`;
 
             // 본문 표시 (HTML이 있으면 HTML, 없으면 텍스트)
             const bodyElement = document.getElementById("email-detail-body");
@@ -926,13 +928,6 @@
               log("이메일 전송 실패: " + error.message);
             }
           });
-
-        // 로그 출력 함수를 전역으로 선언
-        window.log = function (message) {
-          const timestamp = new Date().toLocaleTimeString();
-          resultArea.textContent += `[${timestamp}] ${message}\n`;
-          resultArea.scrollTop = resultArea.scrollHeight;
-        };
 
         // 계정 데이터 가져오기 함수를 전역으로 선언
         window.getAccountData = function () {

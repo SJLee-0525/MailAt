@@ -22,7 +22,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
 
-    "baseUrl": "src",
+    "baseUrl": "renderer", // baseUrl은 renderer로 유지
     "paths": {
       "@/*": ["*"],
       "@apis/*": ["apis/*"],
@@ -37,5 +37,14 @@
       "@utils/*": ["utils/*"]
     }
   },
-  "include": ["src"]
+  // "include": ["src"] // 기존 설정 제거
+  "include": [
+    "./**/*.ts",
+    "./**/*.tsx",
+    "renderer.html",
+    "vite.config.ts",
+    "main.tsx"
+  ], // src 폴더 내의 모든 .ts, .tsx 파일 및 주요 파일 포함
+  // 또는 더 간단하게: "include": ["./**/*"]
+  "exclude": ["node_modules", "../../dist"] // 제외할 폴더 (상대 경로 주의)
 }

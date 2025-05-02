@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import MainLayout from "@layouts/MainLayout";
 import Home from "@pages/home/Home";
 
+import Modal from "@components/common/modal/Modal";
 import NewMailFormModal from "@components/mailForm/NewMailFormModal";
 
 const queryClient = new QueryClient();
@@ -21,6 +22,7 @@ export default function App() {
       </Routes>
 
       <NewMailFormModal />
+      <Modal />
     </QueryClientProvider>
   );
 }

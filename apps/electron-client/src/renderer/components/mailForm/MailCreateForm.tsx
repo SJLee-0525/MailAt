@@ -73,6 +73,7 @@ const MailCreateForm = () => {
           sender={sender}
           addSender={handleAddSender}
           setHtml={setHtml}
+          initialHtml={html}
         />
       </div>
     </div>

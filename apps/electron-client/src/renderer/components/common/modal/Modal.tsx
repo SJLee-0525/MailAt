@@ -1,4 +1,4 @@
-import "@/components/common/modal/Modal.css";
+import "@components/common/modal/Modal.css";
 
 import { useRef, useEffect } from "react";
 
@@ -33,10 +33,8 @@ const Modal = () => {
   return (
     <dialog
       ref={dialog}
-      onClose={() => closeModal()}
       onClick={handleBackdropClick}
-      className={`fixed top-0 z-50 mx-auto w-1/2 h-full rounded-b-xl bg-transparent ${isClosing ? "is-closing" : ""}`}
-      // style={{ maxWidth: "clamp(344px, 100vw, 576px)" }}
+      className={`fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-1/4 min-w-[480px] h-full rounded-b-xl bg-transparent ${isClosing ? "is-closing" : ""}`}
     >
       {modalContent}
     </dialog>

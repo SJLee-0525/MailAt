@@ -7,7 +7,7 @@
     "include_dirs": [],
     "libraries": [],
     "msbuild_toolset": "v143",
-    "msvs_windows_target_platform_version": "10.0.22621.0"
+    "msvs_windows_target_platform_version": "10.0.26100.0"
   },
   "variables": {
     "arm_fpu": "neon",
@@ -414,21 +414,21 @@
     "v8_use_siphash": 1,
     "want_separate_host_toolset": 1,
     "nodedir": "C:\\Users\\SSAFY\\AppData\\Local\\node-gyp\\Cache\\29.4.6",
-    "python": "C:\\Python313\\python.exe",
+    "python": "C:\\Users\\SSAFY\\AppData\\Local\\Programs\\Python\\Python39\\python.exe",
     "standalone_static_library": 1,
-    "msbuild_path": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\MSBuild\\Current\\Bin\\MSBuild.exe",
+    "msbuild_path": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe",
     "cache": "C:\\Users\\SSAFY\\AppData\\Local\\npm-cache",
     "disturl": "https://electronjs.org/headers",
     "globalconfig": "C:\\Users\\SSAFY\\AppData\\Roaming\\npm\\etc\\npmrc",
     "global_prefix": "C:\\Users\\SSAFY\\AppData\\Roaming\\npm",
     "init_module": "C:\\Users\\SSAFY\\.npm-init.js",
-    "local_prefix": "C:\\Users\\SSAFY\\gitLab\\S12P31A204",
-    "node_gyp": "C:\\Users\\SSAFY\\AppData\\Roaming\\npm\\node_modules\\npm\\node_modules\\node-gyp\\bin\\node-gyp.js",
-    "npm_version": "11.3.0",
+    "local_prefix": "C:\\Users\\SSAFY\\Desktop\\github\\S12P31A204",
+    "node_gyp": "C:\\Program Files\\nodejs\\node_modules\\npm\\node_modules\\node-gyp\\bin\\node-gyp.js",
+    "npm_version": "10.9.0",
     "prefix": "C:\\Users\\SSAFY\\AppData\\Roaming\\npm",
     "runtime": "electron",
     "target": "29.4.6",
     "userconfig": "C:\\Users\\SSAFY\\.npmrc",
-    "user_agent": "npm/11.3.0 node/v22.15.0 win32 x64 workspaces/false"
+    "user_agent": "npm/10.9.0 node/v22.12.0 win32 x64 workspaces/true"
   }
 }

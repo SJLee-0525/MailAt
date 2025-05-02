@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const { VITE_DEV_API_URL } = import.meta.env;
+console.log("VITE_DEV_API_U111RL", VITE_DEV_API_URL);
 
 const instance = axios.create({
   baseURL: VITE_DEV_API_URL,
