@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\mailat\electron\addon\build\CMakeFiles\5d9b8cee7edb13b0f5093b51b9acf295\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{99B98E6D-4FB3-3629-A04D-64275C6E7F4B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

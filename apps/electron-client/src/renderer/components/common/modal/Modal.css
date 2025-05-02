@@ -1,0 +1,21 @@
+@import url("../../../styles/animations.css");
+
+dialog[open] {
+  position: fixed !important;
+  top: 0 !important;
+  margin-top: 0 !important;
+  animation: slideDown 0.5s forwards;
+}
+
+.is-closing {
+  animation: slideDownClose 0.3s forwards !important;
+  transition: all 0.3s ease;
+}
+
+dialog::backdrop {
+  animation: fadeBackdrop 0.5s forwards;
+}
+
+dialog.is-closing::backdrop {
+  animation: fadeBackdropOut 0.3s forwards;
+}
