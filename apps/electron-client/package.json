@@ -5,9 +5,9 @@
   "type": "module",
   "main": "main.js",
   "scripts": {
-    "renderer:dev": "vite --config src/vite.config.ts",
-    "electron:dev": "wait-on http://localhost:5173/renderer.html && electron .",
-    "dev": "cross-env NODE_ENV=development concurrently \"npm:renderer:dev\" \"npm:electron:dev\"",
+    "renderer:dev": "npx vite --config src/vite.config.ts",
+    "electron:dev": "npx wait-on http://localhost:5173 && electron .",
+    "dev": "npx cross-env NODE_ENV=development npx concurrently \"npm:renderer:dev\" \"npm:electron:dev\"",
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:addon": "node-gyp configure build",
