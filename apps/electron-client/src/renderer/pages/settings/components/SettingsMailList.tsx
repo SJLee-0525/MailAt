@@ -34,12 +34,12 @@ const SettingsMailList = ({ users }: { users: AuthUser[] }) => {
   return (
     <div className="flex flex-col justify-center items-center p-1 gap-1 rounded-2xl bg-white">
       {users.map((user, index) => (
-        <>
-          <InnerList key={user.id} user={user} />
+        <span key={user.id} className="w-full h-fit">
+          <InnerList user={user} />
           {users.length - 1 !== index && (
             <hr className="border-t border-light1 w-[95%]" />
           )}
-        </>
+        </span>
       ))}
     </div>
   );
