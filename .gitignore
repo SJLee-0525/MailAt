@@ -1,9 +1,10 @@
 # Created by https://www.toptal.com/developers/gitignore/api/react,cmake,node,windows,vs,visualstudiocode,macos,visualstudio,c++,python,jupyternotebooks
 # Edit at https://www.toptal.com/developers/gitignore?templates=react,cmake,node,windows,vs,visualstudiocode,macos,visualstudio,c++,python,jupyternotebooks
 
-### directory ###
+### directory&files ###
 /apps/electron-client/build
 /apps/electron-client/addon/build
+/apps/electron-client/addon/unit_test/info.json
 
 ### C++ ###
 # Prerequisites
