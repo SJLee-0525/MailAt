@@ -15,3 +15,13 @@ export interface AccountsResponse {
   imapHost: string;
   smtpHost: string;
 }
+
+export interface CreateAccountResponse {
+  id: number;
+  email: string;
+}
+
+export interface CreateAccountRequest {
+  email: string;
+  password: string;
+}

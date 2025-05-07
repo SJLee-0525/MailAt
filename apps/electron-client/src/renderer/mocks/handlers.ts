@@ -1,6 +1,7 @@
 import { http, HttpResponse } from "msw";
 
 import { mockEmailConversations } from "@data/EMAIL_CONSERVATIONS";
+import { ACCOUNTS_DATA } from "@data/USER_DATA";
 
 const { VITE_DEV_API_URL } = import.meta.env;
 
@@ -40,6 +41,11 @@ const handlers = [
       password: string;
     };
     return HttpResponse.json({ id: 1, email });
+  }),
+
+  // 계정 조회
+  http.get(VITE_DEV_API_URL + "/accounts/:userId", () => {
+    return HttpResponse.json(ACCOUNTS_DATA);
   }),
 
   // 계정 삭제

@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { AllEmails } from "@/types/emailTypes";
 
-import { getEmailsData } from "@/apis/emailApi";
+import { getEmailsData } from "@apis/emailApi";
 
 import useConversationsStore from "@stores/conversationsStore";
 

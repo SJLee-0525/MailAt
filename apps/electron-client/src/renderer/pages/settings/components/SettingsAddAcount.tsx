@@ -1,9 +1,13 @@
 import useAuthenticateStore from "@stores/authenticateStore";
 
-const SettingAddAccount = ({ closeAction }: { closeAction: () => void }) => {
-  const { userName, setAuthUsers } = useAuthenticateStore();
+import { useCreateAccount } from "@hooks/useGetUser";
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+const SettingAddAccount = ({ closeAction }: { closeAction: () => void }) => {
+  const { setAuthUsers } = useAuthenticateStore();
+
+  const { mutateAsync: createAccount } = useCreateAccount();
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     const fd = new FormData(e.currentTarget);
@@ -18,11 +22,17 @@ const SettingAddAccount = ({ closeAction }: { closeAction: () => void }) => {
     console.log("이메일:", email);
     console.log("비밀번호:", password);
 
-    setAuthUsers({
-      id: Math.floor(Math.random() * 1000),
-      email: email,
-      name: userName || "홍지우",
-    });
+    // api 호출
+    try {
+      const data = await createAccount({ email, password });
+
+      alert(`${email}\n계정이 추가되었습니다!`);
+      setAuthUsers([{ id: data.id, email, name: email.split("@")[0] }]);
+    } catch (error) {
+      console.error("Error creating account:", error);
+      alert("계정 추가에 실패했습니다.");
+      return;
+    }
 
     closeAction(); // 계정 추가 후 모달 닫기
   }

@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { use, useState } from "react";
 
 import useAuthenticateStore from "@stores/authenticateStore";
+
+import { useGetAccounts } from "@hooks/useGetUser";
 
 import SettingsMailList from "@pages/settings/components/SettingsMailList";
 import SettingAddAccount from "@pages/settings/components/SettingsAddAcount";
@@ -8,9 +10,14 @@ import SettingAddAccount from "@pages/settings/components/SettingsAddAcount";
 import Button from "@components/common/button/Button";
 
 const SettingConnectedEmail = () => {
-  const { userName, authUsers } = useAuthenticateStore();
+  const { user, authUsers } = useAuthenticateStore();
 
   const [isAddAccount, setIsAddAccount] = useState(false);
+
+  const accountsQuery = useGetAccounts(user ? user.id : -1);
+  if (accountsQuery.isLoading) return <div>Loading...</div>;
+  if (accountsQuery.isError)
+    return <div>Error: {accountsQuery.error.message}</div>;
 
   return (
     <>
@@ -31,7 +38,7 @@ const SettingConnectedEmail = () => {
           <SettingsMailList users={authUsers} />
         </div>
       )}
-      {userName && authUsers.length === 0 && (
+      {user && authUsers.length === 0 && (
         <div className="flex flex-col items-center justify-center w-full h-36 gap-3 text-center font-pre-bold rounded-lg bg-white">
           <h2 className="font-pre-extra-bold font-bold text-center">
             연결된 계정이 없습니다.

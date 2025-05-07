@@ -2,6 +2,8 @@ import { AuthUser } from "@/types/authType";
 
 import useAuthenticateStore from "@stores/authenticateStore";
 
+import { useDeleteAccount } from "@hooks/useGetUser";
+
 import IconButton from "@components/common/button/IconButton";
 
 import GoogleIcon from "@assets/icons/GoogleIcon";
@@ -10,8 +12,25 @@ import DeleteIcon from "@assets/icons/DeleteIcon";
 const InnerList = ({ user }: { user: AuthUser }) => {
   const { deleteAuthUser } = useAuthenticateStore();
 
-  function handleDelete() {
-    deleteAuthUser(user);
+  const { mutateAsync: deleteAccount } = useDeleteAccount();
+
+  async function handleDelete() {
+    if (!user) return;
+
+    if (!confirm(`${user.email}\n계정을 삭제하시겠습니까?`)) return;
+
+    try {
+      const data = await deleteAccount({ accountId: user.id });
+
+      if (data.success) {
+        alert(`${user.email}\n계정이 삭제되었습니다!`);
+        deleteAuthUser(user); // 임시..
+      }
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      alert("계정 삭제에 실패했습니다.");
+      return;
+    }
   }
 
   return (

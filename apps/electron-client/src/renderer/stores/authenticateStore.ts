@@ -1,30 +1,30 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware"; // StateStorage 추가
 
-import { AuthUser } from "@/types/authType";
+import { User, AuthUser } from "@/types/authType";
 
 interface AuthenticateStore {
-  userName: string | null;
-  setUserName: (name: string) => void;
+  user: User | null;
+  setUserName: (userData: User | null) => void;
   authUsers: AuthUser[];
-  setAuthUsers: (authUsers: AuthUser) => void;
+  setAuthUsers: (authUsers: AuthUser[]) => void;
   deleteAuthUser: (authUsers: AuthUser | null) => void;
   selectedUser: AuthUser | null;
   setSelectedUser: (user: AuthUser | null) => void;
 }
 
 // 실제로 persist될 상태의 타입 정의
-type PersistedAuthState = Pick<AuthenticateStore, "userName">;
+type PersistedAuthState = Pick<AuthenticateStore, "user">;
 
 const useAuthenticateStore = create<AuthenticateStore>()(
   // create 함수에만 기본 상태 타입 지정
   persist(
     (set) => ({
-      userName: null, // 초기값
-      setUserName: (name) => set({ userName: name }),
+      user: null, // 초기값
+      setUserName: (userData: User | null) => set({ user: userData }),
       authUsers: [],
-      setAuthUsers: (newUser) =>
-        set((state) => ({ authUsers: [...state.authUsers, newUser] })),
+      setAuthUsers: (users) =>
+        set((state) => ({ authUsers: [...state.authUsers, ...users] })),
       selectedUser: { id: 1, email: "hong.jiwoo@example.com", name: "홍지우" },
       deleteAuthUser: (user) =>
         set((state) => ({
@@ -40,7 +40,7 @@ const useAuthenticateStore = create<AuthenticateStore>()(
       storage: createJSONStorage(() => localStorage), // 사용할 스토리지
       // partialize 함수의 반환 타입을 명시적으로 지정
       partialize: (state): PersistedAuthState => ({
-        userName: state.userName,
+        user: state.user, // persist할 상태
       }),
     }
   )

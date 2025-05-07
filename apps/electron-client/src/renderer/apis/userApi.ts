@@ -1,6 +1,11 @@
 import instance from "./instance";
 
-import { User, AccountsResponse } from "@/types/authType";
+import {
+  User,
+  AccountsResponse,
+  CreateAccountRequest,
+  CreateAccountResponse,
+} from "@/types/authType";
 
 const { VITE_DEV_API_URL } = import.meta.env;
 
@@ -58,10 +63,10 @@ export const deleteUser = async (
 };
 
 // 계정 추가
-export const createAccount = async (
-  email: string,
-  password: string
-): Promise<{ id: number; email: string }> => {
+export const createAccount = async ({
+  email,
+  password,
+}: CreateAccountRequest): Promise<CreateAccountResponse> => {
   try {
     const response = await instance.post(`/accounts`, {
       email,
@@ -79,10 +84,12 @@ export const createAccount = async (
 };
 
 // 계정 목록 조회
-export const getAccounts = async (): Promise<AccountsResponse[]> => {
+export const getAccounts = async (
+  userId: number
+): Promise<AccountsResponse[]> => {
   try {
-    const response = await instance.get(`/accounts`);
-    console.log(`[GET] ${VITE_DEV_API_URL}/accounts`);
+    const response = await instance.get(`/accounts/${userId}`);
+    console.log(`[GET] ${VITE_DEV_API_URL}/accounts`, userId);
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -90,9 +97,11 @@ export const getAccounts = async (): Promise<AccountsResponse[]> => {
 };
 
 // 계정 삭제
-export const deleteAccount = async (
-  accountId: string
-): Promise<{ success: boolean }> => {
+export const deleteAccount = async ({
+  accountId,
+}: {
+  accountId: number;
+}): Promise<{ success: boolean }> => {
   try {
     const response = await instance.delete(`/accounts/${accountId}`);
     console.log(`[DELETE] ${VITE_DEV_API_URL}/accounts/${accountId}`);
