@@ -22,8 +22,12 @@ find_package(Boost REQUIRED COMPONENTS algorithm)
 # 라이브러리 생성
 add_library(mailio_addon MODULE
     addon.cpp
+    utils.cpp
     base64_wrapper.cpp
     imap_wrapper.cpp
+    bit8_wrapper.cpp
+    bit7_wrapper.cpp
+    smtp_wrapper.cpp
     ${MAILIO_SRC_DIR}/base64.cpp
     ${MAILIO_SRC_DIR}/binary.cpp
     ${MAILIO_SRC_DIR}/bit7.cpp
