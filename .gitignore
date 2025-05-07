@@ -1,6 +1,9 @@
 # Created by https://www.toptal.com/developers/gitignore/api/react,cmake,node,windows,vs,visualstudiocode,macos,visualstudio,c++,python,jupyternotebooks
 # Edit at https://www.toptal.com/developers/gitignore?templates=react,cmake,node,windows,vs,visualstudiocode,macos,visualstudio,c++,python,jupyternotebooks
 
+### directory ###
+/apps/electron-client/build
+
 ### C++ ###
 # Prerequisites
 *.d
