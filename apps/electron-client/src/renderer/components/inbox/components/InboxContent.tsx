@@ -1,4 +1,6 @@
-import { EmailConversation } from "@/types/emailTypes";
+import { useId } from "react";
+
+import { AllEmails } from "@/types/emailTypes";
 
 import defaultProfile from "@assets/images/defaultProfile.png";
 
@@ -33,10 +35,12 @@ const InboxContent = ({
   isSelected,
   onClick,
 }: {
-  email: EmailConversation;
+  email: AllEmails;
   isSelected: boolean;
   onClick: () => void;
 }) => {
+  const idBase = useId();
+
   const formattedDate = formatDate(email.date, "date");
 
   return (
@@ -67,9 +71,9 @@ const InboxContent = ({
         </p>
         {email.attachments && email.attachments.length > 0 && (
           <div className="flex w-full py-1 mb-1 gap-2 overflow-x-auto hide-scrollbar">
-            {email.attachments.map((attachment) => (
+            {email.attachments.map((attachment, index) => (
               <Attachment
-                key={attachment.attachmentId}
+                key={`${idBase}-${index}`}
                 fileName={attachment.filename}
               />
             ))}

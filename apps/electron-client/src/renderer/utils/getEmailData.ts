@@ -1,6 +1,6 @@
-import { EmailConversation, EmailSearchFilters } from "@/types/emailTypes";
+import { AllEmails, EmailSearchFilters } from "@/types/emailTypes";
 
-import { mockEmailConversations } from "@data/EMAIL_CONSERVATIONS";
+import { mockAllEmails } from "@data/EMAIL_CONSERVATIONS";
 
 export function parseEmailFromName(from: string) {
   // 뒤에서 가장 마지막 '<'와 '>' 위치를 찾습니다.
@@ -27,7 +27,7 @@ export function parseEmailFromName(from: string) {
   return { name: from.trim(), email: from.trim() };
 }
 
-export function searchEmails(filters: EmailSearchFilters): EmailConversation[] {
+export function searchEmails(filters: EmailSearchFilters): AllEmails[] {
   const {
     from,
     to,
@@ -39,7 +39,7 @@ export function searchEmails(filters: EmailSearchFilters): EmailConversation[] {
     endDate,
   } = filters;
 
-  return mockEmailConversations.filter((email) => {
+  return mockAllEmails.filter((email) => {
     // 1) 날짜 범위 검사
     if (startDate || endDate) {
       const sent = new Date(email.date).getTime();
@@ -83,7 +83,7 @@ export function searchEmails(filters: EmailSearchFilters): EmailConversation[] {
         email.from,
         email.to,
         email.snippet,
-        email.body,
+        // email.body,
       ]
         .join(" ")
         .toLowerCase();
@@ -102,7 +102,7 @@ export function searchEmails(filters: EmailSearchFilters): EmailConversation[] {
         email.from,
         email.to,
         email.snippet,
-        email.body,
+        // email.body,
       ]
         .join(" ")
         .toLowerCase();

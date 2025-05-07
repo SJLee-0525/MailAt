@@ -1,18 +1,18 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import { EmailConversation } from "@/types/emailTypes";
+import { AllEmails, EmailConversation } from "@/types/emailTypes";
 
-import { getUserRecordList } from "@apis/recordApi";
+import { getEmailsData } from "@apis/recordApi";
 
 import useConversationsStore from "@stores/conversationsStore";
 
 export const useGetConversations = (userId: string) => {
   const { setConversations } = useConversationsStore();
 
-  const query = useQuery<EmailConversation[]>({
+  const query = useQuery<AllEmails[]>({
     queryKey: ["conversations", userId],
-    queryFn: () => getUserRecordList(userId),
+    queryFn: () => getEmailsData(userId),
     enabled: !!userId,
     throwOnError: true,
     staleTime: 1000 * 60 * 5, // 5분

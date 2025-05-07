@@ -2,10 +2,16 @@ export interface ReplyData {
   to: string | null;
   title: string | null;
   body: string | null;
-  attachments: Attachment[] | null;
+  attachments: DetailAttachment[] | null;
 }
 
 export interface Attachment {
+  filename: string;
+  mimeType: string;
+  size: number;
+}
+
+export interface DetailAttachment {
   filename: string;
   mimeType: string;
   size: number; // 바이트 단위
@@ -23,6 +29,19 @@ export interface EmailSearchFilters {
   endDate?: Date; // 날짜 필터: 이 날짜 이전(포함)
 }
 
+export interface AllEmails {
+  id: string;
+  threadId: string;
+  subject: string;
+  from: string;
+  to: string;
+  date: string;
+  snippet: string;
+  attachments: Attachment[];
+  isRead: boolean;
+  labelIds: string[];
+}
+
 export interface EmailConversation {
   id: string;
   threadId: string;
@@ -34,5 +53,5 @@ export interface EmailConversation {
   internalDate: string;
   snippet: string;
   body: string;
-  attachments: Attachment[];
+  attachments: DetailAttachment[];
 }

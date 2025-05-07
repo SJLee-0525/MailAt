@@ -1,10 +1,10 @@
 import { create } from "zustand";
 
-import { EmailConversation } from "@/types/emailTypes";
+import { AllEmails, EmailConversation } from "@/types/emailTypes";
 
 interface ConversationsStore {
-  conversations: EmailConversation[];
-  setConversations: (conversations: EmailConversation[]) => void;
+  conversations: AllEmails[];
+  setConversations: (conversations: AllEmails[]) => void;
 }
 
 const useConversationsStore = create<ConversationsStore>((set) => ({
