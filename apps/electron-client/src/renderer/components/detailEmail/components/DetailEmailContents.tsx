@@ -1,4 +1,4 @@
-import { ReplyData, EmailConversation } from "@/types/emailTypes";
+import { ReplyData, EmailDetail } from "@/types/emailTypes";
 
 import DetailEmailTitle from "@components/detailEmail/components/DetailEmailTitle";
 import DetailEmailContent from "@components/detailEmail/components/DetailEmailContent";
@@ -8,7 +8,7 @@ const DetailEmailContents = ({
   detailEmail,
   onReply,
 }: {
-  detailEmail: EmailConversation;
+  detailEmail: EmailDetail;
   onReply: (replyData: ReplyData) => void;
 }) => {
   return (

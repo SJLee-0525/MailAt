@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { ReplyData, Attachment } from "@/types/emailTypes";
+import { ReplyData, DetailAttachment } from "@/types/emailTypes";
 
 import useUserProgressStore from "@stores/userProgressStore";
 
@@ -31,7 +31,7 @@ const DetailEmailTitle = ({
   from: string;
   to: string;
   body: string;
-  attachments: Attachment[];
+  attachments: DetailAttachment[];
   onReply: (replyData: ReplyData) => void;
 }) => {
   const { setIsReplying } = useUserProgressStore();

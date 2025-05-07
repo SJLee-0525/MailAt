@@ -1,6 +1,6 @@
-import { AllEmails, EmailConversation } from "@/types/emailTypes";
+import { AllEmails, EmailDetail } from "@/types/emailTypes";
 
-export const defaultEmailConversation: EmailConversation = {
+export const defaultEmailConversation: EmailDetail = {
   id: "",
   threadId: "",
   labelIds: [],
@@ -281,7 +281,7 @@ export const mockAllEmails: AllEmails[] = [
   },
 ];
 
-export const mockEmailConversations: EmailConversation[] = [
+export const mockEmailConversations: EmailDetail[] = [
   {
     id: "1967d2f2e9f6504d",
     threadId: "1967d2f2e9f6504d",

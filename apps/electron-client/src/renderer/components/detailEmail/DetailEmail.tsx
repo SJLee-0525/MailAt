@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { ReplyData, EmailConversation } from "@/types/emailTypes";
+import { ReplyData, EmailDetail } from "@/types/emailTypes";
 import {
   defaultEmailConversation,
   defaultReplyData,
@@ -17,7 +17,7 @@ const DetailEmail = () => {
   const { selectedMail, isReplying, setSelectedMail, setIsReplying } =
     useUserProgressStore();
 
-  const [detailEmail, setDetailEmail] = useState<EmailConversation>(
+  const [detailEmail, setDetailEmail] = useState<EmailDetail>(
     defaultEmailConversation
   );
   const [replyData, setReplyData] = useState<ReplyData>(defaultReplyData);

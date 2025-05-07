@@ -1,6 +1,10 @@
-import { Attachment } from "@/types/emailTypes";
+import { DetailAttachment as DetailAttachmentType } from "@/types/emailTypes";
 
-const DetailAttachment = ({ attachment }: { attachment: Attachment }) => {
+const DetailAttachment = ({
+  attachment,
+}: {
+  attachment: DetailAttachmentType;
+}) => {
   return (
     <div className="flex flex-col w-32 min-w-32 h-fit rounded-lg border border-light1">
       <div className="px-1.5 py-1 w-full rounded-t-lg bg-light1">
@@ -15,7 +19,11 @@ const DetailAttachment = ({ attachment }: { attachment: Attachment }) => {
   );
 };
 
-const DetailAttachments = ({ attachments }: { attachments: Attachment[] }) => {
+const DetailAttachments = ({
+  attachments,
+}: {
+  attachments: DetailAttachmentType[];
+}) => {
   if (attachments && attachments.length === 0) {
     return null;
   }

@@ -42,7 +42,7 @@ export interface AllEmails {
   labelIds: string[];
 }
 
-export interface EmailConversation {
+export interface EmailDetail {
   id: string;
   threadId: string;
   labelIds: string[];
@@ -54,4 +54,16 @@ export interface EmailConversation {
   snippet: string;
   body: string;
   attachments: DetailAttachment[];
+}
+
+export interface EmailSendRequestData {
+  to: string[];
+  cc: string[];
+  bcc: string[];
+  title: string;
+  body: string;
+  attachments: DetailAttachment[];
+  threadId: string | null; // 답장일 경우 원래 이메일의 threadId
+  inReplyTo: string | null; // 답장일 경우 원래 이메일의 id
+  references: string[];
 }

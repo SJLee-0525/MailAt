@@ -4,7 +4,7 @@ import { User, AccountsResponse } from "@/types/authType";
 
 const { VITE_DEV_API_URL } = import.meta.env;
 
-// 사용자 추가가
+// 사용자 추가
 export const createUser = async (username: string): Promise<User> => {
   try {
     const response = await instance.post(`/user`, {
