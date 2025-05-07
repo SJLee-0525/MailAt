@@ -1,7 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"C:/mailat/electron/addon/build/cmake_install.cmake"
-	],
-	"Parallel" : false
-}

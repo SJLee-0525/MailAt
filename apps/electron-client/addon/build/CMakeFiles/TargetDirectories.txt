@@ -1,3 +1,0 @@
-C:/mailat/electron/addon/build/CMakeFiles/mailio_addon.dir
-C:/mailat/electron/addon/build/CMakeFiles/ALL_BUILD.dir
-C:/mailat/electron/addon/build/CMakeFiles/ZERO_CHECK.dir
