@@ -7,7 +7,7 @@ import {
 } from "@data/EMAIL_CONSERVATIONS";
 
 import useUserProgressStore from "@stores/userProgressStore";
-import { getDetailEmail } from "@apis/recordApi";
+import { getDetailEmail } from "@/apis/emailApi";
 
 import DetailEmailHeader from "@components/detailEmail/components/DetailEmailHeader";
 import DetailEmailContents from "@components/detailEmail/components/DetailEmailContents";

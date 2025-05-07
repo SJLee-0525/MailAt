@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import { AllEmails, EmailConversation } from "@/types/emailTypes";
+import { AllEmails } from "@/types/emailTypes";
 
-import { getEmailsData } from "@apis/recordApi";
+import { getEmailsData } from "@/apis/emailApi";
 
 import useConversationsStore from "@stores/conversationsStore";
 

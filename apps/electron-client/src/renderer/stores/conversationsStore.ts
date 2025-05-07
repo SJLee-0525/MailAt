@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { AllEmails, EmailConversation } from "@/types/emailTypes";
+import { AllEmails } from "@/types/emailTypes";
 
 interface ConversationsStore {
   conversations: AllEmails[];
