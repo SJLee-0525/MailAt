@@ -1,11 +1,19 @@
 import { AuthUser } from "@/types/authType";
 
+import useAuthenticateStore from "@stores/authenticateStore";
+
 import IconButton from "@components/common/button/IconButton";
 
 import GoogleIcon from "@assets/icons/GoogleIcon";
 import DeleteIcon from "@assets/icons/DeleteIcon";
 
 const InnerList = ({ user }: { user: AuthUser }) => {
+  const { deleteAuthUser } = useAuthenticateStore();
+
+  function handleDelete() {
+    deleteAuthUser(user);
+  }
+
   return (
     <div className="flex items-center justify-between p-2 w-full">
       <div className="flex justify-center items-center px-1 gap-3 w-fit h-fit">
@@ -23,7 +31,7 @@ const InnerList = ({ user }: { user: AuthUser }) => {
         icon={<DeleteIcon />}
         className="p-2 hover:bg-red-200 rounded-full transition-all duration-300"
         onClick={() => {
-          console.log(" Delete Icon Clicked");
+          handleDelete();
         }}
       />
     </div>
