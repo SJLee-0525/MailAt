@@ -1,5 +1,9 @@
 import { useState, useRef } from "react";
 
+import { EmailSendRequestData } from "@/types/emailTypes";
+
+import { sendEmail } from "@apis/emailApi";
+
 import useUserProgressStore from "@stores/userProgressStore";
 
 import MailFormHeader from "@components/mailForm/components/MailFormHeader";
@@ -40,7 +44,7 @@ const MailCreateForm = () => {
   }
 
   // 실제 제출 핸들러
-  function handleSubmit() {
+  async function handleSubmit() {
     console.log("받는 사람:", sender);
     console.log("제목:", titleRef.current?.value);
     console.log("본문:", html);
@@ -56,9 +60,30 @@ const MailCreateForm = () => {
       return;
     }
 
-    setSender([]); // 보낸 사람 초기화
-    titleRef.current!.value = ""; // 제목 초기화
-    setHtml(""); // HTML 초기화
+    const emailData = {
+      to: sender,
+      cc: [], // 참조인
+      bcc: [], // 숨은 참조인
+      title: titleRef.current?.value,
+      body: html,
+      attachments: [], // 첨부파일
+      threadId: null, // 답장할 이메일의 스레드 ID
+      inReplyTo: null, // 답장할 이메일의 ID (Message-ID 헤더)
+      references: [], // References 헤더에 포함할 Message-ID 목록
+    };
+
+    try {
+      const response = await sendEmail(emailData as EmailSendRequestData);
+
+      if (response.success) {
+        console.log("이메일 전송 성공:", response.messageId);
+        setSender([]); // 보낸 사람 초기화
+        titleRef.current!.value = ""; // 제목 초기화
+        setHtml(""); // HTML 초기화
+      }
+    } catch (error) {
+      console.error("Error sending email:", error);
+    }
   }
 
   return (

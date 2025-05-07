@@ -57,13 +57,13 @@ export interface EmailDetail {
 }
 
 export interface EmailSendRequestData {
-  to: string[];
-  cc: string[];
-  bcc: string[];
+  to: string[]; // 받는 사람 이메일 주소 배열
+  cc: string[]; // 참조 이메일 주소 배열
+  bcc: string[]; // 숨은 참조 이메일 주소 배열
   title: string;
   body: string;
   attachments: DetailAttachment[];
-  threadId: string | null; // 답장일 경우 원래 이메일의 threadId
-  inReplyTo: string | null; // 답장일 경우 원래 이메일의 id
-  references: string[];
+  threadId: string | null; // 답장 시 원본 이메일의 threadId  새 메일 작성 시에는 null
+  inReplyTo: string | null; // 답장 시 원본 이메일의 id (Message-ID 헤더)  새 메일 작성 시에는 null
+  references: string[]; // References 헤더에 포함할 Message-ID 목록  (이전 대화 스레드 추적용)
 }

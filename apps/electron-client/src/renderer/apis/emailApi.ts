@@ -31,9 +31,11 @@ export const getDetailEmail = async (emailId: number): Promise<EmailDetail> => {
 };
 
 // 이메일 삭제
-export const deleteEmail = async (
-  emailId: number
-): Promise<{ success: boolean }> => {
+export const deleteEmail = async ({
+  emailId,
+}: {
+  emailId: number;
+}): Promise<{ success: boolean }> => {
   try {
     const response = await instance.delete(`/emails/${emailId}`);
     console.log(`[DELETE] ${VITE_DEV_API_URL}/emails/${emailId}`);
