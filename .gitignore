@@ -3,6 +3,7 @@
 
 ### directory ###
 /apps/electron-client/build
+/apps/electron-client/addon/build
 
 ### C++ ###
 # Prerequisites
