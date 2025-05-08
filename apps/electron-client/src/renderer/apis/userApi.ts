@@ -63,20 +63,12 @@ export const deleteUser = async (
 };
 
 // 계정 추가
-export const createAccount = async ({
-  email,
-  password,
-}: CreateAccountRequest): Promise<CreateAccountResponse> => {
+export const createAccount = async (
+  payload: CreateAccountRequest
+): Promise<CreateAccountResponse> => {
   try {
-    const response = await instance.post(`/accounts`, {
-      email,
-      password,
-      imapHost: "imap.gmail.com",
-      imapPort: 993,
-      smtpHost: "smtp.gmail.com",
-      smtpPort: 465,
-    });
-    console.log(`[POST] ${VITE_DEV_API_URL}/accounts`, email, password);
+    const response = await instance.post(`/accounts`, payload);
+    console.log(`[POST] ${VITE_DEV_API_URL}/accounts`, payload);
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -84,12 +76,10 @@ export const createAccount = async ({
 };
 
 // 계정 목록 조회
-export const getAccounts = async (
-  userId: number
-): Promise<AccountsResponse[]> => {
+export const getAccounts = async (): Promise<AccountsResponse[]> => {
   try {
-    const response = await instance.get(`/accounts/${userId}`);
-    console.log(`[GET] ${VITE_DEV_API_URL}/accounts`, userId);
+    const response = await instance.get(`/accounts`);
+    console.log(`[GET] ${VITE_DEV_API_URL}/accounts`);
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);

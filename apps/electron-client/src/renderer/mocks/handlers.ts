@@ -44,7 +44,7 @@ const handlers = [
   }),
 
   // 계정 조회
-  http.get(VITE_DEV_API_URL + "/accounts/:userId", () => {
+  http.get(VITE_DEV_API_URL + "/accounts", () => {
     return HttpResponse.json(ACCOUNTS_DATA);
   }),
 

@@ -1,11 +1,14 @@
 import { useState } from "react";
 
+import { AccountsResponse } from "@/types/authType";
+
 import useAuthenticateStore from "@stores/authenticateStore";
 
 import { useGetAccounts } from "@hooks/useGetUser";
 
 import SettingsMailList from "@pages/settings/components/SettingsMailList";
-import SettingAddAccount from "@pages/settings/components/SettingsAddAcount";
+import SettingsAddAccount from "@pages/settings/components/SettingsAddAcount";
+import SettingsEditAccount from "@pages/settings/components/SettingsEditAccount";
 
 import Button from "@components/common/button/Button";
 
@@ -13,8 +16,11 @@ const SettingConnectedEmail = () => {
   const { user, authUsers } = useAuthenticateStore();
 
   const [isAddAccount, setIsAddAccount] = useState(false);
+  const [isEditAccount, setIsEditAccount] = useState<AccountsResponse | null>(
+    null
+  );
 
-  const accountsQuery = useGetAccounts(user ? user.id : -1);
+  const accountsQuery = useGetAccounts();
   if (accountsQuery.isLoading) return <div>Loading...</div>;
   if (accountsQuery.isError)
     return <div>Error: {accountsQuery.error.message}</div>;
@@ -37,7 +43,7 @@ const SettingConnectedEmail = () => {
                 }}
               />
             </div>
-            <SettingsMailList users={authUsers} />
+            <SettingsMailList users={authUsers} onEdit={setIsEditAccount} />
           </div>
         </div>
       )}
@@ -57,7 +63,13 @@ const SettingConnectedEmail = () => {
         </div>
       )}
       {isAddAccount && (
-        <SettingAddAccount closeAction={() => setIsAddAccount(false)} />
+        <SettingsAddAccount closeAction={() => setIsAddAccount(false)} />
+      )}
+      {isEditAccount && (
+        <SettingsEditAccount
+          account={isEditAccount}
+          onClose={() => setIsEditAccount(null)}
+        />
       )}
     </>
   );

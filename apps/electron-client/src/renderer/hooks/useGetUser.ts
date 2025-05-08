@@ -11,13 +11,13 @@ import {
 
 import useAuthenticateStore from "@stores/authenticateStore";
 
-export const useGetAccounts = (userId: number) => {
+export const useGetAccounts = () => {
   const { user, setAuthUsers } = useAuthenticateStore();
 
   const query = useQuery<AccountsResponse[]>({
     queryKey: ["accounts"],
-    queryFn: () => getAccounts(userId!),
-    enabled: userId !== -1,
+    queryFn: () => getAccounts(),
+    enabled: !!user,
     throwOnError: true,
     staleTime: 1000 * 60 * 30,
   });
@@ -32,6 +32,8 @@ export const useGetAccounts = (userId: number) => {
           id: account.id,
           email: account.email,
           name: user ? user.username : "이름이 없어요",
+          imapHost: account.imapHost,
+          smtpHost: account.smtpHost,
         };
       });
 
