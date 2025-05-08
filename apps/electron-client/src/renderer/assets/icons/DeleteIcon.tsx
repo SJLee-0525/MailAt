@@ -4,6 +4,7 @@ const DeleteIcon = ({
   width = 24,
   height = 24,
   strokeColor = "#7D7983",
+  className,
   onClick,
 }: IconProps) => {
   return (
@@ -13,6 +14,7 @@ const DeleteIcon = ({
       height={height}
       viewBox="0 0 24 24"
       fill="none"
+      className={className}
       onClick={onClick}
     >
       <path

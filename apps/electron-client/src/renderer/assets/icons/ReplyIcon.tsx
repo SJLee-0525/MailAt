@@ -4,6 +4,7 @@ const ReplyIcon = ({
   width = 28,
   height = 28,
   strokeColor = "#7D7983",
+  className,
   onClick,
 }: IconProps) => {
   return (
@@ -13,6 +14,7 @@ const ReplyIcon = ({
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      className={className}
       onClick={onClick}
     >
       <g clipPath="url(#clip0_127_9192)">

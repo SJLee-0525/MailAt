@@ -1,4 +1,9 @@
 import Button from "@components/common/button/Button";
+import IconButton from "@components/common/button/IconButton";
+
+import CloseIcon from "@assets/icons/CloseIcon";
+import TimerIcon from "@assets/icons/TimerIcon";
+import SendIcon from "@assets/icons/SendIcon";
 
 const MailFormHeader = ({
   closeForm,
@@ -10,26 +15,30 @@ const MailFormHeader = ({
   return (
     <div className="flex items-center justify-between w-full h-16 min-h-16  px-4">
       <nav>
-        <Button
+        <IconButton
           type="button"
-          content="닫기"
-          className="bg-default text-white"
-          onAction={() => closeForm(false)}
+          icon={<CloseIcon width={20} height={20} />}
+          className="p-2.5 transition-all duration-300 bg-default hover:bg-error"
+          onClick={() => closeForm(false)}
         />
       </nav>
 
       <nav className="flex items-center gap-2">
-        <Button
+        {/* <Button
           type="button"
           content="임시"
           className="bg-default text-white"
-        />
-        <Button type="button" content="예약" className="bg-accept text-white" />
-        <Button
+        /> */}
+        <IconButton
           type="button"
-          content="보내기"
-          className="bg-theme text-white"
-          onAction={handleSubmit}
+          icon={<TimerIcon width={20} height={20} />}
+          className="p-2.5 transition-all duration-300 bg-accept hover:bg-theme"
+        />
+        <IconButton
+          type="button"
+          icon={<SendIcon width={20} height={20} />}
+          className="p-2.5 transition-all duration-300 bg-theme hover:bg-theme-dark"
+          onClick={handleSubmit}
         />
       </nav>
     </div>

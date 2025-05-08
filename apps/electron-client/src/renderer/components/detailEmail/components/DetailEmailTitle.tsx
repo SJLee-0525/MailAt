@@ -102,6 +102,7 @@ const DetailEmailTitle = ({
                 attachments: null,
               });
             }}
+            className="transition-all duration-200 rounded-full hover:bg-light2"
           />
           <ForwardIcon
             width={24}
@@ -115,8 +116,14 @@ const DetailEmailTitle = ({
                 attachments: attachments,
               });
             }}
+            className="transition-all duration-200 rounded-full hover:bg-light2"
           />
-          <DeleteIcon width={24} height={24} onClick={handleDelete} />
+          <DeleteIcon
+            width={24}
+            height={24}
+            onClick={handleDelete}
+            className="transition-all duration-200 rounded-full hover:bg-light2"
+          />
         </div>
       </div>
     </div>
