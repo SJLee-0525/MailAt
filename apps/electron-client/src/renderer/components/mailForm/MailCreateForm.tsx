@@ -80,6 +80,7 @@ const MailCreateForm = () => {
         setSender([]); // 보낸 사람 초기화
         titleRef.current!.value = ""; // 제목 초기화
         setHtml(""); // HTML 초기화
+        setMailFormIsOpen(false); // 메일 폼 닫기
       }
     } catch (error) {
       console.error("Error sending email:", error);

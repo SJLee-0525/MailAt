@@ -50,7 +50,7 @@ export const getDetailEmail = async (emailId: number): Promise<EmailDetail> => {
 export const deleteEmail = async ({
   emailId,
 }: {
-  emailId: number;
+  emailId: string;
 }): Promise<{ success: boolean }> => {
   try {
     const response = await instance.delete(`/emails/${emailId}`);

@@ -45,7 +45,7 @@ const InboxContent = ({
 
   return (
     <div
-      className={`flex justify-between p-2 gap-2 w-full h-fit rounded-lg ${isSelected ? "bg-light1" : "transition-all duration-300 hover:bg-light1"}`}
+      className={`flex justify-between p-2.5 gap-1.5 w-full h-fit rounded-lg ${isSelected ? "bg-light1" : "transition-all duration-300 hover:bg-light1"}`}
       onClick={onClick}
     >
       <div className="flex flex-col justify-start items-center w-fit py-1.5">
@@ -56,7 +56,7 @@ const InboxContent = ({
         />
       </div>
 
-      <div className="flex flex-col max-w-5/6 w-5/6 h-fit">
+      <div className="flex flex-col max-w-[85%] w-[85%] h-fit">
         <div className="relative flex justify-between items-start w-full h-fit">
           <FromName from={email.from} />
           {formattedDate && (

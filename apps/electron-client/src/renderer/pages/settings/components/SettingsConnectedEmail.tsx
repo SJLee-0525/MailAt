@@ -23,19 +23,22 @@ const SettingConnectedEmail = () => {
     <>
       {authUsers.length > 0 && (
         <div className="flex flex-col w-full h-fit gap-2 p-2 font-pre-bold">
-          <hr className="border-t border-light3 w-full my-4" />
-          <div className="flex items-center justify-between w-full h-fit px-1.5 text-center font-pre-bold">
-            <h2 className="font-pre-bold font-bold text-lg">연결된 계정</h2>
-            <Button
-              type="button"
-              content="추가"
-              className="bg-theme text-white rounded-full text-xs"
-              onAction={() => {
-                setIsAddAccount(true);
-              }}
-            />
+          <hr className="border-t border-light3 w-full my-1" />
+
+          <div className="flex flex-col w-full h-fit gap-2.5 py-2 font-pre-bold rounded-lg">
+            <div className="flex items-center justify-between w-full h-fit px-1.5 text-center font-pre-bold">
+              <h2 className="font-pre-bold font-bold text-lg">연결된 계정</h2>
+              <Button
+                type="button"
+                content="추가"
+                className="bg-theme text-white rounded-full text-xs"
+                onAction={() => {
+                  setIsAddAccount(true);
+                }}
+              />
+            </div>
+            <SettingsMailList users={authUsers} />
           </div>
-          <SettingsMailList users={authUsers} />
         </div>
       )}
       {user && authUsers.length === 0 && (

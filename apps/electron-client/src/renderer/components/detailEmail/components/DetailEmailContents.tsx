@@ -14,6 +14,7 @@ const DetailEmailContents = ({
   return (
     <div className="flex flex-col w-full h-full p-2 gap-1 bg-white rounded-lg font-pre-bold overflow-y-auto hide-scrollbar">
       <DetailEmailTitle
+        id={detailEmail.id}
         subject={detailEmail.subject}
         date={detailEmail.date}
         from={detailEmail.from}

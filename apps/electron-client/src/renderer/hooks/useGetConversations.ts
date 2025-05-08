@@ -37,7 +37,7 @@ export const useDeleteEmail = () => {
   const mutation = useMutation<
     { success: boolean },
     Error,
-    { emailId: number }
+    { emailId: string }
   >({
     mutationFn: deleteEmail,
     onSuccess: () => {
