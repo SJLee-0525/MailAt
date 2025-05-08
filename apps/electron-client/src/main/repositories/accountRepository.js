@@ -53,35 +53,8 @@ class AccountRepository {
               return;
             }
 
-            const accountId = this.lastID;
-
-            // 사용자 이름 조회
-            db.get(
-              `SELECT username FROM User WHERE user_id = ?`,
-              [userId],
-              (err, userRow) => {
-                if (err) {
-                  reject(new Error(`사용자 조회 오류: ${err.message}`));
-                  return;
-                }
-
-                if (!userRow) {
-                  reject(
-                    new Error(
-                      `사용자 ID(${userId})에 해당하는 사용자를 찾을 수 없습니다.`
-                    )
-                  );
-                  return;
-                }
-
-                // 요청한 형식대로 응답 구성
-                resolve({
-                  accountId: accountId,
-                  email: email,
-                  username: userRow.username,
-                });
-              }
-            );
+            // 생성 성공
+            resolve({ accountId: this.lastID });
           }
         );
       });
@@ -124,6 +97,8 @@ class AccountRepository {
           resolve({
             accountId: row.account_id,
             email: row.email,
+            imapHost: row.imap_host,
+            smtpHost: row.smtp_host,
             username: row.username,
           });
         });
@@ -149,6 +124,7 @@ class AccountRepository {
                  u.username
           FROM Account a
           JOIN User u ON a.user_id = u.user_id
+          ORDER BY a.account_id
         `;
 
         db.all(query, [], (err, rows) => {
@@ -162,6 +138,7 @@ class AccountRepository {
             email: row.email,
             imapHost: row.imap_host,
             smtpHost: row.smtp_host,
+            username: row.username,
           }));
 
           resolve(accounts);

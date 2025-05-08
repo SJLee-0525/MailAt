@@ -25,12 +25,6 @@ class AccountService {
       // 큰 제공자들의 특별 케이스 처리
       if (provider === "google" || provider === "googlemail") {
         return "gmail";
-        //   } else if (
-        //     provider === "outlook" ||
-        //     provider === "hotmail" ||
-        //     provider === "live"
-        //   ) {
-        //     return "microsoft";
       } else if (provider === "mail" && imapHost.includes("yahoo")) {
         return "yahoo";
       } else if (provider === "mail" && imapHost.includes("naver")) {
@@ -46,40 +40,17 @@ class AccountService {
   }
 
   /**
-   * 새 계정 생성
+   * 새 계정 생성 후 모든 계정 목록을 반환
    * @param {Object} accountData - 계정 데이터
-   * @returns {Promise<Object>} 생성된 계정 정보
+   * @returns {Promise<Array>} 계정 목록
    */
   async createAccount(accountData) {
     try {
-      if (!accountData.email) {
-        throw new Error("이메일은 필수입니다.");
-      }
-
-      if (!accountData.password) {
-        throw new Error("비밀번호는 필수입니다.");
-      }
-
-      if (!accountData.imapHost || !accountData.imapPort) {
-        throw new Error("IMAP 호스트 및 포트는 필수입니다.");
-      }
-
-      if (!accountData.smtpHost || !accountData.smtpPort) {
-        throw new Error("SMTP 호스트 및 포트는 필수입니다.");
-      }
+      // 입력 유효성 검사
+      this.validateAccountData(accountData);
 
       // IMAP 인증 테스트
-      const authResult = await testImapAuthentication({
-        host: accountData.imapHost,
-        port: accountData.imapPort,
-        username: accountData.email,
-        password: accountData.password,
-      });
-
-      // 인증 실패 시 오류 처리
-      if (!authResult.success) {
-        throw new Error(`IMAP 인증 실패: ${authResult.message}`);
-      }
+      await this.authenticateImap(accountData);
 
       // 제공자 이름 추출
       const provider = this.extractProviderFromHost(accountData.imapHost);
@@ -94,10 +65,54 @@ class AccountService {
       const userId = await accountRepository.getFirstUserId();
 
       // 계정 생성
-      return await accountRepository.createAccount(userId, enrichedAccountData);
+      await accountRepository.createAccount(userId, enrichedAccountData);
+
+      // 모든 계정 목록 조회하여 반환 (일관된 응답 형식을 위해)
+      return await accountRepository.getAllAccounts();
     } catch (error) {
       console.error("계정 생성 서비스 오류:", error);
       throw error;
+    }
+  }
+
+  /**
+   * 계정 데이터 유효성 검사
+   * @param {Object} accountData - 계정 데이터
+   * @throws {Error} 유효성 검사 실패 시 오류
+   */
+  validateAccountData(accountData) {
+    if (!accountData.email) {
+      throw new Error("이메일은 필수입니다.");
+    }
+
+    if (!accountData.password) {
+      throw new Error("비밀번호는 필수입니다.");
+    }
+
+    if (!accountData.imapHost || !accountData.imapPort) {
+      throw new Error("IMAP 호스트 및 포트는 필수입니다.");
+    }
+
+    if (!accountData.smtpHost || !accountData.smtpPort) {
+      throw new Error("SMTP 호스트 및 포트는 필수입니다.");
+    }
+  }
+
+  /**
+   * IMAP 인증 테스트
+   * @param {Object} accountData - 계정 데이터
+   * @throws {Error} 인증 실패 시 오류
+   */
+  async authenticateImap(accountData) {
+    const authResult = await testImapAuthentication({
+      host: accountData.imapHost,
+      port: accountData.imapPort,
+      username: accountData.email,
+      password: accountData.password,
+    });
+
+    if (!authResult.success) {
+      throw new Error(`IMAP 인증 실패: ${authResult.message}`);
     }
   }
 
