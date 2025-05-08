@@ -1,5 +1,6 @@
 // src/services/accountService.js
 import accountRepository from "../repositories/accountRepository.js";
+import { testImapAuthentication } from "./imapService.js";
 
 /**
  * 계정 서비스 클래스
@@ -65,6 +66,19 @@ class AccountService {
 
       if (!accountData.smtpHost || !accountData.smtpPort) {
         throw new Error("SMTP 호스트 및 포트는 필수입니다.");
+      }
+
+      // IMAP 인증 테스트
+      const authResult = await testImapAuthentication({
+        host: accountData.imapHost,
+        port: accountData.imapPort,
+        username: accountData.email,
+        password: accountData.password,
+      });
+
+      // 인증 실패 시 오류 처리
+      if (!authResult.success) {
+        throw new Error(`IMAP 인증 실패: ${authResult.message}`);
       }
 
       // 제공자 이름 추출

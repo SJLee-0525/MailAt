@@ -13,7 +13,22 @@ export const initAccountController = () => {
       return { success: true, ...result };
     } catch (error) {
       console.error("계정 생성 컨트롤러 오류:", error);
-      return { success: false, message: error.message };
+
+      // 오류 메시지에 따라 사용자 친화적인 메시지 반환
+      let message = error.message;
+      if (message.includes("IMAP 인증 실패")) {
+        message =
+          "이메일 또는 비밀번호가 올바르지 않습니다. 다시 확인해주세요.";
+      } else if (message.includes("연결")) {
+        message =
+          "IMAP 서버에 연결할 수 없습니다. 서버 설정과 인터넷 연결을 확인해주세요.";
+      }
+
+      return {
+        success: false,
+        message: message,
+        error: error.message,
+      };
     }
   });
 
