@@ -3,9 +3,10 @@ import { app, BrowserWindow } from "electron";
 import path from "path";
 import { initSmtpController } from "./src/main/controllers/smtpController.js";
 import { initUserController } from "./src/main/controllers/userController.js";
+import { initAccountController } from "./src/main/controllers/accountController.js";
 import { getConnection, closeConnection } from "./src/main/config/dbConfig.js";
-// 테스트 코드 import
 import { runUserTests } from "./src/test/userTest.js";
+import { runAccountTests } from "./src/test/accountTest.js";
 
 // 개발 모드 체크
 const isDev = process.env.NODE_ENV === "development";
@@ -40,6 +41,7 @@ const createWindow = () => {
   // 컨트롤러 초기화
   initSmtpController();
   initUserController();
+  initAccountController();
 
   // 윈도우가 닫힐 때 이벤트
   mainWindow.on("closed", () => {

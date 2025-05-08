@@ -19,4 +19,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
       ipcRenderer.invoke("user:update", { userId, userData }),
     delete: (userId) => ipcRenderer.invoke("user:delete", userId),
   },
+
+  // 계정 관련 API
+  account: {
+    create: (accountData) => ipcRenderer.invoke("account:create", accountData),
+    getAll: () => ipcRenderer.invoke("account:getAll"),
+    delete: (accountId) => ipcRenderer.invoke("account:delete", accountId),
+  },
 });
