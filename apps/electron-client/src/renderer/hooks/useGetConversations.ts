@@ -3,25 +3,27 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { AllEmails } from "@/types/emailTypes";
 
+import useAuthenticateStore from "@stores/authenticateStore";
+
 import { getEmailsData, deleteEmail } from "@apis/emailApi";
 
 import useConversationsStore from "@stores/conversationsStore";
 
-export const useGetAllEmails = (userId: string) => {
-  const { setConversations } = useConversationsStore();
+export const useGetAllEmails = () => {
+  const { user } = useAuthenticateStore();
+  const { setConversations, filters } = useConversationsStore();
+
+  const userId = user?.id || null;
 
   const query = useQuery<AllEmails[]>({
-    queryKey: ["emails"],
-    queryFn: () => getEmailsData(userId),
-    enabled: !!userId,
+    queryKey: ["emails", userId, filters],
+    queryFn: () => getEmailsData({ userId, filters }),
+    enabled: !!userId, // userId가 truthy(빈 문자열이 아님)일 때만 활성화
     throwOnError: true,
-    staleTime: 1000 * 60 * 5, // 5분
   });
 
   useEffect(() => {
     if (query.data) {
-      console.log("Conversations data:", query.data);
-
       setConversations(query.data);
     }
   }, [query.data, setConversations]);

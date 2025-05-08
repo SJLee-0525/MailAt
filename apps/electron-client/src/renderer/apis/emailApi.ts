@@ -4,15 +4,31 @@ import {
   AllEmails,
   EmailDetail,
   EmailSendRequestData,
+  EmailSearchFilters,
 } from "@/types/emailTypes";
+
+import { buildFilterQueryString } from "@utils/getEmailData";
 
 const { VITE_DEV_API_URL } = import.meta.env;
 
 // 이메일 전체 조회
-export const getEmailsData = async (userId: string): Promise<AllEmails[]> => {
+export const getEmailsData = async ({
+  userId,
+  filters,
+}: {
+  userId: number | null;
+  filters: EmailSearchFilters;
+}): Promise<AllEmails[]> => {
+  if (!userId) {
+    throw new Error("User ID is required to fetch emails.");
+  }
+
+  const qs = buildFilterQueryString(userId, filters);
+  const url = `/emails?${qs}`;
+
   try {
-    const response = await instance.get(`/emails?accountId=${userId}`);
-    console.log(`[GET] ${VITE_DEV_API_URL}/emails?accountId=${userId}`);
+    const response = await instance.get<AllEmails[]>(url);
+    console.log(`[GET] ${VITE_DEV_API_URL}${url}`);
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
