@@ -10,6 +10,7 @@
     "dev": "npx cross-env NODE_ENV=development npx concurrently \"npm:renderer:dev\" \"npm:electron:dev\"",
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "test:user": "electron . --test",
     "build:addon": "node-gyp configure build",
     "build:renderer": "tsc -p src/tsconfig.app.json && vite build --config src/vite.config.ts",
     "build": "npm run build:renderer && npm run build:addon",
