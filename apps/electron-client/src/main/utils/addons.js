@@ -1,76 +1,49 @@
-// src/utils/addons.js (또는 src/main/utils/addons.js)
+// src/main/utils/addons.js
+import { createRequire } from "module";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// ESM에서 __dirname 설정
+// ESM에서 __dirname 흉내내기
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 애드온 모듈 경로 설정
-const addonPath = path.join(__dirname, "../../build/Release/mailio_addon.node");
-// CommonJS 방식을 동적 import로 변경 (ESM에서 require 사용 문제 해결)
-let addonModule;
+// createRequire를 사용하여 require 함수 생성
+const require = createRequire(import.meta.url);
 
+// 변수를 먼저 선언 (초기값은 null)
+let SmtpWrapper = null;
+let ImapWrapper = null;
+let Base64Wrapper = null;
+let Bit7Wrapper = null;
+let Bit8Wrapper = null;
+let moduleExports = {};
+
+// require로 네이티브 모듈 로드
+const addonPath = path.join(
+  __dirname,
+  "../../../build/Release/mailio_addon.node"
+);
 try {
-  // 동적 import 사용 (ESM 환경에서 require 대체)
-  addonModule = await import(addonPath);
+  console.log("현재 디렉토리:", process.cwd());
+  console.log("__dirname:", __dirname);
+  console.log("계산된 addon 경로:", addonPath);
+
+  const addonModule = require(addonPath);
+  console.log("네이티브 애드온 모듈 로드 성공");
+
+  // 변수 값 설정
+  SmtpWrapper = addonModule.SmtpWrapper;
+  ImapWrapper = addonModule.ImapWrapper;
+  Base64Wrapper = addonModule.Base64Wrapper;
+  Bit7Wrapper = addonModule.Bit7Wrapper || null;
+  Bit8Wrapper = addonModule.Bit8Wrapper;
+  moduleExports = addonModule;
 } catch (error) {
-  console.error(`애드온 모듈 로드 오류: ${error.message}`);
-  // 임시 모의 객체 생성 (테스트용)
-  addonModule = {
-    SmtpWrapper: class MockSmtpWrapper {
-      constructor(host, port) {
-        this.host = host;
-        this.port = port;
-        console.log(`[MOCK] SMTP Wrapper 생성: ${host}:${port}`);
-      }
-
-      authenticate(username, password, authMethod) {
-        console.log(`[MOCK] SMTP 인증: ${username}, 방식: ${authMethod}`);
-        return "인증 성공 (모의)";
-      }
-
-      submit(rawMessage) {
-        console.log("[MOCK] 이메일 제출");
-        return "<message-id@example.com>";
-      }
-
-      quit() {
-        console.log("[MOCK] SMTP 연결 종료");
-        return "연결 종료 (모의)";
-      }
-    },
-
-    ImapWrapper: class MockImapWrapper {
-      constructor(host, port) {
-        this.host = host;
-        this.port = port;
-        console.log(`[MOCK] IMAP Wrapper 생성: ${host}:${port}`);
-      }
-
-      authenticate(username, password) {
-        console.log(`[MOCK] IMAP 인증: ${username}`);
-        return true;
-      }
-
-      append(mailbox, message) {
-        console.log(`[MOCK] 메시지 추가: ${mailbox}`);
-        return true;
-      }
-    },
-
-    Base64Wrapper: class MockBase64Wrapper {},
-    Bit7Wrapper: class MockBit7Wrapper {},
-    Bit8Wrapper: class MockBit8Wrapper {},
-  };
+  console.error("애드온 로드 실패:", error.message);
+  console.error("찾으려던 경로:", addonPath);
+  // 변수는 이미 null로 초기화되어 있음
 }
 
-// 애드온 모듈 내보내기
-export const SmtpWrapper = addonModule.SmtpWrapper;
-export const ImapWrapper = addonModule.ImapWrapper;
-export const Base64Wrapper =
-  addonModule.Base64Wrapper || class MockBase64Wrapper {};
-export const Bit7Wrapper = addonModule.Bit7Wrapper || class MockBit7Wrapper {};
-export const Bit8Wrapper = addonModule.Bit8Wrapper || class MockBit8Wrapper {};
-
-export default addonModule;
+// 모든 변수를 한 번만 내보내기
+export { SmtpWrapper, ImapWrapper, Base64Wrapper, Bit7Wrapper, Bit8Wrapper };
+export default moduleExports;
