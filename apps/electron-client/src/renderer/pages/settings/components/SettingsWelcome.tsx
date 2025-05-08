@@ -33,18 +33,20 @@ const SettingsWelcome = ({ userName }: { userName: string | null }) => {
           <h2 className="font-pre-extra-bold font-bold text-xl text-center">
             MAIL@에 오신 것을 환영합니다!
           </h2>
-          {!isNameEdit ? (
-            <Button
-              type="button"
-              content="시작하기"
-              className="h-10 bg-blue-500 text-white rounded-full"
-              onAction={() => {
-                setIsNameEdit(true);
-              }}
-            />
-          ) : (
-            <SettingsName />
-          )}
+          <div className="flex justify-center items-center w-fit h-20">
+            {!isNameEdit ? (
+              <Button
+                type="button"
+                content="시작하기"
+                className="mt-4 h-10 bg-theme text-white rounded-full"
+                onAction={() => {
+                  setIsNameEdit(true);
+                }}
+              />
+            ) : (
+              <SettingsName />
+            )}
+          </div>
         </div>
       )}
     </>

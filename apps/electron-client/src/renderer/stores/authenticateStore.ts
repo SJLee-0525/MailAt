@@ -23,8 +23,7 @@ const useAuthenticateStore = create<AuthenticateStore>()(
       user: null, // 초기값
       setUserName: (userData: User | null) => set({ user: userData }),
       authUsers: [],
-      setAuthUsers: (users) =>
-        set((state) => ({ authUsers: [...state.authUsers, ...users] })),
+      setAuthUsers: (users) => set({ authUsers: users }),
       selectedUser: { id: 1, email: "hong.jiwoo@example.com", name: "홍지우" },
       deleteAuthUser: (user) =>
         set((state) => ({

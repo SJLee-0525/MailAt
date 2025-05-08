@@ -39,24 +39,22 @@ const SettingsName = () => {
     }
   }
   return (
-    <div>
-      <form
-        onSubmit={handleSubmit}
-        className="flex items-center justify-center w-full h-fit gap-3 p-4 text-center font-pre-bold"
+    <form
+      onSubmit={handleSubmit}
+      className="flex items-center justify-center w-full h-fit gap-3 p-4 text-center font-pre-bold"
+    >
+      <input
+        type="text"
+        name="name"
+        className="w-full h-10 px-2 border-b-1 border-theme text-sm focus:outline-none"
+      />
+      <button
+        type="submit"
+        className="w-14 aspect-[1/1] rounded-full font-bold text-white text-xs transition-all duration-200 bg-theme hover:bg-theme-dark"
       >
-        <input
-          type="text"
-          name="name"
-          className="w-full h-10 px-2 border-b-1 border-accept text-sm"
-        />
-        <button
-          type="submit"
-          className="w-14 aspect-[1/1] rounded-full font-bold text-white text-xs transition-all duration-200 bg-accept hover:bg-theme"
-        >
-          등록
-        </button>
-      </form>
-    </div>
+        등록
+      </button>
+    </form>
   );
 };
 
