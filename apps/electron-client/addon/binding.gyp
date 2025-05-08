@@ -3,6 +3,8 @@
     {
       "target_name": "mailio_addon",
       "sources": [
+        "smtp_wrapper.cpp",
+        "bit8_wrapper.cpp",
         "base64_wrapper.cpp",
         "imap_wrapper.cpp"
       ],
