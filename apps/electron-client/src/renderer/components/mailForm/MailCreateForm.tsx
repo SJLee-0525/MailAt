@@ -39,8 +39,13 @@ const MailCreateForm = () => {
 
     if (!sender.includes(value)) {
       setSender((prev) => [...prev, value]);
-      form.reset();
     }
+
+    form.reset();
+  }
+
+  function handleDeleteSender(email: string) {
+    setSender((prev) => prev.filter((item) => item !== email));
   }
 
   // 실제 제출 핸들러
@@ -98,6 +103,7 @@ const MailCreateForm = () => {
           ref={titleRef}
           sender={sender}
           addSender={handleAddSender}
+          deleteSender={handleDeleteSender}
           setHtml={setHtml}
           initialHtml={html}
         />

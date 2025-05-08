@@ -59,8 +59,13 @@ const MailReplyForm = ({
 
     if (!sender.includes(value)) {
       setSender((prev) => [...prev, value]);
-      form.reset();
     }
+
+    form.reset();
+  }
+
+  function handleDeleteSender(email: string) {
+    setSender((prev) => prev.filter((item) => item !== email));
   }
 
   // 실제 제출 핸들러
@@ -115,6 +120,7 @@ const MailReplyForm = ({
           ref={titleRef}
           sender={sender}
           addSender={handleAddSender}
+          deleteSender={handleDeleteSender}
           initialHtml={html}
           setHtml={setHtml}
         />

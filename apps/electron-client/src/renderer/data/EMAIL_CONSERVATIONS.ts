@@ -487,7 +487,7 @@ export const mockEmailConversations: EmailDetail[] = [
     date: "Wed, 30 Apr 2025 16:45:00 +0000",
     internalDate: "1746032700000",
     snippet: "4월 사용금액이 정상 결제되었습니다...",
-    body: "고객님 안녕하세요.\n\n4월 사용금액 150,000원이 정상 결제되었습니다.\n자세한 내역: https://www.kbcard.com/account",
+    body: "고객님 안녕하세요.\n\n4월 사용금액 150,000원이 정상 결제되었습니다.\n자세한 내역: <a style='color: blue;' href='https://www.naver.com/' target='blank'> https://www.kbcard.com/account</a>",
     attachments: [],
   },
   {
@@ -539,7 +539,7 @@ export const mockEmailConversations: EmailDetail[] = [
     date: "Fri, 2 May 2025 13:37:00 +0000",
     internalDate: "1746244620000",
     snippet: "Your order #123-4567890 has shipped...",
-    body: "Your package is on its way!\n\nTrack your shipment: https://www.amazon.com/trackorder",
+    body: "<p>Your package is on its way!\n\nTrack your shipment: https://www.amazon.com/trackorder</p>",
     attachments: [
       {
         filename: "invoice.pdf",
