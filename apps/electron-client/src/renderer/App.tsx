@@ -16,7 +16,6 @@ export default function App() {
   useEffect(() => {
     // Electron의 ipcRenderer를 사용하여 메인 프로세스와 통신
     console.log("[REACT] window.electronAPI:", window.electronAPI);
-    console.log(window.electronAPI.user.create({ username: "test" }));
   }, []);
 
   return (
