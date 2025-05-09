@@ -179,9 +179,9 @@ class UserRepository {
 
           // Account 테이블 생성
           db.run(`CREATE TABLE IF NOT EXISTS Account (
-            account_id VARCHAR(255) PRIMARY KEY,
+            account_id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
-            email TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
             imap_host TEXT NULL,
             imap_port INTEGER NULL,
             smtp_host TEXT NULL,

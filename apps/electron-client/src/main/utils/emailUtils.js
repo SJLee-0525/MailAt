@@ -55,15 +55,19 @@ export const createRawEmail = (emailData) => {
   // 멀티파트 경계 생성
   const boundary = generateBoundary();
 
+  // 제목에 한글이 포함될 수 있으므로 Base64 인코딩 적용
+  const encodedSubject = `=?UTF-8?B?${Buffer.from(title).toString("base64")}?=`;
+
   // 헤더 생성
   let headers = [
     `From: ${accountInfo.username} <${accountInfo.email}>`,
     `To: ${to.join(", ")}`,
-    `Subject: ${title}`,
+    `Subject: ${encodedSubject}`,
     `Date: ${new Date().toUTCString()}`,
     `MIME-Version: 1.0`,
     `Content-Type: multipart/mixed; boundary="${boundary}"`,
     `Message-ID: <${Date.now()}.${Math.random().toString(36).substring(2)}@${accountInfo.email.split("@")[1]}>`,
+    `X-Mailer: Electron Mail Client`,
   ];
 
   // CC가 있는 경우 추가
@@ -71,30 +75,28 @@ export const createRawEmail = (emailData) => {
     headers.push(`Cc: ${cc.join(", ")}`);
   }
 
-  // BCC가 있는 경우 추가 (참고: BCC는 실제로 헤더에 표시되지 않음)
-  // if (bcc && bcc.length > 0) {
-  //   headers.push(`Bcc: ${bcc.join(', ')}`);
-  // }
-
   // 스레드 관련 정보 추가
   if (inReplyTo) {
     headers.push(`In-Reply-To: ${inReplyTo}`);
   }
 
-  if (references) {
+  if (references && references.length > 0) {
     headers.push(`References: ${references.join(" ")}`);
   }
 
   // 헤더와 본문 구분을 위한 빈 줄 추가
   headers.push("");
 
-  // 본문 시작
+  // HTML 본문을 Base64로 인코딩하여 처리
+  const encodedBody = encodeBase64(body);
+
+  // 본문 시작 - HTML 내용
   let bodyParts = [
     `--${boundary}`,
     `Content-Type: text/html; charset=UTF-8`,
-    `Content-Transfer-Encoding: quoted-printable`,
+    `Content-Transfer-Encoding: base64`,
     "",
-    body,
+    encodedBody,
   ];
 
   // 첨부 파일 추가
@@ -102,7 +104,7 @@ export const createRawEmail = (emailData) => {
     for (const attachment of attachments) {
       bodyParts.push(
         `--${boundary}`,
-        `Content-Type: ${attachment.mimeType}`,
+        `Content-Type: ${attachment.mimeType}; name="${attachment.filename}"`,
         `Content-Disposition: attachment; filename="${attachment.filename}"`,
         `Content-Transfer-Encoding: base64`,
         "",
@@ -114,7 +116,7 @@ export const createRawEmail = (emailData) => {
   // 멀티파트 종료
   bodyParts.push(`--${boundary}--`);
 
-  // 전체 메시지 조합
+  // 전체 메시지 조합 - 모든 줄바꿈을 CRLF로 통일
   return headers.join("\r\n") + "\r\n" + bodyParts.join("\r\n");
 };
 
