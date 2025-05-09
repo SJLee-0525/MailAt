@@ -27,7 +27,7 @@ const SettingConnectedEmail = () => {
 
   return (
     <>
-      {authUsers.length > 0 && (
+      {user && authUsers.length > 0 && (
         <div className="flex flex-col w-full h-fit gap-2 p-2 font-pre-bold">
           <hr className="border-t border-light3 w-full my-1" />
 

@@ -12,11 +12,10 @@ export const initUserController = () => {
   ipcMain.removeHandler("user:create"); // 기존 핸들러 제거
 
   ipcMain.handle("user:create", async (event, userData) => {
-    console.log("🧩 user:create 핸들러 호출됨");
-
     try {
       const result = await userService.createUser(userData);
-      return { success: true, ...result };
+      console.log("사용자 생성 결과:", result);
+      return { success: true, data: result };
     } catch (error) {
       console.error("사용자 생성 컨트롤러 오류:", error);
       return { success: false, message: error.message };
@@ -27,7 +26,7 @@ export const initUserController = () => {
   ipcMain.handle("user:get", async (event, userId) => {
     try {
       const user = await userService.getUserById(userId);
-      return user;
+      return { success: true, data: user };
     } catch (error) {
       console.error("사용자 조회 컨트롤러 오류:", error);
       return { success: false, message: error.message };
@@ -38,7 +37,7 @@ export const initUserController = () => {
   ipcMain.handle("user:update", async (event, { userId, userData }) => {
     try {
       const updatedUser = await userService.updateUser(userId, userData);
-      return updatedUser;
+      return { success: true, data: updatedUser };
     } catch (error) {
       console.error("사용자 업데이트 컨트롤러 오류:", error);
       return { success: false, message: error.message };
@@ -49,7 +48,7 @@ export const initUserController = () => {
   ipcMain.handle("user:delete", async (event, userId) => {
     try {
       const result = await userService.deleteUser(userId);
-      return result;
+      return { success: true };
     } catch (error) {
       console.error("사용자 삭제 컨트롤러 오류:", error);
       return { success: false, message: error.message };
