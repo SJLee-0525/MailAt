@@ -1,0 +1,205 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    line-height: 1.6; /* 기본 줄 간격 설정 */
+}
+
+header {
+    background: linear-gradient(135deg, #0078d4, #005a9e); /* 각도 변경 */
+    color: #ffffff;
+    padding: 40px 20px; /* 패딩 증가 */
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 그림자 강화 */
+}
+
+header .logo {
+    font-size: 3em; /* 로고 아이콘 크기 */
+    margin-bottom: 10px;
+}
+
+header h1 {
+    margin: 0 0 5px 0; /* 마진 조정 */
+    font-size: 3em; /* 제목 크기 조정 */
+    font-weight: 700; /* 제목 굵기 증가 */
+}
+
+header p {
+    font-size: 1.2em; /* 부제목 크기 조정 */
+    margin-top: 0;
+    opacity: 0.9;
+}
+
+main {
+    flex: 1;
+    padding: 50px 20px; /* 메인 콘텐츠 패딩 증가 */
+    max-width: 1000px; /* 최대 너비 증가 */
+    margin: 30px auto; /* 상하 마진 증가 */
+    background-color: #ffffff;
+    border-radius: 10px; /* 모서리 더 둥글게 */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* 그림자 조정 */
+}
+
+section {
+    margin-bottom: 50px; /* 섹션 간 간격 증가 */
+    padding-bottom: 30px; /* 섹션 하단 패딩 증가 */
+    border-bottom: 1px solid #e9ecef; /* 구분선 색상 변경 */
+    text-align: center; /* 섹션 내용 가운데 정렬 */
+}
+
+section:last-child {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+h2 {
+    color: #005a9e;
+    font-size: 2.2em; /* 섹션 제목 크기 증가 */
+    margin-bottom: 25px; /* 제목 아래 마진 증가 */
+    font-weight: 600;
+}
+
+/* 특징 섹션 스타일 */
+#features .feature-list {
+    display: flex;
+    justify-content: space-around; /* 아이템 간격 균등하게 */
+    flex-wrap: wrap; /* 화면 작아지면 줄 바꿈 */
+    gap: 20px; /* 아이템 간 간격 */
+    margin-top: 30px;
+}
+
+#features .feature-item {
+    flex-basis: calc(33% - 40px); /* 기본 너비 설정 (간격 고려) */
+    min-width: 250px; /* 최소 너비 */
+    background-color: #f8f9fa; /* 아이템 배경색 */
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+#features .feature-item:hover {
+    transform: translateY(-5px); /* 호버 시 약간 위로 이동 */
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1); /* 호버 시 그림자 강조 */
+}
+
+#features .feature-item i {
+    font-size: 2.5em; /* 아이콘 크기 */
+    color: #0078d4; /* 아이콘 색상 */
+    margin-bottom: 15px;
+}
+
+#features .feature-item h3 {
+    font-size: 1.3em;
+    color: #343a40;
+    margin-bottom: 10px;
+}
+
+#features .feature-item p {
+    font-size: 0.95em;
+    color: #6c757d; /* 본문 텍스트 색상 약간 연하게 */
+    line-height: 1.5;
+}
+
+/* 다운로드 섹션 스타일 */
+#download h2 {
+    margin-bottom: 15px; /* 제목 아래 마진 조정 */
+}
+
+#download p {
+    margin-bottom: 25px; /* 버튼 위 텍스트 마진 증가 */
+    font-size: 1.1em;
+    color: #495057;
+}
+
+.download-button {
+    display: inline-block;
+    background: linear-gradient(90deg, #28a745, #218838); /* 버튼 그라데이션 */
+    color: #ffffff;
+    padding: 15px 35px; /* 패딩 증가 */
+    border: none;
+    border-radius: 50px; /* 완전 둥근 버튼 */
+    font-size: 1.2em; /* 버튼 텍스트 크기 증가 */
+    font-weight: 600; /* 버튼 텍스트 굵기 증가 */
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease; /* 모든 속성에 부드러운 전환 효과 */
+    box-shadow: 0 4px 10px rgba(40, 167, 69, 0.4); /* 버튼 그림자 */
+}
+
+.download-button i {
+    margin-right: 8px; /* 아이콘과 텍스트 간격 */
+}
+
+.download-button:hover {
+    background: linear-gradient(90deg, #218838, #1e7e34); /* 호버 시 그라데이션 변경 */
+    transform: translateY(-3px) scale(1.03); /* 호버 시 약간 위로 이동 및 확대 */
+    box-shadow: 0 6px 15px rgba(33, 136, 56, 0.5); /* 호버 시 그림자 강조 */
+}
+
+footer {
+    background: #343a40;
+    color: #f8f9fa;
+    text-align: center;
+    padding: 20px 0; /* 푸터 패딩 증가 */
+    margin-top: auto;
+    width: 100%;
+}
+
+footer p {
+    margin: 0;
+    font-size: 0.9em;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 992px) {
+    #features .feature-item {
+        flex-basis: calc(50% - 30px); /* 중간 화면 크기에서 2열 */
+    }
+}
+
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 2.5em;
+    }
+    header p {
+        font-size: 1.1em;
+    }
+    main {
+        padding: 40px 15px;
+        margin: 20px;
+    }
+    h2 {
+        font-size: 1.9em;
+    }
+    #features .feature-list {
+        flex-direction: column; /* 작은 화면에서 세로 정렬 */
+        align-items: center;
+    }
+    #features .feature-item {
+        flex-basis: 90%; /* 작은 화면에서 너비 확장 */
+        min-width: unset;
+        margin-bottom: 20px; /* 아이템 간 세로 간격 */
+    }
+    .download-button {
+        padding: 12px 30px;
+        font-size: 1.1em;
+    }
+}
+
+@media (max-width: 480px) {
+    header h1 {
+        font-size: 2em;
+    }
+    header p {
+        font-size: 1em;
+    }
+    h2 {
+        font-size: 1.7em;
+    }
+}
