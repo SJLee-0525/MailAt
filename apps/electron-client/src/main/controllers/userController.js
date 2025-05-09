@@ -2,6 +2,8 @@
 import { ipcMain } from "electron";
 import userService from "../services/userService.js";
 
+console.log("userController 모듈 로드됨!");
+
 /**
  * 사용자 컨트롤러 초기화
  */

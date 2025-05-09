@@ -54,3 +54,5 @@ export const runUserTests = async () => {
     process.exit(0);
   }
 };
+
+runUserTests();

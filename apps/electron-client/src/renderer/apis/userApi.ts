@@ -10,17 +10,18 @@ import {
 const { VITE_DEV_API_URL } = import.meta.env;
 
 // 사용자 추가
+// 사용자 추가
 export const createUser = async (username: string): Promise<User> => {
   try {
-    // const response = await instance.post(`/user`, {
-    //   username,
-    // });
-
-    const reponsne = await window.electronAPI.account.create({
+    const response = await window.electronAPI.user.create({
       username,
     });
-    console.log(`[POST] ${VITE_DEV_API_URL}/user`, username);
-    return response.data;
+
+    // 전체 응답을 User 타입으로 처리
+    return response as User;
+
+    // 또는 response.data가 있는 경우
+    // return (response as any).data;
   } catch (error: unknown) {
     throw new Error(error as string);
   }

@@ -173,8 +173,8 @@ class UserRepository {
           // User 테이블 생성
           db.run(`CREATE TABLE IF NOT EXISTS User (
             user_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            created_at DATETIME NULL
+            username TEXT NOT NULL UNIQUE,
+            created_at DATETIME NULL DEFAULT CURRENT_TIMESTAMP
           )`);
 
           // Account 테이블 생성
@@ -196,19 +196,20 @@ class UserRepository {
           // Folder 테이블 생성
           db.run(`CREATE TABLE IF NOT EXISTS Folder (
             folder_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            account_id VARCHAR(255) NOT NULL,
+            account_id INTEGER NOT NULL,
             name TEXT NOT NULL,
             path TEXT NULL,
             uid_next INTEGER NULL,
             uid_validity INTEGER NULL,
             created_at DATETIME NULL,
             FOREIGN KEY (account_id) REFERENCES Account(account_id) ON DELETE CASCADE
+            UNIQUE (account_id, name)
           )`);
 
           // Message 테이블 생성
           db.run(`CREATE TABLE IF NOT EXISTS Message (
             message_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            account_id VARCHAR(255) NOT NULL,
+            account_id INTEGER NOT NULL,
             folder_id INTEGER NOT NULL,
             external_message_id TEXT NULL,
             thread_id TEXT NULL,
@@ -220,22 +221,25 @@ class UserRepository {
             body_html TEXT NULL,
             reply_to TEXT NULL,
             in_reply_to TEXT NULL,
-            reference_ids TEXT NULL,  /* references를 reference_ids로 변경 */
+            reference_ids TEXT NULL,
             sent_at DATETIME NULL,
             received_at DATETIME NULL,
-            is_read BOOLEAN NULL,
-            is_flagged BOOLEAN NULL,
-            has_attachments BOOLEAN NULL,
+            is_read INTEGER DEFAULT 0,
+            is_flagged INTEGER DEFAULT 0,
+            has_attachments INTEGER DEFAULT 0,
             uid TEXT NULL,
+            created_at DATETIME NOT NULL,
             FOREIGN KEY (account_id) REFERENCES Account(account_id) ON DELETE CASCADE,
-            FOREIGN KEY (folder_id) REFERENCES Folder(folder_id) ON DELETE CASCADE
+            FOREIGN KEY (folder_id) REFERENCES Folder(folder_id) ON DELETE CASCADE,
+            UNIQUE(account_id, external_message_id),
+            UNIQUE(folder_id, uid)
           )`);
 
           // Recipient 테이블 생성
           db.run(`CREATE TABLE IF NOT EXISTS Recipient (
             recipient_id INTEGER PRIMARY KEY AUTOINCREMENT,
             message_id INTEGER NOT NULL,
-            type TEXT NULL,
+            type TEXT NOT NULL, --'TO', 'CC', 'BCC' 같은 값
             name TEXT NULL,
             email TEXT NOT NULL,
             FOREIGN KEY (message_id) REFERENCES Message(message_id) ON DELETE CASCADE
@@ -258,6 +262,7 @@ class UserRepository {
             mime_type TEXT NULL,
             path TEXT NULL,
             size INTEGER NULL,
+            created_at DATETIME NOT NULL,
             FOREIGN KEY (message_id) REFERENCES Message(message_id) ON DELETE CASCADE
           )`);
 
