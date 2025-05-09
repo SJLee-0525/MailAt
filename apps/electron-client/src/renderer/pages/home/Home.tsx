@@ -1,7 +1,7 @@
 import { useGetAllEmails } from "@hooks/useGetConversations";
 
 const Home = () => {
-  useGetAllEmails("1");
+  useGetAllEmails();
 
   return (
     <div className="w-full h-full text-black">

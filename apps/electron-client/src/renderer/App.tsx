@@ -1,4 +1,6 @@
 // src/App.tsx
+import { useEffect } from "react";
+
 import { Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -11,6 +13,12 @@ import NewMailFormModal from "@components/mailForm/NewMailFormModal";
 const queryClient = new QueryClient();
 
 export default function App() {
+  useEffect(() => {
+    // Electron의 ipcRenderer를 사용하여 메인 프로세스와 통신
+    console.log("[REACT] window.electronAPI:", window.electronAPI);
+    console.log(window.electronAPI.user.create({ username: "test" }));
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Routes>

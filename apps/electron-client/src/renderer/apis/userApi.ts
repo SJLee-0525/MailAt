@@ -12,7 +12,11 @@ const { VITE_DEV_API_URL } = import.meta.env;
 // 사용자 추가
 export const createUser = async (username: string): Promise<User> => {
   try {
-    const response = await instance.post(`/user`, {
+    // const response = await instance.post(`/user`, {
+    //   username,
+    // });
+
+    const reponsne = await window.electronAPI.account.create({
       username,
     });
     console.log(`[POST] ${VITE_DEV_API_URL}/user`, username);

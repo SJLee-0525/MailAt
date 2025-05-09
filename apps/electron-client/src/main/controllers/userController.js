@@ -7,7 +7,11 @@ import userService from "../services/userService.js";
  */
 export const initUserController = () => {
   // 사용자 생성 요청 처리
+  ipcMain.removeHandler("user:create"); // 기존 핸들러 제거
+
   ipcMain.handle("user:create", async (event, userData) => {
+    console.log("🧩 user:create 핸들러 호출됨");
+
     try {
       const result = await userService.createUser(userData);
       return { success: true, ...result };
@@ -50,5 +54,3 @@ export const initUserController = () => {
     }
   });
 };
-
-export default { initUserController };

@@ -28,6 +28,6 @@
     }
   },
   // --- 포함/제외 설정 (프로젝트에 맞게 조정) ---
-  "include": ["src/**/*", "electron/**/*", "*.ts", "*.js"], // 예시: src, electron 폴더 및 루트의 ts/js 파일 포함
+  "include": ["src/**/*", "electron/**/*", "*.ts", "*.js", "preload.cjs"], // 예시: src, electron 폴더 및 루트의 ts/js 파일 포함
   "exclude": ["node_modules", "dist"] // 예시: 제외할 폴더
 }
