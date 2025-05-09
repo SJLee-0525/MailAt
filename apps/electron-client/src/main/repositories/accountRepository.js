@@ -242,7 +242,7 @@ class AccountRepository {
 
         db.get(query, [email], (err, row) => {
           if (err) {
-            reject(new Error(`이메일 확인 오류: ${err.message}`));
+            reject(new Error(`이메일 중복 확인 오류: ${err.message}`));
             return;
           }
 
@@ -250,8 +250,8 @@ class AccountRepository {
         });
       });
     } catch (error) {
-      console.error("이메일 확인 오류:", error);
-      throw new Error(`이메일 확인 실패: ${error.message}`);
+      console.error("이메일 중복 확인 오류:", error);
+      throw new Error(`이메일 중복 확인 실패: ${error.message}`);
     }
   }
 }
