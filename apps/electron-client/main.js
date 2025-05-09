@@ -7,6 +7,10 @@ import { initAccountController } from "./src/main/controllers/accountController.
 import { getConnection, closeConnection } from "./src/main/config/dbConfig.js";
 import { runUserTests } from "./src/test/userTest.js";
 import { runAccountTests } from "./src/test/accountTest.js";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // 개발 모드 체크
 const isDev = process.env.NODE_ENV === "development";
