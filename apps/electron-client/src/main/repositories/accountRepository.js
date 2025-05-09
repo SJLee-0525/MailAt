@@ -75,13 +75,13 @@ class AccountRepository {
 
       return new Promise((resolve, reject) => {
         const query = `
-          SELECT a.account_id, a.email, a.imap_host, a.imap_port, 
-                 a.smtp_host, a.smtp_port, a.auth_method, a.provider,
-                 u.username
-          FROM Account a
-          JOIN User u ON a.user_id = u.user_id
-          WHERE a.account_id = ?
-        `;
+        SELECT a.account_id, a.email, a.password, a.imap_host, a.imap_port, 
+               a.smtp_host, a.smtp_port, a.auth_method, a.provider,
+               u.username
+        FROM Account a
+        JOIN User u ON a.user_id = u.user_id
+        WHERE a.account_id = ?
+      `;
 
         db.get(query, [accountId], (err, row) => {
           if (err) {
@@ -97,8 +97,13 @@ class AccountRepository {
           resolve({
             accountId: row.account_id,
             email: row.email,
+            password: row.password,
             imapHost: row.imap_host,
+            imapPort: row.imap_port,
             smtpHost: row.smtp_host,
+            smtpPort: row.smtp_port,
+            authMethod: row.auth_method || "LOGIN",
+            provider: row.provider,
             username: row.username,
           });
         });
