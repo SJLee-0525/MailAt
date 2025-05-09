@@ -43,7 +43,7 @@ class AccountRepository {
             imapPort,
             smtpHost,
             smtpPort,
-            authMethod || "plain",
+            authMethod || "LOGIN",
             provider || "unknown",
             currentDate,
           ],
@@ -225,6 +225,33 @@ class AccountRepository {
     } catch (error) {
       console.error("사용자 조회 오류:", error);
       throw new Error(`사용자 조회 실패: ${error.message}`);
+    }
+  }
+
+  /**
+   * 이메일로 계정 존재 여부 확인
+   * @param {String} email - 확인할 이메일
+   * @returns {Promise<Boolean>} 계정 존재 여부
+   */
+  async checkEmailExists(email) {
+    try {
+      const db = getConnection();
+
+      return new Promise((resolve, reject) => {
+        const query = `SELECT COUNT(*) as count FROM Account WHERE email = ?`;
+
+        db.get(query, [email], (err, row) => {
+          if (err) {
+            reject(new Error(`이메일 확인 오류: ${err.message}`));
+            return;
+          }
+
+          resolve(row.count > 0);
+        });
+      });
+    } catch (error) {
+      console.error("이메일 확인 오류:", error);
+      throw new Error(`이메일 확인 실패: ${error.message}`);
     }
   }
 }

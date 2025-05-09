@@ -49,6 +49,14 @@ class AccountService {
       // 입력 유효성 검사
       this.validateAccountData(accountData);
 
+      // 이메일 중복 확인
+      const emailExists = await accountRepository.checkEmailExists(
+        accountData.email
+      );
+      if (emailExists) {
+        throw new Error(`이미 등록된 이메일입니다: ${accountData.email}`);
+      }
+
       // IMAP 인증 테스트
       await this.authenticateImap(accountData);
 
