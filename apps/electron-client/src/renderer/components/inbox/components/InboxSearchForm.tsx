@@ -2,6 +2,8 @@ import { useState } from "react";
 
 import useConversationsStore from "@stores/conversationsStore";
 
+import { useGetAllEmails } from "@hooks/useGetConversations";
+
 import { searchEmails, splitSearchQuery } from "@utils/getEmailData";
 
 import IconButton from "@components/common/button/IconButton";
@@ -11,7 +13,9 @@ import SearchIcon from "@assets/icons/SearchIcon";
 import FilterIcon from "@assets/icons/FilterIcon";
 
 const InboxSearchForm = () => {
-  const { setConversations } = useConversationsStore();
+  const { setConversations, setFilters } = useConversationsStore();
+
+  const { refetch } = useGetAllEmails();
 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isExpanded, setIsExpanded] = useState(false);
@@ -20,17 +24,21 @@ const InboxSearchForm = () => {
   function handleSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const filters = splitSearchQuery(searchQuery);
-    const filteredEmails = searchEmails(filters);
-    setConversations(filteredEmails); // 필터링된 이메일로 업데이트
+    const newFilters = splitSearchQuery(searchQuery);
+    setFilters(newFilters);
+
+    refetch();
+
+    // const filteredEmails = searchEmails(filters);
+    // setConversations(filteredEmails); // 필터링된 이메일로 업데이트
     setSearchQuery(""); // 검색어 초기화
     setIsExpanded(false); // 필터 닫기
   }
 
   return (
-    <div className="relative z-10 w-full h-full px-4 py-1.5">
+    <div className="relative flex justify-center items-center z-10 w-full h-full px-3 py-1.5">
       <form
-        className="flex items-center justify-between p-1 bg-white text-gray-700 rounded-full"
+        className="flex items-center justify-between p-1 w-full h-full bg-white text-gray-700 rounded-full"
         onSubmit={handleSearch}
       >
         <input

@@ -2,10 +2,16 @@ export interface ReplyData {
   to: string | null;
   title: string | null;
   body: string | null;
-  attachments: Attachment[] | null;
+  attachments: DetailAttachment[] | null;
 }
 
 export interface Attachment {
+  filename: string;
+  mimeType: string;
+  size: number;
+}
+
+export interface DetailAttachment {
   filename: string;
   mimeType: string;
   size: number; // 바이트 단위
@@ -23,7 +29,20 @@ export interface EmailSearchFilters {
   endDate?: Date; // 날짜 필터: 이 날짜 이전(포함)
 }
 
-export interface EmailConversation {
+export interface AllEmails {
+  id: string;
+  threadId: string;
+  subject: string;
+  from: string;
+  to: string;
+  date: string;
+  snippet: string;
+  attachments: Attachment[];
+  isRead: boolean;
+  labelIds: string[];
+}
+
+export interface EmailDetail {
   id: string;
   threadId: string;
   labelIds: string[];
@@ -34,5 +53,17 @@ export interface EmailConversation {
   internalDate: string;
   snippet: string;
   body: string;
-  attachments: Attachment[];
+  attachments: DetailAttachment[];
+}
+
+export interface EmailSendRequestData {
+  to: string[]; // 받는 사람 이메일 주소 배열
+  cc: string[]; // 참조 이메일 주소 배열
+  bcc: string[]; // 숨은 참조 이메일 주소 배열
+  title: string;
+  body: string;
+  attachments: DetailAttachment[];
+  threadId: string | null; // 답장 시 원본 이메일의 threadId  새 메일 작성 시에는 null
+  inReplyTo: string | null; // 답장 시 원본 이메일의 id (Message-ID 헤더)  새 메일 작성 시에는 null
+  references: string[]; // References 헤더에 포함할 Message-ID 목록  (이전 대화 스레드 추적용)
 }

@@ -11,11 +11,11 @@ const InboxHeader = () => {
   return (
     <>
       {isSearch ? (
-        <div className="flex items-center justify-between w-full h-16 bg-light1 rounded-t-xl">
+        <div className="flex items-center justify-center w-full h-16 min-h-16 bg-light1 rounded-t-xl">
           <InboxSearchForm />
         </div>
       ) : (
-        <div className="flex items-center justify-between w-full h-16 px-4 bg-light1 rounded-t-xl">
+        <div className="flex items-center justify-between w-full h-16 min-h-16 px-4 bg-light1 rounded-t-xl">
           <div>
             <h1 className="text-2xl font-bold">Inbox</h1>
           </div>
@@ -23,8 +23,8 @@ const InboxHeader = () => {
           <nav className="flex items-center gap-2">
             <IconButton
               type="submit"
-              icon={<SearchIcon />}
-              className="p-2 bg-theme hover:bg-warning"
+              icon={<SearchIcon strokeColor="white" width={20} height={20} />}
+              className="p-2.5 bg-theme hover:bg-warning"
               onClick={() => setIsSearch(true)}
             />
           </nav>

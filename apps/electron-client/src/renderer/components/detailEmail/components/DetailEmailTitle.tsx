@@ -1,8 +1,10 @@
 import { useState } from "react";
 
-import { ReplyData, Attachment } from "@/types/emailTypes";
+import { ReplyData, DetailAttachment } from "@/types/emailTypes";
 
 import useUserProgressStore from "@stores/userProgressStore";
+
+import { useDeleteEmail } from "@hooks/useGetConversations";
 
 import { formatDate } from "@utils/getFormattedDate";
 import { parseEmailFromName } from "@utils/getEmailData";
@@ -18,6 +20,7 @@ import ForwardIcon from "@assets/icons/ForwardIcon";
 import DeleteIcon from "@assets/icons/DeleteIcon";
 
 const DetailEmailTitle = ({
+  id,
   subject,
   date,
   from,
@@ -26,20 +29,35 @@ const DetailEmailTitle = ({
   attachments,
   onReply,
 }: {
+  id: string;
   subject: string;
   date: string;
   from: string;
   to: string;
   body: string;
-  attachments: Attachment[];
+  attachments: DetailAttachment[];
   onReply: (replyData: ReplyData) => void;
 }) => {
   const { setIsReplying } = useUserProgressStore();
+
+  const { mutateAsync: deleteEmail } = useDeleteEmail();
 
   const [isExpanded, setIsExpanded] = useState(false);
 
   const formattedDate = formatDate(date, "dateTime");
   const parsedFrom = parseEmailFromName(from);
+
+  async function handleDelete() {
+    if (window.confirm("정말로 삭제하시겠습니까?")) {
+      const response = await deleteEmail({ emailId: id });
+
+      if (response.success) {
+        alert("삭제되었습니다.");
+      } else {
+        alert("삭제에 실패했습니다.");
+      }
+    }
+  }
 
   return (
     <div className="flex flex-col h-fit w-full gap-3 p-3">
@@ -84,6 +102,7 @@ const DetailEmailTitle = ({
                 attachments: null,
               });
             }}
+            className="transition-all duration-200 rounded-full hover:bg-light2"
           />
           <ForwardIcon
             width={24}
@@ -97,8 +116,14 @@ const DetailEmailTitle = ({
                 attachments: attachments,
               });
             }}
+            className="transition-all duration-200 rounded-full hover:bg-light2"
           />
-          <DeleteIcon width={24} height={24} />
+          <DeleteIcon
+            width={24}
+            height={24}
+            onClick={handleDelete}
+            className="transition-all duration-200 rounded-full hover:bg-light2"
+          />
         </div>
       </div>
     </div>

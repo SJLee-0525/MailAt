@@ -4,6 +4,7 @@ const ForwardIcon = ({
   width = 24,
   height = 24,
   strokeColor = "#7D7983",
+  className,
   onClick,
 }: IconProps) => {
   return (
@@ -14,6 +15,7 @@ const ForwardIcon = ({
       viewBox="0 0 24 24"
       fill="none"
       onClick={onClick}
+      className={className}
     >
       <g clipPath="url(#clip0_127_9193)">
         <path d="M12 8V4L20 12L12 20V16H4V8H12Z" fill={strokeColor} />

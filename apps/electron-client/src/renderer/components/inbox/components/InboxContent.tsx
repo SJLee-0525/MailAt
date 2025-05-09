@@ -1,4 +1,6 @@
-import { EmailConversation } from "@/types/emailTypes";
+import { useId } from "react";
+
+import { AllEmails } from "@/types/emailTypes";
 
 import defaultProfile from "@assets/images/defaultProfile.png";
 
@@ -33,15 +35,17 @@ const InboxContent = ({
   isSelected,
   onClick,
 }: {
-  email: EmailConversation;
+  email: AllEmails;
   isSelected: boolean;
   onClick: () => void;
 }) => {
+  const idBase = useId();
+
   const formattedDate = formatDate(email.date, "date");
 
   return (
     <div
-      className={`flex justify-between p-2 gap-2 w-full h-fit rounded-lg ${isSelected ? "bg-light1" : "transition-all duration-300 hover:bg-light1"}`}
+      className={`flex justify-between p-2.5 gap-1.5 w-full h-fit rounded-lg ${isSelected ? "bg-light1" : "transition-all duration-300 hover:bg-light1"}`}
       onClick={onClick}
     >
       <div className="flex flex-col justify-start items-center w-fit py-1.5">
@@ -52,7 +56,7 @@ const InboxContent = ({
         />
       </div>
 
-      <div className="flex flex-col max-w-5/6 w-5/6 h-fit">
+      <div className="flex flex-col max-w-[85%] w-[85%] h-fit">
         <div className="relative flex justify-between items-start w-full h-fit">
           <FromName from={email.from} />
           {formattedDate && (
@@ -67,9 +71,9 @@ const InboxContent = ({
         </p>
         {email.attachments && email.attachments.length > 0 && (
           <div className="flex w-full py-1 mb-1 gap-2 overflow-x-auto hide-scrollbar">
-            {email.attachments.map((attachment) => (
+            {email.attachments.map((attachment, index) => (
               <Attachment
-                key={attachment.attachmentId}
+                key={`${idBase}-${index}`}
                 fileName={attachment.filename}
               />
             ))}

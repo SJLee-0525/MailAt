@@ -1,4 +1,4 @@
-import { ReplyData, EmailConversation } from "@/types/emailTypes";
+import { ReplyData, EmailDetail } from "@/types/emailTypes";
 
 import DetailEmailTitle from "@components/detailEmail/components/DetailEmailTitle";
 import DetailEmailContent from "@components/detailEmail/components/DetailEmailContent";
@@ -8,12 +8,13 @@ const DetailEmailContents = ({
   detailEmail,
   onReply,
 }: {
-  detailEmail: EmailConversation;
+  detailEmail: EmailDetail;
   onReply: (replyData: ReplyData) => void;
 }) => {
   return (
     <div className="flex flex-col w-full h-full p-2 gap-1 bg-white rounded-lg font-pre-bold overflow-y-auto hide-scrollbar">
       <DetailEmailTitle
+        id={detailEmail.id}
         subject={detailEmail.subject}
         date={detailEmail.date}
         from={detailEmail.from}

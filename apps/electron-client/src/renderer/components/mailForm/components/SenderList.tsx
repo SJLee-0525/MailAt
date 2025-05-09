@@ -1,14 +1,78 @@
-const SenderList = ({ sender }: { sender: string[] }) => {
+import { useState } from "react";
+
+import ArrowUpIcon from "@assets/icons/ArrowUpIcon";
+import CloseIcon from "@assets/icons/CloseIcon";
+
+interface SenderListProps {
+  sender: string[];
+  deleteSender: (email: string) => void;
+}
+
+const ExpandedSenderList = ({ sender, deleteSender }: SenderListProps) => {
   return (
-    <div className="flex w-full py-1 mb-1 gap-2 overflow-x-auto hide-scrollbar">
+    <div className="absolute flex flex-wrap gap-2 top-10 left-0 z-50 w-full max-h-40 p-2 mb-1 overflow-y-auto hide-scrollbar bg-white rounded-b-lg shadow-lg">
       {sender.map((person) => (
         <span
           key={person}
-          className="flex items-center justify-center px-3 py-1 rounded-full bg-disable text-sm"
+          className="flex items-center justify-center px-2.5 py-0.5 gap-2 rounded-full bg-disable text-sm"
         >
-          {person}
+          <p>{person}</p>
+          <CloseIcon
+            className="ml-1 cursor-pointer"
+            width={12}
+            height={12}
+            strokeColor="black"
+            strokeWidth={2}
+            onClick={() => deleteSender(person)}
+          />
         </span>
       ))}
+    </div>
+  );
+};
+
+const SenderList = ({ sender, deleteSender }: SenderListProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  function toggleSenderList() {
+    setIsOpen((prev) => !prev);
+  }
+
+  return (
+    <div className="flex w-full h-8 py-0.5 gap-2 overflow-x-auto hide-scrollbar">
+      <span className="flex w-full h-full gap-2 overflow-x-auto hide-scrollbar">
+        {sender.map((person) => (
+          <span
+            key={person}
+            className="flex items-center justify-center px-2.5 py-0.5 gap-2 rounded-full bg-disable text-sm"
+          >
+            <p>{person}</p>
+            <CloseIcon
+              className="ml-1 cursor-pointer"
+              width={12}
+              height={12}
+              strokeColor="black"
+              strokeWidth={2}
+              onClick={() => deleteSender(person)}
+            />
+          </span>
+        ))}
+      </span>
+      {sender.length > 0 && (
+        <span
+          className="flex justify-center items-center h-full aspect-[1/1] rounded-full bg-blue-500 font-pre-bold font-bold text-white text-xs"
+          onClick={toggleSenderList}
+        >
+          {isOpen ? (
+            <ArrowUpIcon width={18} height={18} strokeColor="white" />
+          ) : (
+            sender.length
+          )}
+        </span>
+      )}
+      {isOpen && (
+        <ExpandedSenderList sender={sender} deleteSender={deleteSender} />
+      )}
     </div>
   );
 };

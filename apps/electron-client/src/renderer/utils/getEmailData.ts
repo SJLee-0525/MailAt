@@ -1,6 +1,6 @@
-import { EmailConversation, EmailSearchFilters } from "@/types/emailTypes";
+import { AllEmails, EmailSearchFilters } from "@/types/emailTypes";
 
-import { mockEmailConversations } from "@data/EMAIL_CONSERVATIONS";
+import { mockAllEmails } from "@data/EMAIL_CONSERVATIONS";
 
 export function parseEmailFromName(from: string) {
   // 뒤에서 가장 마지막 '<'와 '>' 위치를 찾습니다.
@@ -27,7 +27,7 @@ export function parseEmailFromName(from: string) {
   return { name: from.trim(), email: from.trim() };
 }
 
-export function searchEmails(filters: EmailSearchFilters): EmailConversation[] {
+export function searchEmails(filters: EmailSearchFilters): AllEmails[] {
   const {
     from,
     to,
@@ -39,7 +39,7 @@ export function searchEmails(filters: EmailSearchFilters): EmailConversation[] {
     endDate,
   } = filters;
 
-  return mockEmailConversations.filter((email) => {
+  return mockAllEmails.filter((email) => {
     // 1) 날짜 범위 검사
     if (startDate || endDate) {
       const sent = new Date(email.date).getTime();
@@ -83,7 +83,7 @@ export function searchEmails(filters: EmailSearchFilters): EmailConversation[] {
         email.from,
         email.to,
         email.snippet,
-        email.body,
+        // email.body,
       ]
         .join(" ")
         .toLowerCase();
@@ -102,7 +102,7 @@ export function searchEmails(filters: EmailSearchFilters): EmailConversation[] {
         email.from,
         email.to,
         email.snippet,
-        email.body,
+        // email.body,
       ]
         .join(" ")
         .toLowerCase();
@@ -302,10 +302,58 @@ export function splitSearchQuery(query: string) {
         filters.excludeKeywords.push(trimmedPart);
       } else {
         filters.includeKeywords = filters.includeKeywords || [];
-        filters.includeKeywords.push(part);
+        const trimmedPart = part.trim();
+        if (trimmedPart) {
+          filters.includeKeywords.push(trimmedPart);
+        }
       }
     }
   }
 
   return filters;
 }
+
+// utils/buildQuery.ts
+export const buildFilterQueryString = (
+  userId: number,
+  filters: EmailSearchFilters
+) => {
+  const params = new URLSearchParams();
+
+  // 필수 파라미터
+  params.append("accountId", String(userId));
+
+  // 1) 배열 타입 키를 명시적으로 뽑아두고
+  const multiValueKeys: Array<keyof EmailSearchFilters> = [
+    "from",
+    "to",
+    "subject",
+    "includeKeywords",
+    "excludeKeywords",
+  ];
+
+  // 2) forEach나 for..of로 순회하며, 배열일 때만 append
+  for (const key of multiValueKeys) {
+    const arr = filters[key];
+    if (Array.isArray(arr)) {
+      arr.forEach((v) => {
+        params.append(key, v);
+      });
+    }
+  }
+
+  // 숫자 타입 필터
+  if (filters.attachmentSize != null) {
+    params.append("attachmentSize", String(filters.attachmentSize));
+  }
+
+  // 날짜 타입 필터 (YYYY-MM-DD)
+  if (filters.startDate) {
+    params.append("startDate", filters.startDate.toISOString().split("T")[0]);
+  }
+  if (filters.endDate) {
+    params.append("endDate", filters.endDate.toISOString().split("T")[0]);
+  }
+
+  return params.toString();
+};

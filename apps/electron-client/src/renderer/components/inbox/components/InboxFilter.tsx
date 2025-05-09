@@ -6,8 +6,8 @@ const InboxFilter = ({
   setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   return (
-    <div className="absolute top-14 left-0 w-full p-1 bg-light1 rounded-b-lg">
-      <div className="flex flex-col w-full h-full px-2.5 py-1.5 gap-1 rounded-lg bg-white font-pre-bold">
+    <div className="absolute top-14 left-0 w-full p-1.5 bg-light1 rounded-b-lg">
+      <div className="flex flex-col w-full h-full px-4 py-1.5 gap-1 rounded-lg bg-white font-pre-bold">
         <InboxFilterForm
           name="from"
           type="text"
