@@ -1,0 +1,50 @@
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+
+    "baseUrl": "renderer", // baseUrl은 renderer로 유지
+    "paths": {
+      "@/*": ["*"],
+      "@apis/*": ["apis/*"],
+      "@assets/*": ["assets/*"],
+      "@components/*": ["components/*"],
+      "@data/*": ["data/*"],
+      "@hooks/*": ["hooks/*"],
+      "@layouts/*": ["layouts/*"],
+      "@mocks/*": ["mocks/*"],
+      "@pages/*": ["pages/*"],
+      "@stores/*": ["stores/*"],
+      "@utils/*": ["utils/*"]
+    }
+  },
+  // "include": ["src"] // 기존 설정 제거
+  "include": [
+    "./**/*.ts",
+    "./**/*.tsx",
+    "renderer.html",
+    "vite.config.ts",
+    "main.tsx"
+  ], // src 폴더 내의 모든 .ts, .tsx 파일 및 주요 파일 포함
+  // 또는 더 간단하게: "include": ["./**/*"]
+  "exclude": ["node_modules", "../../dist"] // 제외할 폴더 (상대 경로 주의)
+}

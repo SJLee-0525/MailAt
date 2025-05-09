@@ -1,0 +1,48 @@
+/* styles.css */
+@import "tailwindcss";
+
+@theme {
+  /* Font Families */
+  --font-pre-light: "Pretendard-Light";
+  --font-pre-regular: "Pretendard-Regular";
+  --font-pre-medium: "Pretendard-Medium";
+  --font-pre-semi-bold: "Pretendard-SemiBold";
+  --font-pre-bold: "Pretendard-Bold";
+  --font-pre-extra-bold: "Pretendard-ExtraBold";
+
+  /* Colors */
+  --color-white: #ffffff;
+  --color-light1: #edeef7;
+  --color-light2: #dfe0e2;
+  --color-light3: #bcc0c3;
+  --color-bg: #f8f8f8;
+  --color-icon: #7d7983;
+  --color-theme: #022d48;
+  --color-theme-dark: #022a44;
+  --color-title: #505050;
+  --color-content: #686868;
+  --color-default: #bcc0c3;
+  --color-accept: #0a5685;
+  --color-disable: #dddddd;
+  --color-cancel: #d60000;
+  --color-success: #0094ff;
+  --color-warning: #ffb45c;
+  --color-error: #ee5c5c;
+}
+
+/*
+이 파일 하나만 import("tailwindcss") 하시면,
+Tailwind 플러그인이 자동으로 @theme 블록을 읽어
+text-primary, bg-error 같은 유틸리티에 위 변수들을 매핑해 줍니다.
+
+container.center 설정, 스크롤바 숨기기 플러그인(scrollbarHide) 등
+Tailwind 자체 플러그인 설정은 여전히 JS config에서 해 주셔야 합니다.
+*/
+
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE, Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}

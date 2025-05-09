@@ -1,0 +1,79 @@
+@keyframes slideDown {
+  from {
+    transform: translateY(150vh);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(50vh);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDownClose {
+  from {
+    transform: translateY(50vh);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(150vh);
+    opacity: 0;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-50vh);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeBackdrop {
+  0% {
+    background-color: transparent;
+    backdrop-filter: none;
+  }
+  100% {
+    background-color: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(3px);
+  }
+}
+
+@keyframes fadeBackdropOut {
+  0% {
+    background-color: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(3px);
+  }
+  100% {
+    background-color: transparent;
+    backdrop-filter: none;
+  }
+}
+
+@keyframes pinchIn {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(0);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0) translateY(3px) rotate(0deg);
+  }
+  25% {
+    transform: translateX(-3px) translateY(-3px) rotate(-8deg);
+  }
+  50% {
+    transform: translateX(3px) translateY(0px) rotate(0deg);
+  }
+  75% {
+    transform: translateX(-3px) translateY(3px) rotate(8deg);
+  }
+}

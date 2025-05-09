@@ -1,0 +1,21 @@
+//테스트할 거면 아래 내용 채워서 info.json으로 변경.(주석 지워야함)
+{
+  "imap": {
+    "host": "imap.example.com",
+    "port": 993,
+    "username": "your_imap_username",
+    "password": "your_imap_password"
+  },
+  "smtp": {
+    "host": "smtp.example.com",
+    "port": 587,
+    "authMethod": "START_TLS",
+    "username": "your_smtp_username@example.com",
+    "password": "your_smtp_password_or_app_password"
+  },
+  "mailInfo": {
+    "fromAddress": "your_smtp_username@example.com",
+    "fromName": "Your Name or App Name",
+    "toAddress": "recipient@example.com"
+  }
+}

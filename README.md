@@ -69,3 +69,334 @@ Feat: 회원가입 유효성 검사 구현
 - (본문 내용)
 S12P31A204-105
 ```
+
+```
+S12P31A204
+├─ .npmrc
+├─ apps
+│  ├─ electron-client
+│  │  ├─ .env
+│  │  ├─ addon
+│  │  │  ├─ addon.cpp
+│  │  │  ├─ base64_wrapper.cpp
+│  │  │  ├─ base64_wrapper.hpp
+│  │  │  ├─ binding.gyp
+│  │  │  ├─ build
+│  │  │  │  ├─ ALL_BUILD.vcxproj
+│  │  │  │  ├─ ALL_BUILD.vcxproj.filters
+│  │  │  │  ├─ CMakeCache.txt
+│  │  │  │  ├─ CMakeFiles
+│  │  │  │  │  ├─ 4.0.1
+│  │  │  │  │  │  ├─ CMakeCCompiler.cmake
+│  │  │  │  │  │  ├─ CMakeCXXCompiler.cmake
+│  │  │  │  │  │  ├─ CMakeDetermineCompilerABI_C.bin
+│  │  │  │  │  │  ├─ CMakeDetermineCompilerABI_CXX.bin
+│  │  │  │  │  │  ├─ CMakeRCCompiler.cmake
+│  │  │  │  │  │  ├─ CMakeSystem.cmake
+│  │  │  │  │  │  ├─ CompilerIdC
+│  │  │  │  │  │  │  ├─ CMakeCCompilerId.c
+│  │  │  │  │  │  │  ├─ CompilerIdC.exe
+│  │  │  │  │  │  │  ├─ CompilerIdC.vcxproj
+│  │  │  │  │  │  │  └─ Debug
+│  │  │  │  │  │  │     ├─ CMakeCCompilerId.obj
+│  │  │  │  │  │  │     ├─ CompilerIdC.exe.recipe
+│  │  │  │  │  │  │     └─ CompilerIdC.tlog
+│  │  │  │  │  │  │        ├─ CL.command.1.tlog
+│  │  │  │  │  │  │        ├─ Cl.items.tlog
+│  │  │  │  │  │  │        ├─ CL.read.1.tlog
+│  │  │  │  │  │  │        ├─ CL.write.1.tlog
+│  │  │  │  │  │  │        ├─ CompilerIdC.lastbuildstate
+│  │  │  │  │  │  │        ├─ link.command.1.tlog
+│  │  │  │  │  │  │        ├─ link.read.1.tlog
+│  │  │  │  │  │  │        ├─ link.secondary.1.tlog
+│  │  │  │  │  │  │        └─ link.write.1.tlog
+│  │  │  │  │  │  ├─ CompilerIdCXX
+│  │  │  │  │  │  │  ├─ CMakeCXXCompilerId.cpp
+│  │  │  │  │  │  │  ├─ CompilerIdCXX.exe
+│  │  │  │  │  │  │  ├─ CompilerIdCXX.vcxproj
+│  │  │  │  │  │  │  └─ Debug
+│  │  │  │  │  │  │     ├─ CMakeCXXCompilerId.obj
+│  │  │  │  │  │  │     ├─ CompilerIdCXX.exe.recipe
+│  │  │  │  │  │  │     └─ CompilerIdCXX.tlog
+│  │  │  │  │  │  │        ├─ CL.command.1.tlog
+│  │  │  │  │  │  │        ├─ Cl.items.tlog
+│  │  │  │  │  │  │        ├─ CL.read.1.tlog
+│  │  │  │  │  │  │        ├─ CL.write.1.tlog
+│  │  │  │  │  │  │        ├─ CompilerIdCXX.lastbuildstate
+│  │  │  │  │  │  │        ├─ link.command.1.tlog
+│  │  │  │  │  │  │        ├─ link.read.1.tlog
+│  │  │  │  │  │  │        ├─ link.secondary.1.tlog
+│  │  │  │  │  │  │        └─ link.write.1.tlog
+│  │  │  │  │  │  ├─ VCTargetsPath
+│  │  │  │  │  │  │  └─ x64
+│  │  │  │  │  │  │     └─ Debug
+│  │  │  │  │  │  │        ├─ VCTargetsPath.recipe
+│  │  │  │  │  │  │        └─ VCTargetsPath.tlog
+│  │  │  │  │  │  │           └─ VCTargetsPath.lastbuildstate
+│  │  │  │  │  │  ├─ VCTargetsPath.txt
+│  │  │  │  │  │  └─ VCTargetsPath.vcxproj
+│  │  │  │  │  ├─ 5d9b8cee7edb13b0f5093b51b9acf295
+│  │  │  │  │  │  └─ generate.stamp.rule
+│  │  │  │  │  ├─ cmake.check_cache
+│  │  │  │  │  ├─ CMakeConfigureLog.yaml
+│  │  │  │  │  ├─ generate.stamp
+│  │  │  │  │  ├─ generate.stamp.depend
+│  │  │  │  │  ├─ generate.stamp.list
+│  │  │  │  │  ├─ InstallScripts.json
+│  │  │  │  │  └─ TargetDirectories.txt
+│  │  │  │  ├─ cmake_install.cmake
+│  │  │  │  ├─ mailio_addon.dir
+│  │  │  │  │  └─ Release
+│  │  │  │  │     ├─ addon.obj
+│  │  │  │  │     ├─ base64.obj
+│  │  │  │  │     ├─ base64_wrapper.obj
+│  │  │  │  │     ├─ codec.obj
+│  │  │  │  │     ├─ mailio_addon.node.recipe
+│  │  │  │  │     └─ mailio_addon.tlog
+│  │  │  │  │        ├─ CL.command.1.tlog
+│  │  │  │  │        ├─ Cl.items.tlog
+│  │  │  │  │        ├─ CL.read.1.tlog
+│  │  │  │  │        ├─ CL.write.1.tlog
+│  │  │  │  │        ├─ CustomBuild.command.1.tlog
+│  │  │  │  │        ├─ CustomBuild.read.1.tlog
+│  │  │  │  │        ├─ CustomBuild.write.1.tlog
+│  │  │  │  │        ├─ link.command.1.tlog
+│  │  │  │  │        ├─ link.read.1.tlog
+│  │  │  │  │        ├─ link.secondary.1.tlog
+│  │  │  │  │        ├─ link.write.1.tlog
+│  │  │  │  │        └─ mailio_addon.lastbuildstate
+│  │  │  │  ├─ mailio_addon.sln
+│  │  │  │  ├─ mailio_addon.vcxproj
+│  │  │  │  ├─ mailio_addon.vcxproj.filters
+│  │  │  │  ├─ Release
+│  │  │  │  │  ├─ mailio_addon.exp
+│  │  │  │  │  ├─ mailio_addon.lib
+│  │  │  │  │  └─ mailio_addon.node
+│  │  │  │  ├─ x64
+│  │  │  │  │  └─ Release
+│  │  │  │  │     ├─ ALL_BUILD
+│  │  │  │  │     │  ├─ ALL_BUILD.recipe
+│  │  │  │  │     │  └─ ALL_BUILD.tlog
+│  │  │  │  │     │     ├─ ALL_BUILD.lastbuildstate
+│  │  │  │  │     │     ├─ CustomBuild.command.1.tlog
+│  │  │  │  │     │     ├─ CustomBuild.read.1.tlog
+│  │  │  │  │     │     └─ CustomBuild.write.1.tlog
+│  │  │  │  │     └─ ZERO_CHECK
+│  │  │  │  │        ├─ ZERO_CHECK.recipe
+│  │  │  │  │        └─ ZERO_CHECK.tlog
+│  │  │  │  │           ├─ CustomBuild.command.1.tlog
+│  │  │  │  │           ├─ CustomBuild.read.1.tlog
+│  │  │  │  │           ├─ CustomBuild.write.1.tlog
+│  │  │  │  │           └─ ZERO_CHECK.lastbuildstate
+│  │  │  │  ├─ ZERO_CHECK.vcxproj
+│  │  │  │  └─ ZERO_CHECK.vcxproj.filters
+│  │  │  ├─ CMakeLists.txt
+│  │  │  └─ node.js
+│  │  ├─ addon.cpp
+│  │  ├─ binding.gyp
+│  │  ├─ build
+│  │  │  ├─ addon.vcxproj
+│  │  │  ├─ addon.vcxproj.filters
+│  │  │  ├─ binding.sln
+│  │  │  ├─ config.gypi
+│  │  │  └─ Release
+│  │  │     ├─ addon.iobj
+│  │  │     ├─ addon.ipdb
+│  │  │     ├─ addon.node
+│  │  │     ├─ addon.pdb
+│  │  │     └─ obj
+│  │  │        └─ addon
+│  │  │           ├─ addon.node.recipe
+│  │  │           ├─ addon.obj
+│  │  │           ├─ addon.tlog
+│  │  │           │  ├─ addon.lastbuildstate
+│  │  │           │  ├─ CL.command.1.tlog
+│  │  │           │  ├─ Cl.items.tlog
+│  │  │           │  ├─ CL.read.1.tlog
+│  │  │           │  ├─ CL.write.1.tlog
+│  │  │           │  ├─ link.command.1.tlog
+│  │  │           │  ├─ link.read.1.tlog
+│  │  │           │  ├─ link.secondary.1.tlog
+│  │  │           │  └─ link.write.1.tlog
+│  │  │           └─ win_delay_load_hook.obj
+│  │  ├─ email-client.db
+│  │  ├─ index.html
+│  │  ├─ mailio
+│  │  │  ├─ CMakeLists.txt
+│  │  │  ├─ doxygen.conf
+│  │  │  ├─ doxygen.conf.in
+│  │  │  ├─ include
+│  │  │  │  ├─ mailio
+│  │  │  │  │  ├─ base64.hpp
+│  │  │  │  │  ├─ binary.hpp
+│  │  │  │  │  ├─ bit7.hpp
+│  │  │  │  │  ├─ bit8.hpp
+│  │  │  │  │  ├─ codec.hpp
+│  │  │  │  │  ├─ dialog.hpp
+│  │  │  │  │  ├─ export.hpp
+│  │  │  │  │  ├─ imap.hpp
+│  │  │  │  │  ├─ mailboxes.hpp
+│  │  │  │  │  ├─ message.hpp
+│  │  │  │  │  ├─ mime.hpp
+│  │  │  │  │  ├─ percent.hpp
+│  │  │  │  │  ├─ pop3.hpp
+│  │  │  │  │  ├─ quoted_printable.hpp
+│  │  │  │  │  ├─ q_codec.hpp
+│  │  │  │  │  └─ smtp.hpp
+│  │  │  │  └─ version.hpp.in
+│  │  │  ├─ LICENSE
+│  │  │  ├─ mailio.pc.in
+│  │  │  ├─ README.md
+│  │  │  ├─ README_zh.md
+│  │  │  └─ src
+│  │  │     ├─ base64.cpp
+│  │  │     ├─ binary.cpp
+│  │  │     ├─ bit7.cpp
+│  │  │     ├─ bit8.cpp
+│  │  │     ├─ codec.cpp
+│  │  │     ├─ dialog.cpp
+│  │  │     ├─ imap.cpp
+│  │  │     ├─ mailboxes.cpp
+│  │  │     ├─ message.cpp
+│  │  │     ├─ mime.cpp
+│  │  │     ├─ percent.cpp
+│  │  │     ├─ pop3.cpp
+│  │  │     ├─ quoted_printable.cpp
+│  │  │     ├─ q_codec.cpp
+│  │  │     └─ smtp.cpp
+│  │  ├─ main.js
+│  │  ├─ package.json
+│  │  ├─ preload.js
+│  │  ├─ public
+│  │  │  ├─ mockServiceWorker.js
+│  │  │  └─ vite.svg
+│  │  └─ src
+│  │     ├─ .env
+│  │     ├─ .eslintrc.cjs
+│  │     ├─ .prettierrc
+│  │     ├─ controllers
+│  │     │  ├─ accountController.js
+│  │     │  └─ mailController.js
+│  │     ├─ database
+│  │     │  └─ db.js
+│  │     ├─ eslint.config.js
+│  │     ├─ index.html
+│  │     ├─ package.json
+│  │     ├─ README.md
+│  │     ├─ renderer
+│  │     │  ├─ apis
+│  │     │  │  ├─ instance.ts
+│  │     │  │  └─ recordApi.ts
+│  │     │  ├─ App.css
+│  │     │  ├─ App.tsx
+│  │     │  ├─ assets
+│  │     │  │  ├─ icons
+│  │     │  │  │  ├─ ArrowDownIcon.tsx
+│  │     │  │  │  ├─ ArrowUpIcon.tsx
+│  │     │  │  │  ├─ CalendarIcon.tsx
+│  │     │  │  │  ├─ DeleteIcon.tsx
+│  │     │  │  │  ├─ EditIcon.tsx
+│  │     │  │  │  ├─ FilterIcon.tsx
+│  │     │  │  │  ├─ ForwardIcon.tsx
+│  │     │  │  │  ├─ InboxIcon.tsx
+│  │     │  │  │  ├─ MenuIcon.tsx
+│  │     │  │  │  ├─ NavBarIcon.tsx
+│  │     │  │  │  ├─ ReplyIcon.tsx
+│  │     │  │  │  ├─ SearchIcon.tsx
+│  │     │  │  │  ├─ SettingIcon.tsx
+│  │     │  │  │  ├─ StarFillIcon.tsx
+│  │     │  │  │  └─ StarIcon.tsx
+│  │     │  │  ├─ images
+│  │     │  │  │  └─ defaultProfile.png
+│  │     │  │  └─ react.svg
+│  │     │  ├─ components
+│  │     │  │  ├─ common
+│  │     │  │  │  ├─ bottomNav
+│  │     │  │  │  │  ├─ BottomNav.tsx
+│  │     │  │  │  │  ├─ BottomNavButton.tsx
+│  │     │  │  │  │  └─ SearchBar.tsx
+│  │     │  │  │  ├─ button
+│  │     │  │  │  │  ├─ Button.tsx
+│  │     │  │  │  │  └─ IconButton.tsx
+│  │     │  │  │  ├─ modal
+│  │     │  │  │  │  ├─ Modal.css
+│  │     │  │  │  │  └─ Modal.tsx
+│  │     │  │  │  └─ nav
+│  │     │  │  │     └─ SideNav.tsx
+│  │     │  │  ├─ detailEmail
+│  │     │  │  │  ├─ components
+│  │     │  │  │  │  ├─ DetailAttachments.tsx
+│  │     │  │  │  │  ├─ DetailEmailContent.tsx
+│  │     │  │  │  │  ├─ DetailEmailContents.tsx
+│  │     │  │  │  │  ├─ DetailEmailHeader.tsx
+│  │     │  │  │  │  ├─ DetailEmailInfo.tsx
+│  │     │  │  │  │  └─ DetailEmailTitle.tsx
+│  │     │  │  │  └─ DetailEmail.tsx
+│  │     │  │  ├─ inbox
+│  │     │  │  │  ├─ components
+│  │     │  │  │  │  ├─ InboxContent.tsx
+│  │     │  │  │  │  ├─ InboxContents.tsx
+│  │     │  │  │  │  ├─ InboxFilter.tsx
+│  │     │  │  │  │  ├─ InboxFilterForm.tsx
+│  │     │  │  │  │  ├─ InboxHeader.tsx
+│  │     │  │  │  │  └─ InboxSearchForm.tsx
+│  │     │  │  │  └─ Inbox.tsx
+│  │     │  │  └─ mailForm
+│  │     │  │     ├─ components
+│  │     │  │     │  ├─ MailForm.tsx
+│  │     │  │     │  ├─ MailFormHeader.tsx
+│  │     │  │     │  ├─ MailTextEditor.tsx
+│  │     │  │     │  └─ SenderList.tsx
+│  │     │  │     ├─ MailCreateForm.tsx
+│  │     │  │     ├─ MailReplyForm.tsx
+│  │     │  │     └─ NewMailFormModal.tsx
+│  │     │  ├─ data
+│  │     │  │  └─ EMAIL_CONSERVATIONS.ts
+│  │     │  ├─ hooks
+│  │     │  │  ├─ useDebounceHook.ts
+│  │     │  │  └─ useGetConversations.ts
+│  │     │  ├─ index.css
+│  │     │  ├─ layouts
+│  │     │  │  ├─ HoverZone.tsx
+│  │     │  │  ├─ MainLayout.tsx
+│  │     │  │  └─ NavZone.tsx
+│  │     │  ├─ main.tsx
+│  │     │  ├─ mocks
+│  │     │  │  ├─ browser.ts
+│  │     │  │  ├─ handlers.ts
+│  │     │  │  └─ server.ts
+│  │     │  ├─ pages
+│  │     │  │  └─ home
+│  │     │  │     └─ Home.tsx
+│  │     │  ├─ services
+│  │     │  │  └─ mailService.ts
+│  │     │  ├─ stores
+│  │     │  │  ├─ conversationsStore.ts
+│  │     │  │  ├─ modalStore.ts
+│  │     │  │  └─ userProgressStore.ts
+│  │     │  ├─ styles
+│  │     │  │  └─ animations.css
+│  │     │  ├─ types
+│  │     │  │  ├─ commonTypes.ts
+│  │     │  │  ├─ emailTypes.ts
+│  │     │  │  └─ iconProps.ts
+│  │     │  ├─ utils
+│  │     │  │  ├─ getEmailData.ts
+│  │     │  │  └─ getFormattedDate.ts
+│  │     │  └─ vite-env.d.ts
+│  │     ├─ renderer.html
+│  │     ├─ services
+│  │     │  ├─ imap.js
+│  │     │  └─ smtp.js
+│  │     ├─ tsconfig.app.json
+│  │     ├─ tsconfig.json
+│  │     ├─ tsconfig.node.json
+│  │     ├─ utils
+│  │     │  └─ logging.js
+│  │     └─ vite.config.ts
+│  └─ web-site
+├─ package-lock.json
+├─ package.json
+└─ README.md
+
+```
