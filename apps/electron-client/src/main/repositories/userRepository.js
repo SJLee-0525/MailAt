@@ -196,7 +196,7 @@ class UserRepository {
           // Folder 테이블 생성
           db.run(`CREATE TABLE IF NOT EXISTS Folder (
             folder_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            account_id VARCHAR(255) NOT NULL,
+            account_id INTEGER NOT NULL,
             name TEXT NOT NULL,
             path TEXT NULL,
             uid_next INTEGER NULL,
@@ -208,7 +208,7 @@ class UserRepository {
           // Message 테이블 생성
           db.run(`CREATE TABLE IF NOT EXISTS Message (
             message_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            account_id VARCHAR(255) NOT NULL,
+            account_id INTEGER NOT NULL,
             folder_id INTEGER NOT NULL,
             external_message_id TEXT NULL,
             thread_id TEXT NULL,
