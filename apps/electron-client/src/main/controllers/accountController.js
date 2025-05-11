@@ -10,7 +10,7 @@ export const initAccountController = () => {
   ipcMain.handle("account:create", async (event, accountData) => {
     try {
       const result = await accountService.createAccount(accountData);
-      return { success: true, ...result };
+      return { success: true, data: result };
     } catch (error) {
       console.error("계정 생성 컨트롤러 오류:", error);
 
@@ -36,7 +36,7 @@ export const initAccountController = () => {
   ipcMain.handle("account:getAll", async () => {
     try {
       const accounts = await accountService.getAllAccounts();
-      return accounts;
+      return { success: true, data: accounts };
     } catch (error) {
       console.error("계정 목록 조회 컨트롤러 오류:", error);
       return { success: false, message: error.message };
@@ -47,7 +47,7 @@ export const initAccountController = () => {
   ipcMain.handle("account:delete", async (event, accountId) => {
     try {
       const result = await accountService.deleteAccount(accountId);
-      return result;
+      return { success: true, data: result };
     } catch (error) {
       console.error("계정 삭제 컨트롤러 오류:", error);
       return { success: false, message: error.message };

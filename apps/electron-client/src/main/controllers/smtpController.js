@@ -10,7 +10,7 @@ export const initSmtpController = () => {
   ipcMain.handle("email:send", async (event, emailData) => {
     try {
       const result = await smtpService.sendEmail(emailData);
-      return { success: true, ...result };
+      return { success: true, data: result };
     } catch (error) {
       console.error("이메일 전송 컨트롤러 오류:", error);
       return mapErrorToUserFriendlyResponse(error);
@@ -21,7 +21,7 @@ export const initSmtpController = () => {
   ipcMain.handle("smtp:test", async (event, config) => {
     try {
       const result = await smtpService.testConnection(config);
-      return { success: true, ...result };
+      return { success: true, data: result };
     } catch (error) {
       console.error("SMTP 테스트 컨트롤러 오류:", error);
       return mapErrorToUserFriendlyResponse(error);
