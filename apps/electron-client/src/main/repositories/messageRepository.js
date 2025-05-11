@@ -77,7 +77,7 @@ class MessageRepository {
                         const messageContactQuery = `
                           INSERT OR IGNORE INTO MessageContact (message_id, contact_id, type)
                           VALUES (?, ?, ?)
-                        `;
+                          `;
 
                         db.run(
                           messageContactQuery,

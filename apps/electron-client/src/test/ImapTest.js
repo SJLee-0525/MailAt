@@ -153,22 +153,25 @@ export const runImapTests = async () => {
           }
 
           // 6. Check recipients data
-          console.log("\n6. Check Recipients Data");
-          if (recentMessages.length > 0) {
-            const firstMessageId = recentMessages[0].message_id;
-            const recipientsQuery = `
-              SELECT * FROM Recipient WHERE message_id = ?
-            `;
-            const recipients = await new Promise((resolve, reject) => {
-              db.all(recipientsQuery, [firstMessageId], (err, rows) => {
-                if (err) reject(err);
-                else resolve(rows);
-              });
+          console.log("6. Check Message Contacts Data");
+          try {
+            const messageId = 1; // 적절한 메시지 ID
+            const contacts = await new Promise((resolve, reject) => {
+              db.all(
+                `SELECT mc.*, ec.email, ec.name 
+                FROM MessageContact mc
+                JOIN EmailContact ec ON mc.contact_id = ec.contact_id
+                WHERE mc.message_id = ?`,
+                [messageId],
+                (err, rows) => {
+                  if (err) reject(err);
+                  else resolve(rows);
+                }
+              );
             });
-            console.log(
-              `Recipients for message ${firstMessageId}:`,
-              recipients
-            );
+            console.log(`Contacts for message ${messageId}:`, contacts);
+          } catch (error) {
+            console.error("Message contacts check error:", error.message);
           }
 
           // 7. Check headers data

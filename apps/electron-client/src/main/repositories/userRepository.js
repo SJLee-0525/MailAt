@@ -253,7 +253,7 @@ class UserRepository {
 
           // MessageContact 테이블
           db.run(`CREATE TABLE IF NOT EXISTS MessageContact (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            message_contact_id INTEGER PRIMARY KEY AUTOINCREMENT,
             message_id INTEGER NOT NULL,
             contact_id INTEGER NOT NULL,
             type TEXT NOT NULL, -- 'FROM', 'TO', 'CC', 'BCC'
