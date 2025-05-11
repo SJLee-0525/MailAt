@@ -194,15 +194,22 @@ class UserRepository {
           )`);
 
           // Folder 테이블 생성
-          db.run(`CREATE TABLE IF NOT EXISTS Folder (
+          db.run(`CREATE TABLE Folder (
             folder_id INTEGER PRIMARY KEY AUTOINCREMENT,
             account_id INTEGER NOT NULL,
             name TEXT NOT NULL,
             path TEXT NULL,
+            type TEXT NULL, -- 'inbox', 'sent', 'drafts', 'spam', 'trash', 'custom'
+            flags TEXT NULL, -- IMAP 플래그들
             uid_next INTEGER NULL,
             uid_validity INTEGER NULL,
+            messages_total INTEGER NULL,
+            messages_recent INTEGER NULL,
+            messages_unseen INTEGER NULL,
+            last_sync_at DATETIME NULL,
             created_at DATETIME NULL,
-            FOREIGN KEY (account_id) REFERENCES Account(account_id) ON DELETE CASCADE
+            updated_at DATETIME NULL,
+            FOREIGN KEY (account_id) REFERENCES Account(account_id) ON DELETE CASCADE,
             UNIQUE (account_id, name)
           )`);
 
@@ -235,16 +242,26 @@ class UserRepository {
             UNIQUE(folder_id, uid)
           )`);
 
-          // Recipient 테이블 생성
-          db.run(`CREATE TABLE IF NOT EXISTS Recipient (
-            recipient_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            message_id INTEGER NOT NULL,
-            type TEXT NOT NULL, --'TO', 'CC', 'BCC' 같은 값
+          // EmailContact 테이블
+          db.run(`CREATE TABLE IF NOT EXISTS EmailContact (
+            contact_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL UNIQUE,
             name TEXT NULL,
-            email TEXT NOT NULL,
-            FOREIGN KEY (message_id) REFERENCES Message(message_id) ON DELETE CASCADE
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            last_seen_at DATETIME DEFAULT CURRENT_TIMESTAMP
           )`);
 
+          // MessageContact 테이블
+          db.run(`CREATE TABLE IF NOT EXISTS MessageContact (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            message_id INTEGER NOT NULL,
+            contact_id INTEGER NOT NULL,
+            type TEXT NOT NULL, -- 'FROM', 'TO', 'CC', 'BCC'
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (message_id) REFERENCES Message(message_id) ON DELETE CASCADE,
+            FOREIGN KEY (contact_id) REFERENCES EmailContact(contact_id),
+            UNIQUE(message_id, contact_id, type)
+          )`);
           // Header 테이블 생성
           db.run(`CREATE TABLE IF NOT EXISTS Header (
             header_id INTEGER PRIMARY KEY AUTOINCREMENT,
