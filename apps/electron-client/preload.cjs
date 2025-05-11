@@ -1,4 +1,4 @@
-// preload.js - CommonJS 형식
+// preload.cjs - CommonJS 형식
 const { contextBridge, ipcRenderer } = require("electron");
 
 // 디버깅용 로그
@@ -34,6 +34,30 @@ try {
         ipcRenderer.invoke("account:create", accountData),
       getAll: () => ipcRenderer.invoke("account:getAll"),
       delete: (accountId) => ipcRenderer.invoke("account:delete", accountId),
+    },
+
+    // IMAP 관련 API
+    imap: {
+      syncLatest: (accountId) => {
+        console.log("[PRELOAD] imap.syncLatest 호출됨", accountId);
+        return ipcRenderer.invoke("imap:syncLatest", accountId);
+      },
+      syncFolder: ({ accountId, folderName, limit }) => {
+        console.log("[PRELOAD] imap.syncFolder 호출됨", {
+          accountId,
+          folderName,
+          limit,
+        });
+        return ipcRenderer.invoke("imap:syncFolder", {
+          accountId,
+          folderName,
+          limit,
+        });
+      },
+      test: (config) => {
+        console.log("[PRELOAD] imap.test 호출됨", config);
+        return ipcRenderer.invoke("imap:test", config);
+      },
     },
 
     // 디버깅 도구

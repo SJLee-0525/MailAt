@@ -63,6 +63,9 @@ async function initializeControllers() {
       "account:delete",
       "email:send",
       "smtp:test",
+      "imap:syncLatest",
+      "imap:syncFolder",
+      "imap:test",
     ].forEach((channel) => {
       try {
         ipcMain.removeHandler(channel);
@@ -81,6 +84,9 @@ async function initializeControllers() {
     const smtpControllerModule = await import(
       "./src/main/controllers/smtpController.js"
     );
+    const imapControllerModule = await import(
+      "./src/main/controllers/imapController.js"
+    );
 
     // 컨트롤러 초기화 함수 실행
     userControllerModule.initUserController();
@@ -91,6 +97,9 @@ async function initializeControllers() {
 
     smtpControllerModule.initSmtpController();
     console.log("[MAIN] SMTP 컨트롤러 초기화 완료");
+
+    imapControllerModule.initImapController();
+    console.log("[MAIN] IMAP 컨트롤러 초기화 완료");
 
     controllersInitialized = true;
     console.log("[MAIN] 등록된 IPC 핸들러:", ipcMain.eventNames());
