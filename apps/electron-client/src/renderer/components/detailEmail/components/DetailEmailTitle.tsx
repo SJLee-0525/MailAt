@@ -77,7 +77,7 @@ const DetailEmailTitle = ({
             ) : (
               <ArrowDownIcon onClick={() => setIsExpanded(true)} />
             )}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-start gap-2">
               <h3 className="font-pre-semi-bold font-sm font-bold whitespace-nowrap">
                 보낸 사람
               </h3>

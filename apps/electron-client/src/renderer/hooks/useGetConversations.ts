@@ -13,7 +13,7 @@ export const useGetAllEmails = () => {
   const { user } = useAuthenticateStore();
   const { setConversations, filters } = useConversationsStore();
 
-  const userId = user?.id || null;
+  const userId = user?.userId || 1;
 
   const query = useQuery<AllEmails[]>({
     queryKey: ["emails", userId, filters],

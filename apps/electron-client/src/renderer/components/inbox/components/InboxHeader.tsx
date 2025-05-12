@@ -17,7 +17,7 @@ const InboxHeader = () => {
       ) : (
         <div className="flex items-center justify-between w-full h-16 min-h-16 px-4 bg-light1 rounded-t-xl">
           <div>
-            <h1 className="text-2xl font-bold">Inbox</h1>
+            <h1 className="text-2xl font-pre-medium">Inbox 안녕</h1>
           </div>
 
           <nav className="flex items-center gap-2">
