@@ -6,6 +6,7 @@ import { User, AccountsResponse } from "@/types/authType";
 interface AuthenticateStore {
   user: User | null;
   setUserName: (userData: User | null) => void;
+  deleteUser: () => void;
   authUsers: AccountsResponse[];
   setAuthUsers: (authUsers: AccountsResponse[]) => void;
   deleteAuthUser: (authUsers: AccountsResponse | null) => void;
@@ -22,6 +23,10 @@ const useAuthenticateStore = create<AuthenticateStore>()(
     (set) => ({
       user: null, // 초기값
       setUserName: (userData: User | null) => set({ user: userData }),
+      deleteUser: () => {
+        set({ user: null });
+        localStorage.removeItem("authenticate-storage"); // 로컬 스토리지에서 키를 완전히 제거
+      },
       authUsers: [],
       setAuthUsers: (users) => set({ authUsers: users }),
       selectedUser: {

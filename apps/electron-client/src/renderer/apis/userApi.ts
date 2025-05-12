@@ -10,12 +10,13 @@ import {
 const { VITE_DEV_API_URL } = import.meta.env;
 
 // 사용자 추가
+// 사용자 추가
 export const createUser = async (username: string): Promise<User> => {
   try {
-    const response = await instance.post(`/user`, {
+    const response = await window.electronAPI.user.create({
       username,
     });
-    console.log(`[POST] ${VITE_DEV_API_URL}/user`, username);
+    console.log(`[POST] window.electronAPI.user.create(${username})`, response);
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -23,10 +24,10 @@ export const createUser = async (username: string): Promise<User> => {
 };
 
 // 사용자 조회
-export const getUser = async (userId: string): Promise<User> => {
+export const getUser = async (userId: number): Promise<User> => {
   try {
-    const response = await instance.get(`/user/${userId}`);
-    console.log(`[GET] ${VITE_DEV_API_URL}/user/${userId}`);
+    const response = await window.electronAPI.user.get(userId);
+    console.log(`[GET] window.electronAPI.user.get(${userId})`, response);
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -35,14 +36,17 @@ export const getUser = async (userId: string): Promise<User> => {
 
 // 사용자 수정
 export const updateUser = async (
-  userId: string,
+  userId: number,
   username: string
 ): Promise<User> => {
   try {
-    const response = await instance.patch(`/user/${userId}`, {
+    const response = await window.electronAPI.user.update(userId, {
       username,
     });
-    console.log(`[PATCH] ${VITE_DEV_API_URL}/user/${userId}`, username);
+    console.log(
+      `[PUT] window.electronAPI.user.update(${userId}, ${username})`,
+      response
+    );
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -51,12 +55,12 @@ export const updateUser = async (
 
 // 사용자 삭제
 export const deleteUser = async (
-  userId: string
+  userId: number
 ): Promise<{ success: boolean }> => {
   try {
-    const response = await instance.delete(`/user/${userId}`);
-    console.log(`[DELETE] ${VITE_DEV_API_URL}/user/${userId}`);
-    return response.data;
+    const response = await window.electronAPI.user.delete(userId);
+    console.log(`[DELETE] window.electronAPI.user.delete(${userId})`, response);
+    return response;
   } catch (error: unknown) {
     throw new Error(error as string);
   }

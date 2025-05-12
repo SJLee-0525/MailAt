@@ -30,6 +30,7 @@ const SettingsName = () => {
     // api 호출
     try {
       const response = await createUser(name);
+      console.log(response);
       setUserName(response);
       alert(`${response.username}님 환영합니다!`);
     } catch (error) {
