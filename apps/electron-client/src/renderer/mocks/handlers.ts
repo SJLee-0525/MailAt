@@ -1,6 +1,9 @@
 import { http, HttpResponse } from "msw";
 
-import { mockEmailConversations } from "@data/EMAIL_CONSERVATIONS";
+import {
+  mockEmailConversations,
+  mockEmailThreadConservation,
+} from "@data/EMAIL_CONSERVATIONS";
 import { ACCOUNTS_DATA } from "@data/USER_DATA";
 
 const { VITE_DEV_API_URL } = import.meta.env;
@@ -68,6 +71,13 @@ const handlers = [
     const { emailId } = params;
 
     return HttpResponse.json(mockEmailConversations[Number(emailId)]);
+  }),
+
+  // 이메일 스레드로 전체 조회
+  http.get(VITE_DEV_API_URL + "/emails/thread/:threadId", ({ params }) => {
+    // const { threadId } = params;
+
+    return HttpResponse.json(mockEmailThreadConservation);
   }),
 
   // 이메일 삭제

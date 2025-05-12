@@ -16,7 +16,7 @@ const MailReplyForm = ({
 }: {
   replyData: ReplyData;
   threadId: string;
-  replyId: string;
+  replyId: number;
 }) => {
   const { setIsReplying } = useUserProgressStore();
 
@@ -157,7 +157,7 @@ const MailReplyForm = ({
       body: html,
       attachments: [], // 첨부파일
       threadId: threadId, // 답장할 이메일의 스레드 ID
-      inReplyTo: replyId, // 답장할 이메일의 ID (Message-ID 헤더)
+      inReplyTo: String(replyId), // 답장할 이메일의 ID (Message-ID 헤더)
       references: [], // References 헤더에 포함할 Message-ID 목록
     };
 

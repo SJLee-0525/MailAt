@@ -43,13 +43,15 @@ const InboxContents = () => {
       {folders && <InboxFolders folders={folders} />}
       {conversations && (
         <div className="flex flex-col w-full h-full p-2 gap-1 bg-white rounded-lg font-pre-bold overflow-y-auto hide-scrollbar">
-          {conversations.map((email, index) => {
+          {conversations.map((email) => {
             return (
               <InboxContent
                 key={email.id}
                 email={email}
-                isSelected={selectedMail === index}
-                onClick={() => setSelectedMail(index)}
+                isSelected={
+                  selectedMail !== null && selectedMail.id === email.id
+                }
+                onClick={() => setSelectedMail(email)}
               />
             );
           })}

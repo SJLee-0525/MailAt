@@ -1,8 +1,8 @@
 import React, { forwardRef, useState } from "react";
 
 import SenderList from "@components/mailForm/components/SenderList";
-import CcList from "@components/mailForm/components/CcList";
-import BccList from "@components/mailForm/components/BccList";
+// import CcList from "@components/mailForm/components/CcList";
+// import BccList from "@components/mailForm/components/BccList";
 import MailTextEditor from "@components/mailForm/components/MailTextEditor";
 
 interface MailFormProps {
