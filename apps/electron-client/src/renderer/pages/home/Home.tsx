@@ -1,6 +1,10 @@
-import { useGetAllEmails } from "@hooks/useGetConversations";
+import {
+  useGetEmailFolders,
+  useGetAllEmails,
+} from "@hooks/useGetConversations";
 
 const Home = () => {
+  useGetEmailFolders();
   useGetAllEmails();
 
   return (

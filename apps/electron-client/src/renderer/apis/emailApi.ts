@@ -11,6 +11,25 @@ import { buildFilterQueryString } from "@utils/getEmailData";
 
 const { VITE_DEV_API_URL } = import.meta.env;
 
+// 폴더 목록 조회
+export const getFolders = async ({
+  accountId,
+}: {
+  accountId: number | null;
+}): Promise<string[]> => {
+  if (!accountId) {
+    throw new Error("Account ID is required to fetch folders.");
+  }
+
+  try {
+    const response = await instance.get<string[]>(`/folders/${accountId}`);
+    console.log(`[GET] ${VITE_DEV_API_URL}/folders/${accountId}`);
+    return response.data;
+  } catch (error: unknown) {
+    throw new Error(error as string);
+  }
+};
+
 // 이메일 전체 조회
 export const getEmailsData = async ({
   userId,

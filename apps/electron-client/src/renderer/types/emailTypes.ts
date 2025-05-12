@@ -1,3 +1,8 @@
+export interface Folder {
+  name: string;
+  color: string;
+}
+
 export interface ReplyData {
   to: string | null;
   title: string | null;

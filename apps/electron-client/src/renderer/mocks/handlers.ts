@@ -53,6 +53,11 @@ const handlers = [
     return HttpResponse.json({ success: true });
   }),
 
+  // 폴더 목록 조회
+  http.get(VITE_DEV_API_URL + "/folders/:accoundId", () => {
+    return HttpResponse.json(["INBOX", "SENT", "DRAFT", "TRASH", "SPAM"]);
+  }),
+
   // 이메일 전체 조회
   http.get(VITE_DEV_API_URL + "/emails", () => {
     return HttpResponse.json(mockEmailConversations);
