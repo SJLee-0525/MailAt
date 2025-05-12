@@ -3,20 +3,22 @@
     "version": "1.0.0",
     "private": true,
     "workspaces": [
-      "apps/electron-client",
-      "apps/electron-client/src"
+        "apps/electron-client",
+        "apps/electron-client/src"
     ],
-    "engines": { "node": ">=20.0.0" },
+    "engines": {
+        "node": ">=20.0.0"
+    },
     "scripts": {
-      "dev":   "npm run --workspace=electron-client dev",
-      "build": "npm run --workspace=electron-client build",
-      "lint":  "npm run --workspaces --if-present lint"
+        "dev": "npm run --workspace=electron-client dev",
+        "build": "npm run --workspace=electron-client build",
+        "lint": "npm run --workspaces --if-present lint"
     },
     "devDependencies": {
-      "eslint": "^9.25.1",
-      "eslint-config-prettier": "^10.1.2",
-      "eslint-plugin-prettier": "^5.2.6",
-      "prettier": "^3.5.3"
+        "electron-rebuild": "^3.2.9",
+        "eslint": "^9.25.1",
+        "eslint-config-prettier": "^10.1.2",
+        "eslint-plugin-prettier": "^5.2.6",
+        "prettier": "^3.5.3"
     }
-  }
-  
+}

@@ -26,7 +26,7 @@ namespace mailio
 /**
 Seven bit codec.
 **/
-class MAILIO_EXPORT bit7 : public codec
+class bit7 : public codec
 {
 public:
 

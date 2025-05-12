@@ -26,7 +26,7 @@ namespace mailio
 /**
 Binary codec.
 **/
-class MAILIO_EXPORT binary : public codec
+class binary : public codec
 {
 public:
 

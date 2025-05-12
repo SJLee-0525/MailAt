@@ -38,7 +38,7 @@ namespace mailio
 /**
 SMTP client implementation.
 **/
-class MAILIO_EXPORT smtp
+class smtp
 {
 public:
 
@@ -224,7 +224,7 @@ protected:
 /**
 Secure version of SMTP client.
 **/
-class MAILIO_EXPORT smtps : public smtp
+class smtps : public smtp
 {
 public:
 

@@ -7,11 +7,11 @@
   "scripts": {
     "renderer:dev": "npx vite --config src/vite.config.ts",
     "electron:dev": "npx wait-on http://localhost:5173 && electron .",
-    "dev": "npx cross-env NODE_ENV=development npx concurrently \"npm:renderer:dev\" \"npm:electron:dev\"",
+    "dev": "npm run build:addon && npx cross-env NODE_ENV=development npx concurrently \"npm:renderer:dev\" \"npm:electron:dev\"",
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:user": "electron . --test",
-    "build:addon": "cd addon && mkdir -p cmake-build && cd cmake-build && cmake .. && cmake --build . --config Release && mkdir -p ../../../build/Release && copy Release\\mailio_addon.node ../../../build/Release\\",
+    "build:addon": "cd addon && node-gyp rebuild --target=29.4.6 --arch=x64 --dist-url=https://electronjs.org/headers",
     "build:renderer": "tsc -p src/tsconfig.app.json && vite build --config src/vite.config.ts",
     "build": "npm run build:renderer && npm run build:addon",
     "lint": "eslint . --ext .ts,.tsx,.js,.cjs"
@@ -54,8 +54,6 @@
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react-swc": "^3.8.0",
     "autoprefixer": "^10.4.21",
-    "concurrently": "^9.1.2",
-    "cross-env": "^7.0.3",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
