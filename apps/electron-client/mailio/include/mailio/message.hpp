@@ -56,7 +56,7 @@ struct message_format_options_t
 /**
 Mail message and applied parsing/formatting algorithms.
 **/
-class MAILIO_EXPORT message : public mime
+class message : public mime
 {
 public:
 

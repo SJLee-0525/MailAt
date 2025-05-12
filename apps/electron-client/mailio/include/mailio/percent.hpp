@@ -28,7 +28,7 @@ Percent encoding and decoding as described in RFC 2231 section 4.
 
 @todo Line policies not implemented.
 **/
-class MAILIO_EXPORT percent : public codec
+class percent : public codec
 {
 public:
 

@@ -3,20 +3,44 @@
     {
       "target_name": "mailio_addon",
       "sources": [
+        "addon.cpp",
         "smtp_wrapper.cpp",
+        "imap_wrapper.cpp",
+        "bit7_wrapper.cpp",
         "bit8_wrapper.cpp",
         "base64_wrapper.cpp",
-        "imap_wrapper.cpp"
+        "utils.cpp",
+
+        "../mailio/src/base64.cpp",
+        "../mailio/src/binary.cpp",
+        "../mailio/src/bit7.cpp",
+        "../mailio/src/bit8.cpp",
+        "../mailio/src/codec.cpp",
+        "../mailio/src/dialog.cpp",
+        "../mailio/src/imap.cpp",
+        "../mailio/src/mailboxes.cpp",
+        "../mailio/src/message.cpp",
+        "../mailio/src/mime.cpp",
+        "../mailio/src/percent.cpp",
+        "../mailio/src/pop3.cpp",
+        "../mailio/src/q_codec.cpp",
+        "../mailio/src/quoted_printable.cpp",
+        "../mailio/src/smtp.cpp"
       ],
       "include_dirs": [
-        "<!(node -p \"require('node-addon-api').include\")",
+        "../../../node_modules/node-addon-api",
         "../mailio/include",
-        "C:/vcpkg/installed/x64-windows/include"
+        "C:/boost_1_88_0",
+        "C:/vcpkg/installed/x64-windows-static/include",
+        "<(module_root_dir)"
       ],
-      "dependencies": [
-        "<!(node -p \"require('node-addon-api').gyp\")"
+      "defines": [
+        "NAPI_CPP_EXCEPTIONS",
+        "MAILIO_STATIC_LIB=1",
+        "BOOST_ALL_NO_LIB",
+        "_WIN32_WINNT=0x0601",
+        "OPENSSL_USE_STATIC_LIBS"
       ],
-      "defines": [ "NAPI_CPP_EXCEPTIONS", "MAILIO_EXPORT=" ]
       "cflags_cc!": [ "-fno-exceptions" ],
       "msvs_settings": {
         "VCCLCompilerTool": {
@@ -25,17 +49,18 @@
         },
         "VCLinkerTool": {
           "AdditionalLibraryDirectories": [
-            "C:/vcpkg/installed/x64-windows/lib"
+            "C:/boost_1_88_0/stage/lib",
+            "C:/vcpkg/installed/x64-windows-static/lib"
           ]
         }
       },
       "libraries": [
-        "mailio.lib",
-        "boost_regex-vc143-mt-x64-1_83.lib",
-        "boost_system-vc143-mt-x64-1_83.lib",
+        "libboost_regex-vc143-mt-s-x64-1_88.lib",
+        "libboost_system-vc143-mt-s-x64-1_88.lib",
         "libssl.lib",
         "libcrypto.lib",
-        "ws2_32.lib"
+        "ws2_32.lib",
+        "Crypt32.lib"
       ]
     }
   ]

@@ -1,4 +1,3 @@
-import Button from "@components/common/button/Button";
 import IconButton from "@components/common/button/IconButton";
 
 import CloseIcon from "@assets/icons/CloseIcon";

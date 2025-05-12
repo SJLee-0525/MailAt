@@ -4,7 +4,7 @@ import useConversationsStore from "@stores/conversationsStore";
 
 import { useGetAllEmails } from "@hooks/useGetConversations";
 
-import { searchEmails, splitSearchQuery } from "@utils/getEmailData";
+import { splitSearchQuery } from "@utils/getEmailData";
 
 import IconButton from "@components/common/button/IconButton";
 import InboxFilter from "@components/inbox/components/InboxFilter";
@@ -13,7 +13,7 @@ import SearchIcon from "@assets/icons/SearchIcon";
 import FilterIcon from "@assets/icons/FilterIcon";
 
 const InboxSearchForm = () => {
-  const { setConversations, setFilters } = useConversationsStore();
+  const { setFilters } = useConversationsStore();
 
   const { refetch } = useGetAllEmails();
 
@@ -29,8 +29,6 @@ const InboxSearchForm = () => {
 
     refetch();
 
-    // const filteredEmails = searchEmails(filters);
-    // setConversations(filteredEmails); // 필터링된 이메일로 업데이트
     setSearchQuery(""); // 검색어 초기화
     setIsExpanded(false); // 필터 닫기
   }

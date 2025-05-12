@@ -15,8 +15,7 @@ const handlers = [
   // 사용자 조회
   http.get(VITE_DEV_API_URL + "/user/:userId", ({ params }) => {
     const { userId } = params;
-    return HttpResponse.json();
-    // return HttpResponse.json({ id: userId, username: "testUser" });
+    return HttpResponse.json({ id: userId, username: "testUser" });
   }),
 
   // 사용자 수정

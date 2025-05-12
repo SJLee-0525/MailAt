@@ -57,7 +57,7 @@ addr-spec = (dot-atom / quoted-string) "@" (dot-atom / dtext)
 /**
 Mime part implementation.
 **/
-class MAILIO_EXPORT mime
+class mime
 {
 public:
 
@@ -96,7 +96,7 @@ public:
     /**
     Content type.
     **/
-    struct MAILIO_EXPORT content_type_t
+    struct content_type_t
     {
         /**
         Charset attribute name.

@@ -34,7 +34,7 @@ Q codec.
 
 ASCII and UTF-8 charsets are recognized.
 **/
-class MAILIO_EXPORT q_codec : public codec
+class q_codec : public codec
 {
 public:
 
