@@ -28,7 +28,7 @@ Quoted Printable codec.
 
 @todo Remove the Q codec flag.
 **/
-class MAILIO_EXPORT quoted_printable : public codec
+class quoted_printable : public codec
 {
 public:
 

@@ -27,7 +27,7 @@ namespace mailio
 /**
 Eight bit codec.
 **/
-class MAILIO_EXPORT bit8 : public codec
+class bit8 : public codec
 {
 public:
 
