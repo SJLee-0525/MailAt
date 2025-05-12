@@ -5,17 +5,24 @@ import userProgressStore from "@stores/userProgressStore";
 
 import InboxContent from "@components/inbox/components/InboxContent";
 
-const InboxFolders = ({ folders }: { folders: Record<string, string> }) => {
+const InboxFolders = ({ folders }: { folders: Record<string, string[]> }) => {
   const id = useId();
 
+  const { selectedFolder, setSelectedFolder } = useConservationsStore();
+
   return (
-    <div className="flex w-full h-10 p-2 gap-1 bg-white rounded-lg font-pre-bold overflow-y-auto hide-scrollbar">
+    <div className="flex w-full p-1 gap-1 bg-white rounded-lg font-pre-bold overflow-y-auto hide-scrollbar">
       {folders &&
         Object.keys(folders).map((folder) => {
           return (
             <span
               key={`${id}-${folder}`}
-              className={`flex justify-center items-center px-2 py-0.5 rounded-md text-center ${folders[folder]}`}
+              className={`flex justify-center items-center px-2 py-0.5 rounded-md text-center transition-all duration-200 ${folder === selectedFolder ? folders[folder][1] : folders[folder][0]}`}
+              onClick={
+                folder === selectedFolder
+                  ? () => setSelectedFolder(null)
+                  : () => setSelectedFolder(folder)
+              }
             >
               <p className="text-sm font-pre-regular whitespace-nowrap">
                 {folder}

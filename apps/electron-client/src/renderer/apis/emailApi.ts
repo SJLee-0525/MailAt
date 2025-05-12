@@ -33,16 +33,18 @@ export const getFolders = async ({
 // 이메일 전체 조회
 export const getEmailsData = async ({
   userId,
+  folderName,
   filters,
 }: {
   userId: number | null;
+  folderName: string | null;
   filters: EmailSearchFilters;
 }): Promise<AllEmails[]> => {
   if (!userId) {
     throw new Error("User ID is required to fetch emails.");
   }
 
-  const qs = buildFilterQueryString(userId, filters);
+  const qs = buildFilterQueryString(userId, folderName, filters);
   const url = `/emails?${qs}`;
 
   try {
