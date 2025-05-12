@@ -1,14 +1,19 @@
 import instance from "./instance";
 
 import {
+  FolderResponse,
   AllEmails,
-  EmailSummary,
+  // EmailSummary,
   EmailDetail,
   EmailSendRequestData,
   EmailSearchFilters,
+  EmailDetailByThreadId,
 } from "@/types/emailTypes";
 
-import { buildFilterQueryString } from "@utils/getEmailData";
+import {
+  // buildFilterQueryString,
+  getEmailParams,
+} from "@utils/getEmailData";
 
 const { VITE_DEV_API_URL } = import.meta.env;
 
@@ -17,14 +22,17 @@ export const getFolders = async ({
   accountId,
 }: {
   accountId: number | null;
-}): Promise<string[]> => {
+}): Promise<FolderResponse[]> => {
   if (!accountId) {
     throw new Error("Account ID is required to fetch folders.");
   }
 
   try {
-    const response = await instance.get<string[]>(`/folders/${accountId}`);
-    console.log(`[GET] ${VITE_DEV_API_URL}/folders/${accountId}`);
+    const response = await window.electronAPI.email.getFolders(accountId);
+    console.log(
+      `[GET] window.electronAPI.email.getFolders(${accountId})`,
+      response
+    );
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -45,12 +53,21 @@ export const getEmailsData = async ({
     throw new Error("User ID is required to fetch emails.");
   }
 
-  const qs = buildFilterQueryString(userId, folderName, filters);
-  const url = `/emails?${qs}`;
+  const params = getEmailParams({
+    userId,
+    folderName: folderName || "INBOX",
+    filters,
+  });
+
+  // const qs = buildFilterQueryString(userId, folderName, filters);
+  // const url = `/emails?${qs}`;
 
   try {
-    const response = await instance.get<AllEmails[]>(url);
-    console.log(`[GET] ${VITE_DEV_API_URL}${url}`);
+    const response = await window.electronAPI.email.getEmails(params);
+    console.log(
+      `[GET] window.electronAPI.email.getEmails(${params})`,
+      response
+    );
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -58,10 +75,15 @@ export const getEmailsData = async ({
 };
 
 // 이메일 상세 조회
-export const getDetailEmail = async (emailId: number): Promise<EmailDetail> => {
+export const getDetailEmail = async (
+  messageId: number
+): Promise<EmailDetail> => {
   try {
-    const response = await instance.get(`/emails/${emailId}`);
-    console.log(`[GET] ${VITE_DEV_API_URL}/emails/${emailId}`);
+    const response = await window.electronAPI.email.getDetail(messageId);
+    console.log(
+      `[GET] window.electronAPI.email.getDetail(${messageId})`,
+      response
+    );
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -70,22 +92,29 @@ export const getDetailEmail = async (emailId: number): Promise<EmailDetail> => {
 
 // 나와 상대간의 전체 이메일 스레드 요약 조회
 export const getEmailSummaryByThreadId = async ({
-  accountId,
-  emailId,
+  contactId,
+  limit = 20,
+  offset = 0,
 }: {
-  accountId: number | null;
-  emailId: number;
-}): Promise<EmailSummary[]> => {
-  if (!accountId) {
-    throw new Error("Account ID is required to fetch email thread summary.");
+  contactId: number | null;
+  limit?: number;
+  offset?: number;
+}): Promise<EmailDetailByThreadId[]> => {
+  if (!contactId) {
+    throw new Error("Contact ID is required to fetch email thread summary.");
   }
 
+  const params = {
+    contactId,
+    limit,
+    offset,
+  };
+
   try {
-    const response = await instance.get<EmailSummary[]>(
-      `/accounts/${accountId}/emails/thread/with/${emailId}`
-    );
+    const response = await window.electronAPI.email.getThreads(params);
     console.log(
-      `[GET] ${VITE_DEV_API_URL}/accounts/${accountId}/emails/thread/with/${emailId}`
+      `[GET] window.electronAPI.email.getThreads(${params})`,
+      response
     );
     return response.data;
   } catch (error: unknown) {
@@ -95,19 +124,33 @@ export const getEmailSummaryByThreadId = async ({
 
 // 스레드 id로 이메일 전체 조회
 export const getEmailsByThreadId = async ({
-  threadId,
+  userId,
+  email,
+  limit = 20,
+  offset = 0,
 }: {
-  threadId: string | null;
-}): Promise<EmailDetail[]> => {
-  if (!threadId) {
-    throw new Error("Thread ID is required to fetch emails.");
+  userId: number | null;
+  email: string | null;
+  limit?: number;
+  offset?: number;
+}): Promise<EmailDetailByThreadId[]> => {
+  if (!userId) {
+    throw new Error("User ID is required to fetch emails.");
   }
 
+  const params = {
+    userId,
+    email,
+    limit: limit ? limit : 20,
+    offset: offset ? offset : 0,
+  };
+
   try {
-    const response = await instance.get<EmailDetail[]>(
-      `/emails/thread/${threadId}`
+    const response = await window.electronAPI.email.getThreadsByEmail(params);
+    console.log(
+      `[GET] window.electronAPI.email.getThreadsByEmail(${params})`,
+      response
     );
-    console.log(`[GET] ${VITE_DEV_API_URL}/emails/thread/${threadId}`);
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -116,13 +159,16 @@ export const getEmailsByThreadId = async ({
 
 // 이메일 삭제
 export const deleteEmail = async ({
-  emailId,
+  messageId,
 }: {
-  emailId: number;
-}): Promise<{ success: boolean }> => {
+  messageId: number;
+}): Promise<{ success: boolean; messageId: number }> => {
   try {
-    const response = await instance.delete(`/emails/${emailId}`);
-    console.log(`[DELETE] ${VITE_DEV_API_URL}/emails/${emailId}`);
+    const response = await window.electronAPI.email.delete(messageId);
+    console.log(
+      `[DELETE] window.electronAPI.email.delete(${messageId})`,
+      response
+    );
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -131,14 +177,22 @@ export const deleteEmail = async ({
 
 // 읽음 표시
 export const markEmailAsRead = async (
-  emailId: number,
+  messageId: number,
   isRead: boolean
-): Promise<{ success: boolean }> => {
+): Promise<{
+  success: boolean;
+  messageId: number;
+  isRead: boolean;
+}> => {
   try {
-    const response = await instance.patch(`/emails/${emailId}/read`, {
+    const response = await window.electronAPI.email.markAsRead({
+      messageId,
       isRead,
     });
-    console.log(`[PATCH] ${VITE_DEV_API_URL}/emails/${emailId}/read`, isRead);
+    console.log(
+      `[PATCH] window.electronAPI.email.markAsRead(${messageId}, ${isRead})`,
+      response
+    );
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -148,10 +202,13 @@ export const markEmailAsRead = async (
 // 이메일 전송
 export const sendEmail = async (
   emailData: EmailSendRequestData
-): Promise<{ success: boolean; messageId: string }> => {
+): Promise<{ success: boolean; messageId: number }> => {
   try {
-    const response = await instance.post(`/emails/send`, emailData);
-    console.log(`[POST] ${VITE_DEV_API_URL}/emails/send`, emailData);
+    const response = await window.electronAPI.email.sendEmail(emailData);
+    console.log(
+      `[POST] window.electronAPI.sendEmail(${JSON.stringify(emailData)})`,
+      response
+    );
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);

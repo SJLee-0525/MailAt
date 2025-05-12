@@ -1,4 +1,8 @@
-import { AllEmails, EmailSearchFilters } from "@/types/emailTypes";
+import {
+  AllEmails,
+  EmailSearchFilters,
+  EmailSearchFiltersParams,
+} from "@/types/emailTypes";
 
 import { mockAllEmails } from "@data/EMAIL_CONSERVATIONS";
 
@@ -363,3 +367,66 @@ export const buildFilterQueryString = (
 
   return params.toString();
 };
+
+export function getEmailParams({
+  userId,
+  folderName,
+  filters,
+  limit = 50,
+  offset = 0,
+  sort = "sent_at",
+  order = "DESC",
+}: {
+  userId: number;
+  folderName: string | null;
+  filters: EmailSearchFilters;
+  limit?: number;
+  offset?: number;
+  sort?: "sent_at" | "created_at";
+  order?: "DESC" | "ASC";
+}): EmailSearchFiltersParams {
+  const params: EmailSearchFiltersParams = {
+    accountId: userId,
+    folderName: folderName ? folderName : "INBOX",
+
+    limit,
+    offset,
+    sort,
+    order,
+  };
+
+  // 필터 추가
+  if (filters.from) {
+    params.from = filters.from;
+  }
+
+  if (filters.to) {
+    params.to = filters.to;
+  }
+
+  if (filters.subject) {
+    params.subject = filters.subject;
+  }
+
+  if (filters.includeKeywords) {
+    params.includeKeywords = filters.includeKeywords;
+  }
+
+  if (filters.excludeKeywords) {
+    params.excludeKeywords = filters.excludeKeywords;
+  }
+
+  // if (filters.attachmentSize) {
+  //   params.attachmentSize = filters.attachmentSize;
+  // }
+
+  if (filters.startDate) {
+    params.startDate = filters.startDate.toISOString();
+  }
+
+  if (filters.endDate) {
+    params.endDate = filters.endDate.toISOString();
+  }
+
+  return params;
+}
