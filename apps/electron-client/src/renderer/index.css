@@ -1,8 +1,62 @@
 /* styles.css */
+
 @import "tailwindcss";
 
+@font-face {
+  font-family: Pretendard-Light;
+  font-weight: 300;
+  src:
+    local("Pretendard Light"),
+    url("./assets/fonts/Pretendard-Light.woff") format("woff"),
+    url("./assets/fonts/Pretendard-Light.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Pretendard-Regular;
+  font-weight: 300;
+  src:
+    local("Pretendard Regular"),
+    url("./assets/fonts/Pretendard-Regular.woff") format("woff"),
+    url("./assets/fonts/Pretendard-Regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Pretendard-Medium;
+  font-weight: 300;
+  src:
+    local("Pretendard Medium"),
+    url("./assets/fonts/Pretendard-Medium.woff") format("woff"),
+    url("./assets/fonts/Pretendard-Medium.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Pretendard-SemiBold;
+  font-weight: 300;
+  src:
+    local("Pretendard SemiBold"),
+    url("./assets/fonts/Pretendard-SemiBold.woff") format("woff"),
+    url("./assets/fonts/Pretendard-SemiBold.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Pretendard-Bold;
+  font-weight: 300;
+  src:
+    local("Pretendard Bold"),
+    url("./assets/fonts/Pretendard-Bold.woff") format("woff"),
+    url("./assets/fonts/Pretendard-Bold.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Pretendard-ExtraBold;
+  font-weight: 300;
+  src:
+    local("Pretendard ExtraBold"),
+    url("./assets/fonts/Pretendard-ExtraBold.woff") format("woff"),
+    url("./assets/fonts/Pretendard-ExtraBold.woff2") format("woff2");
+}
+
 @theme {
-  /* Font Families */
   --font-pre-light: "Pretendard-Light";
   --font-pre-regular: "Pretendard-Regular";
   --font-pre-medium: "Pretendard-Medium";

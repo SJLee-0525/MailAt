@@ -1,3 +1,8 @@
+export interface Folder {
+  name: string;
+  color: string;
+}
+
 export interface ReplyData {
   to: string | null;
   title: string | null;
@@ -14,8 +19,8 @@ export interface Attachment {
 export interface DetailAttachment {
   filename: string;
   mimeType: string;
-  size: number; // 바이트 단위
-  attachmentId: string; // 필요하면 포함
+  size?: number; // 바이트 단위
+  attachmentId?: string; // 필요하면 포함
 }
 
 export interface EmailSearchFilters {
@@ -30,7 +35,7 @@ export interface EmailSearchFilters {
 }
 
 export interface AllEmails {
-  id: string;
+  id: number;
   threadId: string;
   subject: string;
   from: string;
@@ -42,8 +47,21 @@ export interface AllEmails {
   labelIds: string[];
 }
 
+export interface EmailSummary {
+  id: number;
+  threadId: string;
+  subject: string;
+  from: string;
+  to: string;
+  date: string;
+  snippet: string;
+  attachments: { filename: string; mimeType: string }[];
+  isRead: boolean;
+  labelIds: string[];
+}
+
 export interface EmailDetail {
-  id: string;
+  id: number;
   threadId: string;
   labelIds: string[];
   subject: string;

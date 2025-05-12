@@ -28,8 +28,9 @@ const DetailEmailTitle = ({
   body,
   attachments,
   onReply,
+  openChat,
 }: {
-  id: string;
+  id: number;
   subject: string;
   date: string;
   from: string;
@@ -37,6 +38,7 @@ const DetailEmailTitle = ({
   body: string;
   attachments: DetailAttachment[];
   onReply: (replyData: ReplyData) => void;
+  openChat: () => void;
 }) => {
   const { setIsReplying } = useUserProgressStore();
 
@@ -77,11 +79,14 @@ const DetailEmailTitle = ({
             ) : (
               <ArrowDownIcon onClick={() => setIsExpanded(true)} />
             )}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-start gap-2">
               <h3 className="font-pre-semi-bold font-sm font-bold whitespace-nowrap">
                 보낸 사람
               </h3>
-              <span className="flex items-center justify-center px-3 py-1 rounded-full bg-disable font-pre-medium text-sm">
+              <span
+                className="flex items-center justify-center px-3 py-1 rounded-full bg-disable font-pre-medium text-sm"
+                onClick={openChat}
+              >
                 {from}
               </span>
             </div>

@@ -14,8 +14,14 @@ import DetailEmailContents from "@components/detailEmail/components/DetailEmailC
 import MailReplyForm from "@components/mailForm/MailReplyForm";
 
 const DetailEmail = () => {
-  const { selectedMail, isReplying, setSelectedMail, setIsReplying } =
-    useUserProgressStore();
+  const {
+    selectedMail,
+    isReplying,
+    chattingIsOpen,
+    setSelectedMail,
+    setIsReplying,
+    setChattingIsOpen,
+  } = useUserProgressStore();
 
   const [detailEmail, setDetailEmail] = useState<EmailDetail>(
     defaultEmailConversation
@@ -36,7 +42,7 @@ const DetailEmail = () => {
       }
     }
 
-    fetchDetailEmail(selectedMail);
+    fetchDetailEmail(selectedMail.id);
   }, [selectedMail]);
 
   function handleClose() {
@@ -59,6 +65,7 @@ const DetailEmail = () => {
         <div className="flex flex-col w-full h-full px-1 pb-1 bg-light1 rounded-b-xl overflow-y-auto">
           <DetailEmailContents
             detailEmail={detailEmail}
+            openChat={() => setChattingIsOpen(!chattingIsOpen)}
             onReply={setReplyData}
           />
         </div>

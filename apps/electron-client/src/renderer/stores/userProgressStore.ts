@@ -1,18 +1,22 @@
 import { create } from "zustand";
 
+import { AllEmails } from "@/types/emailTypes";
+
 interface UserProgressStore {
   bottomNavProgress: "search" | null;
   mailFormIsOpen: boolean;
   mailFormIsClosing: boolean;
   inboxIsOpen: boolean;
   inboxIsClosing: boolean;
-  selectedMail: number | null;
+  selectedMail: AllEmails | null;
   isReplying: boolean;
+  chattingIsOpen: boolean;
   setBottomNavProgress: (progress: "search" | null) => void;
   setMailFormIsOpen: (isOpen: boolean) => void;
   setInboxIsOpen: (isOpen: boolean) => void;
-  setSelectedMail: (mailId: number | null) => void;
+  setSelectedMail: (email: AllEmails | null) => void;
   setIsReplying: (isReplying: boolean) => void;
+  setChattingIsOpen: (isOpen: boolean) => void;
 }
 
 const useUserProgressStore = create<UserProgressStore>((set) => ({
@@ -23,6 +27,7 @@ const useUserProgressStore = create<UserProgressStore>((set) => ({
   inboxIsClosing: false,
   selectedMail: null,
   isReplying: false,
+  chattingIsOpen: false,
   setBottomNavProgress: (progress) => set({ bottomNavProgress: progress }),
   setMailFormIsOpen: (isOpen) => {
     if (isOpen) {
@@ -50,6 +55,7 @@ const useUserProgressStore = create<UserProgressStore>((set) => ({
     set({ selectedMail: mailId !== null ? mailId : null });
   },
   setIsReplying: (isReplying) => set({ isReplying: isReplying }),
+  setChattingIsOpen: (isOpen) => set({ chattingIsOpen: isOpen }),
 }));
 
 export default useUserProgressStore;

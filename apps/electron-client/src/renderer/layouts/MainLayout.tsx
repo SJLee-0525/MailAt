@@ -5,14 +5,25 @@ import useUserProgressStore from "@stores/userProgressStore";
 import HoverZone from "@layouts/HoverZone";
 import SideNav from "@components/common/nav/SideNav";
 import Inbox from "@components/inbox/Inbox";
+// import Chat from "@components/chat/Chat";
 import DetailEmail from "@components/detailEmail/DetailEmail";
 
 const PopUpLayout = () => {
-  const { inboxIsOpen, selectedMail, isReplying } = useUserProgressStore();
+  const {
+    inboxIsOpen,
+    selectedMail,
+    isReplying,
+    // chattingIsOpen,
+    // setChattingIsOpen,
+  } = useUserProgressStore();
 
   return (
     <div className="absolute top-0 right-0 flex flex-row-reverse p-1 gap-1.5 w-full h-full">
       {inboxIsOpen && !isReplying && <Inbox />}
+      {/* {inboxIsOpen && chattingIsOpen && (
+        <Chat onClose={() => setChattingIsOpen(false)} />
+      )} */}
+
       {selectedMail !== null && <DetailEmail />}
     </div>
   );

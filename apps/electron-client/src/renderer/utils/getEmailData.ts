@@ -316,12 +316,18 @@ export function splitSearchQuery(query: string) {
 // utils/buildQuery.ts
 export const buildFilterQueryString = (
   userId: number,
+  folderName: string | null,
   filters: EmailSearchFilters
 ) => {
   const params = new URLSearchParams();
 
   // 필수 파라미터
   params.append("accountId", String(userId));
+
+  // 선택적 파라미터
+  if (folderName) {
+    params.append("folderName", folderName);
+  }
 
   // 1) 배열 타입 키를 명시적으로 뽑아두고
   const multiValueKeys: Array<keyof EmailSearchFilters> = [

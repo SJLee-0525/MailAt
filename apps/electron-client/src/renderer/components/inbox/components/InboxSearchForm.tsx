@@ -31,7 +31,7 @@ const InboxSearchForm = () => {
 
     // const filteredEmails = searchEmails(filters);
     // setConversations(filteredEmails); // 필터링된 이메일로 업데이트
-    setSearchQuery(""); // 검색어 초기화
+    // setSearchQuery(""); // 검색어 초기화
     setIsExpanded(false); // 필터 닫기
   }
 

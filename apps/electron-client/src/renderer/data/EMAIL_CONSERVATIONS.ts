@@ -1,7 +1,7 @@
 import { AllEmails, EmailDetail } from "@/types/emailTypes";
 
 export const defaultEmailConversation: EmailDetail = {
-  id: "",
+  id: 0,
   threadId: "",
   labelIds: [],
   subject: "",
@@ -30,7 +30,7 @@ export const defaultReplyData = {
 
 export const mockAllEmails: AllEmails[] = [
   {
-    id: "1967d2f2e9f6504d",
+    id: 1,
     threadId: "1967d2f2e9f6504d",
     subject: "How to Get Your Brain to Focus on What Matters",
     from: "Glasp <glasp@substack.com>",
@@ -49,7 +49,7 @@ export const mockAllEmails: AllEmails[] = [
     labelIds: ["UNREAD", "CATEGORY_UPDATES", "INBOX"],
   },
   {
-    id: "1967c4176bacf97b",
+    id: 2,
     threadId: "1967a0d4ce8cac3b",
     subject: "보안 알림",
     from: "Google <no-reply@accounts.google.com>",
@@ -61,7 +61,7 @@ export const mockAllEmails: AllEmails[] = [
     labelIds: ["UNREAD", "CATEGORY_UPDATES", "INBOX"],
   },
   {
-    id: "1967a2ff45813fcc",
+    id: 3,
     threadId: "1967a2ff45813fcc",
     subject: "(광고) ⏰모든 강의 30% 선물은 오늘까지!",
     from: "인프런 소식 <hello@inflearn.com>",
@@ -124,7 +124,7 @@ export const mockAllEmails: AllEmails[] = [
     labelIds: ["CATEGORY_PROMOTIONS", "UNREAD", "INBOX"],
   },
   {
-    id: "1967e4f123456789",
+    id: 4,
     threadId: "1967e4f123456789",
     subject: "Netflix 추천: 새로운 드라마",
     from: "Netflix <no-reply@netflix.com>",
@@ -136,7 +136,7 @@ export const mockAllEmails: AllEmails[] = [
     labelIds: ["CATEGORY_SOCIAL", "INBOX"],
   },
   {
-    id: "1967e5a1b2c3d4e5",
+    id: 5,
     threadId: "1967e5a1b2c3d4e5",
     subject: "Workspace 채널 알림",
     from: "Slack <no-reply@slack.com>",
@@ -148,7 +148,7 @@ export const mockAllEmails: AllEmails[] = [
     labelIds: ["CATEGORY_SOCIAL", "INBOX"],
   },
   {
-    id: "1967e62789abcdef",
+    id: 6,
     threadId: "1967e62789abcdef",
     subject: "New login to your Twitter account",
     from: "Twitter <notify@twitter.com>",
@@ -160,7 +160,7 @@ export const mockAllEmails: AllEmails[] = [
     labelIds: ["CATEGORY_SOCIAL", "INBOX"],
   },
   {
-    id: "1967e7a0b1c2d3e4",
+    id: 7,
     threadId: "1967e7a0b1c2d3e4",
     subject: "New issue assigned to you",
     from: "GitHub <noreply@github.com>",
@@ -178,7 +178,7 @@ export const mockAllEmails: AllEmails[] = [
     labelIds: ["CATEGORY_UPDATES", "INBOX"],
   },
   {
-    id: "1967e8b2f4a5c6d7",
+    id: 8,
     threadId: "1967e8b2f4a5c6d7",
     subject: "Someone viewed your profile",
     from: "LinkedIn <member@linkedin.com>",
@@ -190,7 +190,7 @@ export const mockAllEmails: AllEmails[] = [
     labelIds: ["CATEGORY_SOCIAL", "INBOX"],
   },
   {
-    id: "1967e9c3d5e6f7a8",
+    id: 9,
     threadId: "1967e9c3d5e6f7a8",
     subject: "🚀긴급 세일: 여름 준비 행사",
     from: "Sale Store <promo@sale.com>",
@@ -202,7 +202,7 @@ export const mockAllEmails: AllEmails[] = [
     labelIds: ["CATEGORY_PROMOTIONS", "INBOX"],
   },
   {
-    id: "1967ea4d6b7c8d9e",
+    id: 10,
     threadId: "1967ea4d6b7c8d9e",
     subject: "입금 알림",
     from: "KB국민은행 <no-reply@kbcard.com>",
@@ -214,7 +214,7 @@ export const mockAllEmails: AllEmails[] = [
     labelIds: ["CATEGORY_UPDATES", "INBOX"],
   },
   {
-    id: "1967eb5e7f8a9b0c",
+    id: 11,
     threadId: "1967eb5e7f8a9b0c",
     subject: "Server maintenance scheduled",
     from: "System Admin <admin@system.local>",
@@ -226,7 +226,7 @@ export const mockAllEmails: AllEmails[] = [
     labelIds: ["CATEGORY_UPDATES", "INBOX"],
   },
   {
-    id: "1967ec6f8a9b0c1d",
+    id: 12,
     threadId: "1967ec6f8a9b0c1d",
     subject: "Lunch Tomorrow?",
     from: "Jane Doe <jane.doe@example.com>",
@@ -238,7 +238,7 @@ export const mockAllEmails: AllEmails[] = [
     labelIds: ["CATEGORY_PERSONAL", "INBOX"],
   },
   {
-    id: "1967ed7a9b0c1d2e",
+    id: 13,
     threadId: "1967ed7a9b0c1d2e",
     subject: "[일정] 오후 3시 미팅",
     from: "Calendar <calendar@google.com>",
@@ -250,7 +250,7 @@ export const mockAllEmails: AllEmails[] = [
     labelIds: ["CATEGORY_UPDATES", "INBOX"],
   },
   {
-    id: "1967ee8b0c1d2e3f",
+    id: 14,
     threadId: "1967ee8b0c1d2e3f",
     subject: "Your package has shipped",
     from: "Amazon <shipping@amazon.com>",
@@ -268,7 +268,7 @@ export const mockAllEmails: AllEmails[] = [
     labelIds: ["CATEGORY_UPDATES", "INBOX"],
   },
   {
-    id: "1967ef9c0d1e2f3a",
+    id: 15,
     threadId: "1967ef9c0d1e2f3a",
     subject: "New playlist recommendations",
     from: "Spotify <service@spotify.com>",
@@ -283,7 +283,7 @@ export const mockAllEmails: AllEmails[] = [
 
 export const mockEmailConversations: EmailDetail[] = [
   {
-    id: "1967d2f2e9f6504d",
+    id: 1,
     threadId: "1967d2f2e9f6504d",
     labelIds: ["UNREAD", "CATEGORY_UPDATES", "INBOX"],
     subject: "How to Get Your Brain to Focus on What Matters",
@@ -304,7 +304,7 @@ export const mockEmailConversations: EmailDetail[] = [
     ],
   },
   {
-    id: "1967c4176bacf97b",
+    id: 2,
     threadId: "1967a0d4ce8cac3b",
     labelIds: ["UNREAD", "CATEGORY_UPDATES", "INBOX"],
     subject: "보안 알림",
@@ -317,7 +317,7 @@ export const mockEmailConversations: EmailDetail[] = [
     attachments: [],
   },
   {
-    id: "1967a2ff45813fcc",
+    id: 3,
     threadId: "1967a2ff45813fcc",
     labelIds: ["CATEGORY_PROMOTIONS", "UNREAD", "INBOX"],
     subject: "(광고) ⏰모든 강의 30% 선물은 오늘까지!",
@@ -393,7 +393,7 @@ export const mockEmailConversations: EmailDetail[] = [
   // 기존 mockEmailConversations 배열에 아래 아이템들을 추가하세요.
 
   {
-    id: "1967e4f123456789",
+    id: 4,
     threadId: "1967e4f123456789",
     labelIds: ["CATEGORY_SOCIAL", "INBOX"],
     subject: "Netflix 추천: 새로운 드라마",
@@ -406,7 +406,7 @@ export const mockEmailConversations: EmailDetail[] = [
     attachments: [],
   },
   {
-    id: "1967e5a1b2c3d4e5",
+    id: 5,
     threadId: "1967e5a1b2c3d4e5",
     labelIds: ["CATEGORY_SOCIAL", "INBOX"],
     subject: "Workspace 채널 알림",
@@ -419,7 +419,7 @@ export const mockEmailConversations: EmailDetail[] = [
     attachments: [],
   },
   {
-    id: "1967e62789abcdef",
+    id: 6,
     threadId: "1967e62789abcdef",
     labelIds: ["CATEGORY_SOCIAL", "INBOX"],
     subject: "New login to your Twitter account",
@@ -432,7 +432,7 @@ export const mockEmailConversations: EmailDetail[] = [
     attachments: [],
   },
   {
-    id: "1967e7a0b1c2d3e4",
+    id: 7,
     threadId: "1967e7a0b1c2d3e4",
     labelIds: ["CATEGORY_UPDATES", "INBOX"],
     subject: "New issue assigned to you",
@@ -452,7 +452,7 @@ export const mockEmailConversations: EmailDetail[] = [
     ],
   },
   {
-    id: "1967e8b2f4a5c6d7",
+    id: 8,
     threadId: "1967e8b2f4a5c6d7",
     labelIds: ["CATEGORY_SOCIAL", "INBOX"],
     subject: "Someone viewed your profile",
@@ -465,7 +465,7 @@ export const mockEmailConversations: EmailDetail[] = [
     attachments: [],
   },
   {
-    id: "1967e9c3d5e6f7a8",
+    id: 9,
     threadId: "1967e9c3d5e6f7a8",
     labelIds: ["CATEGORY_PROMOTIONS", "INBOX"],
     subject: "🚀긴급 세일: 여름 준비 행사",
@@ -478,7 +478,7 @@ export const mockEmailConversations: EmailDetail[] = [
     attachments: [],
   },
   {
-    id: "1967ea4d6b7c8d9e",
+    id: 10,
     threadId: "1967ea4d6b7c8d9e",
     labelIds: ["CATEGORY_UPDATES", "INBOX"],
     subject: "입금 알림",
@@ -491,7 +491,7 @@ export const mockEmailConversations: EmailDetail[] = [
     attachments: [],
   },
   {
-    id: "1967eb5e7f8a9b0c",
+    id: 11,
     threadId: "1967eb5e7f8a9b0c",
     labelIds: ["CATEGORY_UPDATES", "INBOX"],
     subject: "Server maintenance scheduled",
@@ -504,7 +504,7 @@ export const mockEmailConversations: EmailDetail[] = [
     attachments: [],
   },
   {
-    id: "1967ec6f8a9b0c1d",
+    id: 12,
     threadId: "1967ec6f8a9b0c1d",
     labelIds: ["CATEGORY_PERSONAL", "INBOX"],
     subject: "Lunch Tomorrow?",
@@ -517,7 +517,7 @@ export const mockEmailConversations: EmailDetail[] = [
     attachments: [],
   },
   {
-    id: "1967ed7a9b0c1d2e",
+    id: 13,
     threadId: "1967ed7a9b0c1d2e",
     labelIds: ["CATEGORY_UPDATES", "INBOX"],
     subject: "[일정] 오후 3시 미팅",
@@ -530,7 +530,7 @@ export const mockEmailConversations: EmailDetail[] = [
     attachments: [],
   },
   {
-    id: "1967ee8b0c1d2e3f",
+    id: 14,
     threadId: "1967ee8b0c1d2e3f",
     labelIds: ["CATEGORY_UPDATES", "INBOX"],
     subject: "Your package has shipped",
@@ -550,7 +550,7 @@ export const mockEmailConversations: EmailDetail[] = [
     ],
   },
   {
-    id: "1967ef9c0d1e2f3a",
+    id: 15,
     threadId: "1967ef9c0d1e2f3a",
     labelIds: ["CATEGORY_UPDATES", "INBOX"],
     subject: "New playlist recommendations",
@@ -560,6 +560,153 @@ export const mockEmailConversations: EmailDetail[] = [
     internalDate: "1746330345000",
     snippet: "Your weekly mix is ready for you...",
     body: "Hi there,\n\nYour Weekly Mix playlist is now available. Check it out on Spotify!\n\nListen now: https://open.spotify.com/playlist/weeklymix",
+    attachments: [],
+  },
+];
+
+export const mockEmailThreadConservation: EmailDetail[] = [
+  {
+    id: 1,
+    threadId: "project-2025-05",
+    labelIds: ["INBOX", "SENT"],
+    subject: "Kick-off 자료 전달드립니다.",
+    from: "me@example.com",
+    to: "alice@example.com",
+    date: "2025-05-01T09:12:13Z",
+    internalDate: "2025-05-01T09:12:13Z",
+    snippet: "안녕하세요 Alice님, 이번 주 킥오프 미팅용 자료를 첨부합니다...",
+    body: "안녕하세요 Alice님,\n\n이번 주 금요일 킥오프 미팅에서 쓸 자료 PDF를 첨부합니다...\n\n감사합니다.\n이호준 드림",
+    attachments: [
+      { filename: "kickoff_deck.pdf", mimeType: "application/pdf" },
+    ],
+  },
+
+  {
+    id: 2,
+    threadId: "project-2025-05",
+    labelIds: ["INBOX"],
+    subject: "Re: Kick-off 자료 전달드립니다.",
+    from: "alice@example.com",
+    to: "me@example.com",
+    date: "2025-05-01T10:03:47Z",
+    internalDate: "2025-05-01T10:03:47Z",
+    snippet: "자료 잘 받았습니다! 금요일 14:00에 확인 일정 OK입니다...",
+    body: "자료 잘 받았습니다! 금요일 14:00에 확인 일정 OK입니다.\n\n— Alice",
+    attachments: [],
+  },
+
+  {
+    id: 3,
+    threadId: "project-2025-05",
+    labelIds: ["SENT"],
+    subject: "Re: Kick-off 자료 전달드립니다.",
+    from: "me@example.com",
+    to: "alice@example.com",
+    date: "2025-05-01T10:08:19Z",
+    internalDate: "2025-05-01T10:08:19Z",
+    snippet: "확인 감사합니다. 회의실은 Teams 링크로 공유드릴게요...",
+    body: "확인 감사합니다. 회의실은 Teams 링크로 공유드릴게요.\n\n- 이호준",
+    attachments: [],
+  },
+
+  // 같은 사람이 두 번 연속 보내는 예 (Alice가 follow-up 두 통)
+  {
+    id: 4,
+    threadId: "project-2025-05",
+    labelIds: ["INBOX"],
+    subject: "Re: Kick-off 자료 전달드립니다.",
+    from: "alice@example.com",
+    to: "me@example.com",
+    date: "2025-05-02T01:22:05Z",
+    internalDate: "2025-05-02T01:22:05Z",
+    snippet:
+      "추가 요청이 있습니다. 슬라이드 5쪽 예산 표에 최신 수치를 반영해 주실 수 있을까요?",
+    body: "추가 요청이 있습니다.\n\n• 슬라이드 5쪽 예산 표에 2025 Q1 데이터를 반영해 주세요.\n\n감사합니다!\nAlice",
+    attachments: [],
+  },
+  {
+    id: 5,
+    threadId: "project-2025-05",
+    labelIds: ["INBOX"],
+    subject: "Re: Kick-off 자료 전달드립니다.",
+    from: "alice@example.com",
+    to: "me@example.com",
+    date: "2025-05-02T01:45:40Z",
+    internalDate: "2025-05-02T01:45:40Z",
+    snippet: "방금 전 메일에 하나 더! 슬라이드 7쪽 그래프 색상도 확인 부탁...",
+    body: "방금 전 메일에 하나 더!\n\n슬라이드 7쪽 그래프 색상이 브랜드 가이드라인(#022d48)과 다르다고 디자인팀에서 피드백이 있었습니다.\n\n번거롭게 해서 죄송합니다 🙏\n\nAlice",
+    attachments: [],
+  },
+
+  // 내가 두 번 연속 답장 예시
+  {
+    id: 6,
+    threadId: "project-2025-05",
+    labelIds: ["SENT"],
+    subject: "Re: Kick-off 자료 전달드립니다.",
+    from: "me@example.com",
+    to: "alice@example.com",
+    date: "2025-05-02T03:10:26Z",
+    internalDate: "2025-05-02T03:10:26Z",
+    snippet: "Q1 예산·그래프 색상 모두 수정했습니다. 첨부 확인 부탁드립니다...",
+    body: "안녕하세요!\n\n요청 주신 Q1 예산·그래프 색상 모두 수정했습니다. PDF 다시 첨부하니 확인 부탁드립니다.\n\n— 이호준",
+    attachments: [
+      { filename: "kickoff_deck_v2.pdf", mimeType: "application/pdf" },
+    ],
+  },
+  {
+    id: 7,
+    threadId: "project-2025-05",
+    labelIds: ["SENT"],
+    subject: "Teams 회의 링크",
+    from: "me@example.com",
+    to: "alice@example.com",
+    date: "2025-05-02T03:11:12Z",
+    internalDate: "2025-05-02T03:11:12Z",
+    snippet: "추가로 금요일 킥오프 회의 링크 공유드립니다...",
+    body: "추가로 금요일 킥오프 회의 링크 공유드립니다.\n\nhttps://teams.microsoft.com/l/meetup-join/···\n\n그럼 회의 때 뵙겠습니다!",
+    attachments: [],
+  },
+
+  {
+    id: 8,
+    threadId: "project-2025-05",
+    labelIds: ["INBOX"],
+    subject: "Re: Teams 회의 링크",
+    from: "alice@example.com",
+    to: "me@example.com",
+    date: "2025-05-02T04:05:53Z",
+    internalDate: "2025-05-02T04:05:53Z",
+    snippet: "링크 및 자료 모두 확인했습니다. 수고 많으셨어요!",
+    body: "링크 및 자료 모두 확인했습니다. 수고 많으셨어요!\n\n그날 뵙겠습니다 :)\nAlice",
+    attachments: [],
+  },
+
+  {
+    id: 9,
+    threadId: "project-2025-05",
+    labelIds: ["SENT"],
+    subject: "[리마인더] 킥오프 미팅은 오늘 14:00",
+    from: "me@example.com",
+    to: "alice@example.com",
+    date: "2025-05-03T00:02:11Z",
+    internalDate: "2025-05-03T00:02:11Z",
+    snippet: "회의 전에 리마인더 드립니다. 문의사항 있으면 알려주세요...",
+    body: "회의 전에 리마인더 드립니다. 혹시 시스템 접근 권한에 문제 있으면 알려주세요!\n\n감사합니다.\n이호준",
+    attachments: [],
+  },
+
+  {
+    id: 10,
+    threadId: "project-2025-05",
+    labelIds: ["INBOX"],
+    subject: "Re: [리마인더] 킥오프 미팅은 오늘 14:00",
+    from: "alice@example.com",
+    to: "me@example.com",
+    date: "2025-05-03T02:10:44Z",
+    internalDate: "2025-05-03T02:10:44Z",
+    snippet: "접속 문제 없습니다. 곧 뵙겠습니다!",
+    body: "접속 문제 없습니다. 곧 뵙겠습니다!\n\n— Alice",
     attachments: [],
   },
 ];

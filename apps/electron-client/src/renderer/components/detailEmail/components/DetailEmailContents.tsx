@@ -6,9 +6,11 @@ import DetailAttachments from "@components/detailEmail/components/DetailAttachme
 
 const DetailEmailContents = ({
   detailEmail,
+  openChat,
   onReply,
 }: {
   detailEmail: EmailDetail;
+  openChat: () => void;
   onReply: (replyData: ReplyData) => void;
 }) => {
   return (
@@ -21,6 +23,7 @@ const DetailEmailContents = ({
         to={detailEmail.to}
         body={detailEmail.body}
         attachments={detailEmail.attachments}
+        openChat={openChat}
         onReply={onReply}
       />
       <hr className="border-t border-light3 my-0.5" />
