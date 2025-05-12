@@ -124,9 +124,10 @@ export interface Contact {
   lastSeenAt: string;
 }
 
+// 임시로 상세 메일로 변경
 export interface EmailDetailByThreadId {
   contact: Contact;
-  messages: AllEmails[];
+  messages: EmailDetail[];
 }
 
 export interface EmailSendRequestData {

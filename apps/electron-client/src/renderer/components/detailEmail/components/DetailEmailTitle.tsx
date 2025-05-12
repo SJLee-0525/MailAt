@@ -7,7 +7,7 @@ import useUserProgressStore from "@stores/userProgressStore";
 import { useDeleteEmail } from "@hooks/useGetConversations";
 
 import { formatDate } from "@utils/getFormattedDate";
-import { parseEmailFromName } from "@utils/getEmailData";
+// import { parseEmailFromName } from "@utils/getEmailData";
 
 import DetailEmailInfo from "@components/detailEmail/components/DetailEmailInfo";
 
@@ -23,7 +23,8 @@ const DetailEmailTitle = ({
   id,
   subject,
   date,
-  from,
+  fromName,
+  fromEmail,
   to,
   body,
   attachments,
@@ -33,7 +34,8 @@ const DetailEmailTitle = ({
   id: number;
   subject: string;
   date: string;
-  from: string;
+  fromName: string;
+  fromEmail: string;
   to: string;
   body: string;
   attachments: DetailAttachment[];
@@ -47,11 +49,11 @@ const DetailEmailTitle = ({
   const [isExpanded, setIsExpanded] = useState(false);
 
   const formattedDate = formatDate(date, "dateTime");
-  const parsedFrom = parseEmailFromName(from);
+  // const parsedFrom = parseEmailFromName(from);
 
   async function handleDelete() {
     if (window.confirm("정말로 삭제하시겠습니까?")) {
-      const response = await deleteEmail({ emailId: id });
+      const response = await deleteEmail({ messageId: id });
 
       if (response.success) {
         alert("삭제되었습니다.");
@@ -87,7 +89,7 @@ const DetailEmailTitle = ({
                 className="flex items-center justify-center px-3 py-1 rounded-full bg-disable font-pre-medium text-sm"
                 onClick={openChat}
               >
-                {from}
+                {fromName} {fromEmail}
               </span>
             </div>
           </div>
@@ -101,7 +103,7 @@ const DetailEmailTitle = ({
             onClick={() => {
               setIsReplying(true);
               onReply({
-                to: parsedFrom.email,
+                to: fromEmail,
                 title: "Re: " + subject,
                 body: null,
                 attachments: null,
@@ -118,7 +120,7 @@ const DetailEmailTitle = ({
                 to: null,
                 title: "Fwd: " + subject,
                 body: body,
-                attachments: attachments,
+                attachments: attachments ? attachments : null,
               });
             }}
             className="transition-all duration-200 rounded-full hover:bg-light2"

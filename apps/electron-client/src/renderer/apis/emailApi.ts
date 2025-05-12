@@ -1,4 +1,4 @@
-import instance from "./instance";
+// import instance from "./instance";
 
 import {
   FolderResponse,
@@ -15,7 +15,7 @@ import {
   getEmailParams,
 } from "@utils/getEmailData";
 
-const { VITE_DEV_API_URL } = import.meta.env;
+// const { VITE_DEV_API_URL } = import.meta.env;
 
 // 폴더 목록 조회
 export const getFolders = async ({
@@ -133,7 +133,7 @@ export const getEmailsByThreadId = async ({
   email: string | null;
   limit?: number;
   offset?: number;
-}): Promise<EmailDetailByThreadId[]> => {
+}): Promise<EmailDetailByThreadId> => {
   if (!userId) {
     throw new Error("User ID is required to fetch emails.");
   }

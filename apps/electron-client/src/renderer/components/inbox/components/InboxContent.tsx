@@ -4,31 +4,35 @@ import { AllEmails } from "@/types/emailTypes";
 
 import defaultProfile from "@assets/images/defaultProfile.png";
 
-import { parseEmailFromName } from "@utils/getEmailData";
+// import { parseEmailFromName } from "@utils/getEmailData";
 import { formatDate } from "@utils/getFormattedDate";
 
-const FromName = ({ from }: { from: string }) => {
-  const { name, email: senderEmail } = parseEmailFromName(from);
-
+const FromName = ({
+  fromName,
+  fromEmail,
+}: {
+  fromName: string;
+  fromEmail: string;
+}) => {
   return (
     <>
-      <h2 className="m-0 font-pre-bold text-md font-bold">{name}</h2>
+      <h2 className="m-0 font-pre-bold text-md font-bold">{fromName}</h2>
       <div className="absolute top-0 left-0 w-full h-full opacity-0 hover:opacity-100 transition-opacity duration-200">
         <div className="absolute top-6 left-0 bg-black text-white text-xs rounded py-1 px-2 whitespace-nowrap">
-          {senderEmail}
+          {fromEmail}
         </div>
       </div>
     </>
   );
 };
 
-const Attachment = ({ fileName }: { fileName: string }) => {
-  return (
-    <span className="flex items-center justify-center px-3 py-1 rounded-full bg-disable">
-      <p className="font-pre-medium text-sm m-0 line-clamp-1">{fileName}</p>
-    </span>
-  );
-};
+// const Attachment = ({ fileName }: { fileName: string }) => {
+//   return (
+//     <span className="flex items-center justify-center px-3 py-1 rounded-full bg-disable">
+//       <p className="font-pre-medium text-sm m-0 line-clamp-1">{fileName}</p>
+//     </span>
+//   );
+// };
 
 const InboxContent = ({
   email,
@@ -41,7 +45,8 @@ const InboxContent = ({
 }) => {
   const idBase = useId();
 
-  const formattedDate = formatDate(email.date, "date");
+  // 수신 시간으로 할 지, 발송 시간으로 할 지 고민 중
+  const formattedDate = formatDate(email.receivedAt, "date");
 
   return (
     <div
@@ -58,7 +63,7 @@ const InboxContent = ({
 
       <div className="flex flex-col max-w-[85%] w-[85%] h-fit">
         <div className="relative flex justify-between items-start w-full h-fit">
-          <FromName from={email.from} />
+          <FromName fromName={email.fromName} fromEmail={email.fromEmail} />
           {formattedDate && (
             <p className="m-0 font-pre-regular text-xs">{formattedDate}</p>
           )}
@@ -69,7 +74,9 @@ const InboxContent = ({
         <p className="m-0 font-pre-regular text-sm text-content line-clamp-2">
           {email.snippet}
         </p>
-        {email.attachments && email.attachments.length > 0 && (
+
+        {/* 첨부파일 관련해서 생각한 번 해야할 듯 */}
+        {/* {email.attachments && email.attachments.length > 0 && (
           <div className="flex w-full py-1 mb-1 gap-2 overflow-x-auto hide-scrollbar">
             {email.attachments.map((attachment, index) => (
               <Attachment
@@ -78,7 +85,7 @@ const InboxContent = ({
               />
             ))}
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

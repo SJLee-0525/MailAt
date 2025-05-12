@@ -46,14 +46,14 @@ export function searchEmails(filters: EmailSearchFilters): AllEmails[] {
   return mockAllEmails.filter((email) => {
     // 1) 날짜 범위 검사
     if (startDate || endDate) {
-      const sent = new Date(email.date).getTime();
+      const sent = new Date(email.receivedAt).getTime();
       if (startDate && sent < startDate.getTime()) return false;
       if (endDate && sent > endDate.getTime()) return false;
     }
 
     // 2) from 필터
     if (from) {
-      const fromLower = email.from.toLowerCase();
+      const fromLower = email.fromEmail.toLowerCase();
       const fromMatch = from.some((f) => fromLower.includes(f.toLowerCase()));
       if (!fromMatch) {
         return false;
@@ -61,13 +61,13 @@ export function searchEmails(filters: EmailSearchFilters): AllEmails[] {
     }
 
     // 3) to 필터
-    if (to) {
-      const toLower = email.to.toLowerCase();
-      const toMatch = to.some((t) => toLower.includes(t.toLowerCase()));
-      if (!toMatch) {
-        return false;
-      }
-    }
+    // if (to) {
+    //   const toLower = email.to.toLowerCase();
+    //   const toMatch = to.some((t) => toLower.includes(t.toLowerCase()));
+    //   if (!toMatch) {
+    //     return false;
+    //   }
+    // }
 
     // 4) subject 필터
     if (subject) {
@@ -84,8 +84,8 @@ export function searchEmails(filters: EmailSearchFilters): AllEmails[] {
     if (includeKeywords && includeKeywords.length > 0) {
       const haystack = [
         email.subject,
-        email.from,
-        email.to,
+        email.fromName,
+        email.fromEmail,
         email.snippet,
         // email.body,
       ]
@@ -103,8 +103,8 @@ export function searchEmails(filters: EmailSearchFilters): AllEmails[] {
     if (excludeKeywords && excludeKeywords.length > 0) {
       const haystack = [
         email.subject,
-        email.from,
-        email.to,
+        email.fromName,
+        email.fromEmail,
         email.snippet,
         // email.body,
       ]
@@ -119,15 +119,15 @@ export function searchEmails(filters: EmailSearchFilters): AllEmails[] {
     }
 
     // 7) minAttachmentSize 필터
-    if (attachmentSize != null) {
-      // 첨부파일 중 하나라도 size >= minAttachmentSize 여야 통과
-      const hasLarge = email.attachments.some(
-        (att) => att.size >= attachmentSize!
-      );
-      if (!hasLarge) {
-        return false;
-      }
-    }
+    // if (attachmentSize != null) {
+    //   // 첨부파일 중 하나라도 size >= minAttachmentSize 여야 통과
+    //   const hasLarge = email.attachments.some(
+    //     (att) => att.size >= attachmentSize!
+    //   );
+    //   if (!hasLarge) {
+    //     return false;
+    //   }
+    // }
 
     // 통과한 이메일 반환
     return true;

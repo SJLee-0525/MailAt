@@ -46,10 +46,11 @@ const InboxContents = () => {
           {conversations.map((email) => {
             return (
               <InboxContent
-                key={email.id}
+                key={email.messageId}
                 email={email}
                 isSelected={
-                  selectedMail !== null && selectedMail.id === email.id
+                  selectedMail !== null &&
+                  selectedMail.messageId === email.messageId
                 }
                 onClick={() => setSelectedMail(email)}
               />

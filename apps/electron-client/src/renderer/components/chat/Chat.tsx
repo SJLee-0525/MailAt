@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 
+import useAuthenticateStore from "@stores/authenticateStore";
+
 import { getEmailsByThreadId } from "@apis/emailApi";
 
-import { AllEmails, EmailDetail } from "@/types/emailTypes";
+import { AllEmails, EmailDetailByThreadId } from "@/types/emailTypes";
 
 import ChatHeader from "@components/chat/components/ChatHeader";
 import ChatContents from "@components/chat/components/ChatContents";
@@ -14,13 +16,20 @@ const Chat = ({
   selectedMail: AllEmails | null;
   onClose: () => void;
 }) => {
-  const [chatData, setChatData] = useState<EmailDetail[]>([]);
+  const { user } = useAuthenticateStore();
+
+  const [chatData, setChatData] = useState<EmailDetailByThreadId | null>(null);
 
   if (selectedMail === null) return null;
 
-  async function fetchChatData(threadId: string) {
+  async function fetchChatData() {
+    if (!user || !selectedMail) return;
+
     try {
-      const response = await getEmailsByThreadId({ threadId });
+      const response = await getEmailsByThreadId({
+        userId: user.userId,
+        email: selectedMail.fromEmail,
+      });
       setChatData(response);
       return;
     } catch (error) {
@@ -30,15 +39,16 @@ const Chat = ({
 
   useEffect(() => {
     if (selectedMail) {
-      fetchChatData(selectedMail.threadId);
+      fetchChatData();
     }
   }, [selectedMail]);
 
+  // 여기 타입 에러 왜난느 거임..!!!!!!!!!!!!!!!!!!!!!
   return (
     <div className="absolute z-10 flex flex-col w-md min-w-md h-full max-h-full bg-light1 rounded-xl">
       <ChatHeader onClose={onClose} />
       <div className="w-full h-full px-1 pb-1 bg-light1 rounded-b-xl overflow-y-auto">
-        <ChatContents chatData={chatData} />
+        <ChatContents chatData={chatData ? chatData.messages : []} />
       </div>
     </div>
   );

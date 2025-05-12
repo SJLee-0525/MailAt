@@ -1,20 +1,16 @@
 import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { getAccounts, createAccount, deleteAccount } from "@apis/userApi";
+import { CreateAccountRequest, CreateAccountResponse } from "@/types/authType";
 
-import {
-  AccountsResponse,
-  CreateAccountRequest,
-  CreateAccountResponse,
-} from "@/types/authType";
+import { getAccounts, createAccount, deleteAccount } from "@apis/userApi";
 
 import useAuthenticateStore from "@stores/authenticateStore";
 
 export const useGetAccounts = () => {
   const { user, setAuthUsers } = useAuthenticateStore();
 
-  const query = useQuery<AccountsResponse[]>({
+  const query = useQuery<CreateAccountResponse[]>({
     queryKey: ["accounts"],
     queryFn: () => getAccounts(),
     enabled: !!user,
@@ -29,11 +25,11 @@ export const useGetAccounts = () => {
 
       const accountsData = query.data.map((account) => {
         return {
-          id: account.id,
+          accountId: account.accountId,
           email: account.email,
-          name: user ? user.username : "이름이 없어요",
           imapHost: account.imapHost,
           smtpHost: account.smtpHost,
+          username: user ? user.username : "이름이 없어요",
         };
       });
 
@@ -48,7 +44,7 @@ export const useCreateAccount = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation<
-    CreateAccountResponse,
+    CreateAccountResponse[],
     Error,
     CreateAccountRequest
   >({

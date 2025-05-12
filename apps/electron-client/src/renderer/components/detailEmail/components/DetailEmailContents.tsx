@@ -16,20 +16,23 @@ const DetailEmailContents = ({
   return (
     <div className="flex flex-col w-full h-full p-2 gap-1 bg-white rounded-lg font-pre-bold overflow-y-auto hide-scrollbar">
       <DetailEmailTitle
-        id={detailEmail.id}
+        id={detailEmail.messageId}
         subject={detailEmail.subject}
-        date={detailEmail.date}
-        from={detailEmail.from}
-        to={detailEmail.to}
-        body={detailEmail.body}
-        attachments={detailEmail.attachments}
+        date={detailEmail.receivedAt}
+        fromName={detailEmail.fromName}
+        fromEmail={detailEmail.fromEmail}
+        to={detailEmail.fromEmail} // 내 메일 나중에 넣어야 할 듯 임시로 아무거나 넣어둠
+        body={detailEmail.bodyHtml}
+        attachments={detailEmail.attachments ? detailEmail.attachments : []}
         openChat={openChat}
         onReply={onReply}
       />
       <hr className="border-t border-light3 my-0.5" />
-      <DetailEmailContent body={detailEmail.body} />
+      <DetailEmailContent body={detailEmail.bodyHtml} />
       <hr className="border-t border-light3 my-0.5" />
-      <DetailAttachments attachments={detailEmail.attachments} />
+      <DetailAttachments
+        attachments={detailEmail.attachments ? detailEmail.attachments : []}
+      />
     </div>
   );
 };

@@ -1,10 +1,10 @@
-import { AccountsResponse } from "@/types/authType";
+import { CreateAccountResponse } from "@/types/authType";
 
 const SettingEditAccount = ({
   account,
   onClose,
 }: {
-  account: AccountsResponse;
+  account: CreateAccountResponse;
   onClose: () => void;
 }) => {
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -21,14 +21,17 @@ const SettingEditAccount = ({
         {account.email}
       </h1>
 
-      <form className="flex flex-col items-center justify-center w-full h-fit gap-6 p-4 text-center font-pre-bold" onSubmit={handleSubmit}>
+      <form
+        className="flex flex-col items-center justify-center w-full h-fit gap-6 p-4 text-center font-pre-bold"
+        onSubmit={handleSubmit}
+      >
         <div className="flex flex-col items-center justify-center w-full h-fit gap-4 p-4 text-center font-pre-bold">
           <div className="flex flex-col items-start w-full h-fit gap-1">
             <label className="font-pre-bold font-bold text-xs">이름</label>
             <input
               type="text"
               name="name"
-              defaultValue={account.name}
+              defaultValue={account.username}
               className="w-full h-8 border-b-1 border-accept text-sm focus:outline-none focus:bg-gray-100"
             />
           </div>

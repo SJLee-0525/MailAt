@@ -95,7 +95,7 @@ interface ElectronAPI {
       offset?: number;
     }): Promise<{
       success: boolean;
-      data: EmailDetailByThreadId[];
+      data: EmailDetailByThreadId;
     }>;
 
     // 이메일 삭제
