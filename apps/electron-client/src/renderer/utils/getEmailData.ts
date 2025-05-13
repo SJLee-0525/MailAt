@@ -430,3 +430,34 @@ export function getEmailParams({
 
   return params;
 }
+
+export function base64ToUtf16(base64: string): string {
+  try {
+    // Base64 문자열을 디코딩하여 바이너리 문자열을 얻기
+    const binaryString = atob(base64);
+
+    // ArrayBuffer로 변환
+    const buffer = new ArrayBuffer(binaryString.length);
+    const bufferView = new Uint8Array(buffer);
+
+    // 바이너리 문자열을 Uint8Array에 채우기
+    for (let i = 0; i < binaryString.length; i++) {
+      bufferView[i] = binaryString.charCodeAt(i);
+    }
+
+    console.log("디코딩된 버퍼:", buffer);
+
+    // UTF-16 디코딩
+    const decoder = new TextDecoder("utf-8");
+    const decodedString = decoder.decode(buffer);
+
+    console.log("디코딩된 문자열:", decodedString);
+    return decodedString;
+  } catch (error) {
+    console.error(
+      "Error decoding base64 to UTF-16:",
+      error instanceof Error ? error.message : String(error)
+    );
+    return ""; // Return empty string or handle error as appropriate
+  }
+}

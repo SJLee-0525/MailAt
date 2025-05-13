@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { AllEmails, FolderResponse } from "@/types/emailTypes";
 
+// import { base64ToUtf16 } from "@utils/getEmailData";
+
 import useAuthenticateStore from "@stores/authenticateStore";
 
 import { getFolders, getEmailsData, deleteEmail } from "@apis/emailApi";
@@ -41,6 +43,9 @@ export const useGetEmailFolders = () => {
       const foldersWithColor: Record<string, string[]> = {};
 
       query.data.forEach((folder, index) => {
+        // 폴더 이름을 UTF-16으로 변환
+        // const utf16Name = base64ToUtf16(folder.name);
+
         foldersWithColor[folder.name] = [
           COLOR_BOX[index % COLOR_BOX.length][0],
           COLOR_BOX[index % COLOR_BOX.length][1],
@@ -55,31 +60,37 @@ export const useGetEmailFolders = () => {
   return query;
 };
 
-export const useGetAllEmails = () => {
-  const { user } = useAuthenticateStore();
-  const {
-    selectedFolder: folderName,
-    setConversations,
-    filters,
-  } = useConversationsStore();
+// export const useGetAllEmails = () => {
+//   const { user } = useAuthenticateStore();
+//   const {
+//     selectedFolder: folderName,
+//     setConversations,
+//     filters,
+//   } = useConversationsStore();
 
-  const userId = user?.userId || 1;
+//   const userId = user?.userId || null;
 
-  const query = useQuery<AllEmails[]>({
-    queryKey: ["emails", userId, folderName, filters],
-    queryFn: () => getEmailsData({ userId, folderName, filters }),
-    enabled: !!userId, // userId가 truthy(빈 문자열이 아님)일 때만 활성화
-    throwOnError: true,
-  });
+//   // 쿼리 키를 동적으로 설정해서 데이터가 준비될 때만 쿼리 실행
+//   const queryKey =
+//     userId && folderName && filters
+//       ? ["emails", userId, folderName, filters]
+//       : [];
 
-  useEffect(() => {
-    if (query.data) {
-      setConversations(query.data);
-    }
-  }, [query.data, setConversations]);
+//   const query = useQuery<AllEmails[]>({
+//     queryKey,
+//     queryFn: () => getEmailsData({ userId, folderName, filters }),
+//     enabled: queryKey.length > 0, // queryKey가 빈 배열이 아니면 쿼리 실행
+//     throwOnError: true,
+//   });
 
-  return query;
-};
+//   useEffect(() => {
+//     if (query.data) {
+//       setConversations(query.data || []);
+//     }
+//   }, [query.data, setConversations]);
+
+//   return query;
+// };
 
 export const useDeleteEmail = () => {
   const queryClient = useQueryClient();

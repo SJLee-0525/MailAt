@@ -20,5 +20,8 @@
         "eslint-config-prettier": "^10.1.2",
         "eslint-plugin-prettier": "^5.2.6",
         "prettier": "^3.5.3"
+    },
+    "dependencies": {
+        "mime-types": "^3.0.1"
     }
 }

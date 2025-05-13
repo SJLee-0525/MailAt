@@ -95,7 +95,7 @@ async function initializeControllers() {
       "./src/main/controllers/imapController.js"
     );
     const emailControllerModule = await import(
-      "./src/main/controllers/emailController.js"
+      "./src/main/controllers/emailControllers.js"
     );
 
     // 컨트롤러 초기화 함수 실행
@@ -156,6 +156,8 @@ async function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    show: false, // 처음에는 창을 숨깁니다.
+
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,
@@ -178,6 +180,8 @@ async function createWindow() {
   // 이벤트 리스너 등록
   mainWindow.webContents.on("did-finish-load", () => {
     console.log("[MAIN] 페이지 로드 완료");
+    mainWindow.show(); // 로드 완료 후 창을 보이게 함
+    mainWindow.focus(); // 포커스를 주어 입력 문제 해결
   });
 
   mainWindow.webContents.on(

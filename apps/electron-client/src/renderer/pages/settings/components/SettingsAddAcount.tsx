@@ -28,7 +28,7 @@ const SettingsAddAccount = ({ closeAction }: { closeAction: () => void }) => {
       smtpHost.trim() === "" ||
       smtpPort.trim() === ""
     ) {
-      alert("모든 필드를 입력하세요.");
+      // alert("모든 필드를 입력하세요.");
       return;
     }
 
@@ -41,17 +41,19 @@ const SettingsAddAccount = ({ closeAction }: { closeAction: () => void }) => {
       smtpPort: Number(smtpPort),
     };
 
+    console.log("이메일 추가 payload", payload);
+
     // api 호출 (!!!!!!!추후 보완 필요)
     try {
-      createAccount(payload);
+      await createAccount(payload);
 
-      alert(`${email}\n계정이 추가되었습니다!`);
+      // alert(`${email}\n계정이 추가되었습니다!`);
       // setAuthUsers([
       //   { id: data[0].accountId, email, name: email.split("@")[0], imapHost, smtpHost },
       // ]);
     } catch (error) {
       console.error("Error creating account:", error);
-      alert("계정 추가에 실패했습니다.");
+      // alert("계정 추가에 실패했습니다.");
       return;
     }
 

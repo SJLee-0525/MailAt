@@ -55,11 +55,11 @@ const DetailEmailTitle = ({
     if (window.confirm("정말로 삭제하시겠습니까?")) {
       const response = await deleteEmail({ messageId: id });
 
-      if (response.success) {
-        alert("삭제되었습니다.");
-      } else {
-        alert("삭제에 실패했습니다.");
-      }
+      // if (response.success) {
+      //   alert("삭제되었습니다.");
+      // } else {
+      //   alert("삭제에 실패했습니다.");
+      // }
     }
   }
 
