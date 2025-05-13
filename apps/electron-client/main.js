@@ -95,7 +95,7 @@ async function initializeControllers() {
       "./src/main/controllers/imapController.js"
     );
     const emailControllerModule = await import(
-      "./src/main/controllers/emailControllers.js"
+      "./src/main/controllers/emailController.js"
     );
 
     // 컨트롤러 초기화 함수 실행

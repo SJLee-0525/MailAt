@@ -27,7 +27,7 @@ const Chat = ({
 
     try {
       const response = await getEmailsByThreadId({
-        userId: user.userId,
+        accountId: user.userId,
         email: selectedMail.fromEmail,
       });
       setChatData(response);

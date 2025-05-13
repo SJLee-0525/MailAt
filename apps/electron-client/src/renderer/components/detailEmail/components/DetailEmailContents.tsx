@@ -6,10 +6,12 @@ import DetailAttachments from "@components/detailEmail/components/DetailAttachme
 
 const DetailEmailContents = ({
   detailEmail,
+  onChangeIsRead,
   openChat,
   onReply,
 }: {
   detailEmail: EmailDetail;
+  onChangeIsRead: (isRead: boolean) => void;
   openChat: () => void;
   onReply: (replyData: ReplyData) => void;
 }) => {
@@ -24,6 +26,9 @@ const DetailEmailContents = ({
         to={detailEmail.fromEmail} // 내 메일 나중에 넣어야 할 듯 임시로 아무거나 넣어둠
         body={detailEmail.bodyHtml}
         attachments={detailEmail.attachments ? detailEmail.attachments : []}
+        isFlagged={detailEmail.isFlagged}
+        isRead={detailEmail.isRead}
+        onChangeIsRead={onChangeIsRead}
         openChat={openChat}
         onReply={onReply}
       />

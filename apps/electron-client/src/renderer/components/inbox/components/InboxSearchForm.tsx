@@ -2,8 +2,6 @@ import { useState } from "react";
 
 import useConversationsStore from "@stores/conversationsStore";
 
-import { getEmailsData } from "@apis/emailApi";
-
 // import { useGetAllEmails } from "@hooks/useGetConversations";
 
 import { splitSearchQuery } from "@utils/getEmailData";

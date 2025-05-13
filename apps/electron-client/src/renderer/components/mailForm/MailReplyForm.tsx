@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { ReplyData, EmailSendRequestData } from "@/types/emailTypes";
 
 import useUserProgressStore from "@stores/userProgressStore";
+import useAuthenticateStore from "@stores/authenticateStore";
 
 import { sendEmail } from "@apis/emailApi";
 
@@ -19,6 +20,7 @@ const MailReplyForm = ({
   replyId: number;
 }) => {
   const { setIsReplying } = useUserProgressStore();
+  const { user } = useAuthenticateStore();
 
   const [sender, setSender] = useState<string[]>([]);
   const [cc, setCc] = useState<string[]>([]);
@@ -138,6 +140,8 @@ const MailReplyForm = ({
     console.log("제목:", titleRef.current?.value);
     console.log("본문:", html);
 
+    if (!user) return;
+
     if (sender.length === 0) {
       // alert("받는 사람을 입력하세요.");
       return;
@@ -150,6 +154,7 @@ const MailReplyForm = ({
     }
 
     const emailData = {
+      accountId: user.userId,
       to: sender,
       cc: cc, // 참조인
       bcc: bcc, // 숨은 참조인

@@ -60,37 +60,31 @@ export const useGetEmailFolders = () => {
   return query;
 };
 
-// export const useGetAllEmails = () => {
-//   const { user } = useAuthenticateStore();
-//   const {
-//     selectedFolder: folderName,
-//     setConversations,
-//     filters,
-//   } = useConversationsStore();
+export const useGetAllEmails = () => {
+  const { user } = useAuthenticateStore();
+  const {
+    selectedFolder: folderName,
+    setConversations,
+    filters,
+  } = useConversationsStore();
 
-//   const userId = user?.userId || null;
+  const userId = user?.userId || null;
 
-//   // 쿼리 키를 동적으로 설정해서 데이터가 준비될 때만 쿼리 실행
-//   const queryKey =
-//     userId && folderName && filters
-//       ? ["emails", userId, folderName, filters]
-//       : [];
+  const query = useQuery<AllEmails[]>({
+    queryKey: ["emails"],
+    queryFn: () => getEmailsData({ userId, folderName, filters }),
+    enabled: !userId || !folderName, // queryKey가 빈 배열이 아니면 쿼리 실행
+    throwOnError: true,
+  });
 
-//   const query = useQuery<AllEmails[]>({
-//     queryKey,
-//     queryFn: () => getEmailsData({ userId, folderName, filters }),
-//     enabled: queryKey.length > 0, // queryKey가 빈 배열이 아니면 쿼리 실행
-//     throwOnError: true,
-//   });
+  useEffect(() => {
+    if (query.data) {
+      setConversations(query.data || []);
+    }
+  }, [query.data, setConversations]);
 
-//   useEffect(() => {
-//     if (query.data) {
-//       setConversations(query.data || []);
-//     }
-//   }, [query.data, setConversations]);
-
-//   return query;
-// };
+  return query;
+};
 
 export const useDeleteEmail = () => {
   const queryClient = useQueryClient();

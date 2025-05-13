@@ -78,21 +78,29 @@ interface ElectronAPI {
     }>;
 
     // 나와 상대간의 전체 이메일 스레드 요약 조회
-    getThreads(params: {
-      contactId: number;
-      limit: number;
-      offset: number;
+    getThreads({
+      params,
+    }: {
+      params: {
+        contactId: number;
+        limit: number;
+        offset: number;
+      };
     }): Promise<{
       success: boolean;
       data: EmailDetailByThreadId[];
     }>;
 
     // 스레드 id로 이메일 전체 조회
-    getThreadsByEmail(params: {
-      userId: number | null;
-      email: string | null;
-      limit?: number;
-      offset?: number;
+    getThreadsByEmail({
+      params,
+    }: {
+      params: {
+        accountId: number | null;
+        email: string | null;
+        limit?: number;
+        offset?: number;
+      };
     }): Promise<{
       success: boolean;
       data: EmailDetailByThreadId;
@@ -115,13 +123,13 @@ interface ElectronAPI {
       success: boolean;
       data: { success: boolean; messageId: number; isRead: boolean };
     }>;
-
-    // 이메일 전송
-    sendEmail(emailData: EmailSendRequestData): Promise<{
-      success: boolean;
-      data: { success: boolean; messageId: number };
-    }>;
   };
+
+  // 이메일 전송
+  sendEmail(emailData: EmailSendRequestData): Promise<{
+    success: boolean;
+    messageId: number;
+  }>;
 }
 
 // ② Window 타입 보강

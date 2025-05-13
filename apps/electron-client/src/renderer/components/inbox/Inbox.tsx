@@ -1,12 +1,15 @@
-import { use, useEffect } from "react";
+import { useEffect } from "react";
 
 import useAuthenticateStore from "@stores/authenticateStore";
 import useUserProgressStore from "@stores/userProgressStore";
 import useConversationsStore from "@stores/conversationsStore";
 
-import { getEmailsData } from "@apis/emailApi";
+// import { getEmailsData } from "@apis/emailApi";
 
-import { useGetEmailFolders } from "@hooks/useGetConversations";
+import {
+  useGetEmailFolders,
+  useGetAllEmails,
+} from "@hooks/useGetConversations";
 
 import InboxHeader from "@components/inbox/components/InboxHeader";
 import InboxContents from "@components/inbox/components/InboxContents";
@@ -18,31 +21,18 @@ const Inbox = () => {
     useUserProgressStore();
   const { selectedFolder, filters, setConversations } = useConversationsStore();
 
-  console.log(user, "user");
   if (!user) return null;
 
   // 폴더 목록 조회
-  const { refetch } = useGetEmailFolders();
+  useGetEmailFolders();
+
+  // 이메일 목록 조회
+  const { refetch: refetchEmails } = useGetAllEmails();
 
   useEffect(() => {
-    async function fetchEmails() {
-      if (!user) return;
+    if (!user) return;
 
-      try {
-        const response = await getEmailsData({
-          userId: user.userId,
-          folderName: selectedFolder,
-          filters,
-        });
-        console.log("Fetched emails:", response);
-        setConversations(response);
-        refetch(); // 폴더 목록을 새로고침
-      } catch (error) {
-        console.error("Error fetching emails:", error);
-      }
-    }
-
-    fetchEmails();
+    refetchEmails();
   }, [user.userId, selectedFolder, filters, setConversations]);
 
   return (

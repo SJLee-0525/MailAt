@@ -69,7 +69,7 @@ class MessageRepository {
                       if (contact.email) {
                         // EmailContact 테이블에 이메일 주소 저장/조회
                         const contactId =
-                          await emailContactRepository.getOrCreateContact(
+                          await folderRepository.getOrCreateContact(
                             contact.email,
                             contact.name
                           );

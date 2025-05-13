@@ -1,6 +1,23 @@
-const DetailEmailInfo = ({ to }: { to: string }) => {
+import ReadIcon from "@assets/icons/ReadIcon";
+import UnReadIcon from "@assets/icons/UnReadIcon";
+
+const DetailEmailInfo = ({
+  isRead,
+  to,
+  handleChangeIsRead,
+}: {
+  isRead: boolean;
+  to: string;
+  handleChangeIsRead: () => void;
+}) => {
   return (
-    <div className="flex items-center justify-start h-fit ps-8 gap-2">
+    <div className="flex items-center justify-start h-fit gap-2.5">
+      {isRead ? (
+        <ReadIcon onClick={handleChangeIsRead} />
+      ) : (
+        <UnReadIcon onClick={handleChangeIsRead} />
+      )}
+
       <h3 className="font-pre-semi-bold font-sm font-bold whitespace-nowrap">
         받은 사람
       </h3>

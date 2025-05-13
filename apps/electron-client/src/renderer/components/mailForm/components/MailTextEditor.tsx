@@ -15,13 +15,13 @@ const MailTextEditor = ({
     placeholder: "본문을 입력하세요.",
     modules: {
       toolbar: [
-        [{ font: [] }],
+        // [{ font: [] }],
         [{ size: ["small", false, "large", "huge"] }],
-        ["bold", "italic", "underline", "strike", "blockquote", "code-block"],
+        ["bold", "italic", "underline", "strike"],
         [{ header: 1 }, { header: 2 }, { header: 3 }, { header: 4 }],
         [{ color: [] }, { background: [] }],
         [{ list: "ordered" }, { list: "bullet" }], // 리스트: 순서있는 리스트, 순서없는 리스트
-        [{ script: "sub" }, { script: "super" }], // 인용구
+        // [{ script: "sub" }, { script: "super" }], // 인용구
         [{ indent: "-1" }, { indent: "+1" }], // 들여쓰기
         [{ align: [] }], // 텍스트 정렬: 왼쪽, 가운데, 오른쪽, 양쪽정렬
         ["link", "image", "video", "formula"], // 링크, 이미지, 비디오, 수식 삽입

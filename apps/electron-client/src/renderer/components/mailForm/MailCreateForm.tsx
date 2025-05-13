@@ -5,12 +5,14 @@ import { EmailSendRequestData } from "@/types/emailTypes";
 import { sendEmail } from "@apis/emailApi";
 
 import useUserProgressStore from "@stores/userProgressStore";
+import useAuthenticateStore from "@stores/authenticateStore";
 
 import MailFormHeader from "@components/mailForm/components/MailFormHeader";
 import MailForm from "@components/mailForm/components/MailForm";
 
 const MailCreateForm = () => {
   const { setMailFormIsOpen } = useUserProgressStore();
+  const { user } = useAuthenticateStore();
 
   const [sender, setSender] = useState<string[]>([]);
   const [cc, setCc] = useState<string[]>([]);
@@ -118,6 +120,8 @@ const MailCreateForm = () => {
     console.log("제목:", titleRef.current?.value);
     console.log("본문:", html);
 
+    if (!user) return;
+
     if (sender.length === 0) {
       // alert("받는 사람을 입력하세요.");
       return;
@@ -130,6 +134,7 @@ const MailCreateForm = () => {
     }
 
     const emailData = {
+      accountId: user.userId,
       to: sender,
       cc: cc, // 참조인
       bcc: bcc, // 숨은 참조인
