@@ -302,6 +302,9 @@ cover/
 *.mo
 *.pot
 
+# 장고
+*.sqlite
+
 # Django stuff:
 local_settings.py
 db.sqlite3

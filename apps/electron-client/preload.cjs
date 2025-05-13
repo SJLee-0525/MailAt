@@ -60,6 +60,38 @@ try {
       },
     },
 
+    // 이메일 관련 API 추가
+    email: {
+      getFolders: (accountId) => {
+        console.log("[PRELOAD] email.getFolders 호출됨", accountId);
+        return ipcRenderer.invoke("email:getFolders", accountId);
+      },
+      getEmails: (params) => {
+        console.log("[PRELOAD] email.getEmails 호출됨", params);
+        return ipcRenderer.invoke("email:getEmails", params);
+      },
+      getThreads: (params) => {
+        console.log("[PRELOAD] email.getThreads 호출됨", params);
+        return ipcRenderer.invoke("email:getThreads", params);
+      },
+      getThreadsByEmail: (params) => {
+        console.log("[PRELOAD] email.getThreadsByEmail 호출됨", params);
+        return ipcRenderer.invoke("email:getThreadsByEmail", params);
+      },
+      getDetail: (messageId) => {
+        console.log("[PRELOAD] email.getDetail 호출됨", messageId);
+        return ipcRenderer.invoke("email:getDetail", messageId);
+      },
+      delete: (messageId) => {
+        console.log("[PRELOAD] email.delete 호출됨", messageId);
+        return ipcRenderer.invoke("email:delete", messageId);
+      },
+      markAsRead: (params) => {
+        console.log("[PRELOAD] email.markAsRead 호출됨", params);
+        return ipcRenderer.invoke("email:markAsRead", params);
+      },
+    },
+
     // 디버깅 도구
     debug: {
       ping: () => "pong", // 연결 테스트용

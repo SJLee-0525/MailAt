@@ -66,6 +66,13 @@ async function initializeControllers() {
       "imap:syncLatest",
       "imap:syncFolder",
       "imap:test",
+      "email:getFolders",
+      "email:getEmails",
+      "email:getThreads",
+      "email:getThreadsByEmail",
+      "email:getDetail",
+      "email:delete",
+      "email:markAsRead",
     ].forEach((channel) => {
       try {
         ipcMain.removeHandler(channel);
@@ -87,6 +94,9 @@ async function initializeControllers() {
     const imapControllerModule = await import(
       "./src/main/controllers/imapController.js"
     );
+    const emailControllerModule = await import(
+      "./src/main/controllers/emailController.js"
+    );
 
     // 컨트롤러 초기화 함수 실행
     userControllerModule.initUserController();
@@ -103,6 +113,9 @@ async function initializeControllers() {
 
     controllersInitialized = true;
     console.log("[MAIN] 등록된 IPC 핸들러:", ipcMain.eventNames());
+
+    emailControllerModule.initEmailController();
+    console.log("[MAIN] Email 컨트롤러 초기화 완료");
 
     return true;
   } catch (error) {
