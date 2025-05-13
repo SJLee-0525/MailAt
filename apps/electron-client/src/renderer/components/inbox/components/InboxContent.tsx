@@ -1,4 +1,4 @@
-import { useId } from "react";
+// import { useId } from "react";
 
 import { AllEmails } from "@/types/emailTypes";
 
@@ -8,17 +8,23 @@ import defaultProfile from "@assets/images/defaultProfile.png";
 import { formatDate } from "@utils/getFormattedDate";
 
 const FromName = ({
+  isRead,
   fromName,
   fromEmail,
 }: {
+  isRead: boolean;
   fromName: string;
   fromEmail: string;
 }) => {
   return (
     <>
-      <h2 className="m-0 font-pre-bold text-md font-bold">{fromName}</h2>
+      <h2
+        className={`m-0 font-pre-bold text-[16px] ${isRead ? "text-icon" : "text-black"}`}
+      >
+        {fromName}
+      </h2>
       <div className="absolute top-0 left-0 w-full h-full opacity-0 hover:opacity-100 transition-opacity duration-200">
-        <div className="absolute top-6 left-0 bg-black text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+        <div className="absolute top-6 left-0 bg-black text-white text-[14px] rounded py-1 px-2 whitespace-nowrap">
           {fromEmail}
         </div>
       </div>
@@ -43,7 +49,7 @@ const InboxContent = ({
   isSelected: boolean;
   onClick: () => void;
 }) => {
-  const idBase = useId();
+  // const idBase = useId();
 
   // 수신 시간으로 할 지, 발송 시간으로 할 지 고민 중
   const formattedDate = formatDate(email.receivedAt, "date");
@@ -61,17 +67,21 @@ const InboxContent = ({
         />
       </div>
 
-      <div className="flex flex-col max-w-[85%] w-[85%] h-fit">
-        <div className="relative flex justify-between items-start w-full h-fit">
-          <FromName fromName={email.fromName} fromEmail={email.fromEmail} />
+      <div className="flex flex-col max-w-[85%] w-[85%] h-fit max-h-30">
+        <div className="relative flex justify-between items-center w-full h-fit">
+          <FromName
+            isRead={email.isRead}
+            fromName={email.fromName}
+            fromEmail={email.fromEmail}
+          />
           {formattedDate && (
-            <p className="m-0 font-pre-regular text-xs">{formattedDate}</p>
+            <p className="m-0 font-pre-regular text-[12px]">{formattedDate}</p>
           )}
         </div>
-        <h3 className="m-0 font-pre-regular text-sm line-clamp-1">
+        <h3 className="m-0 font-pre-regular text-[14px] whitespace-nowrap overflow-hidden text-ellipsis">
           {email.subject}
         </h3>
-        <p className="m-0 font-pre-regular text-sm text-content line-clamp-2">
+        <p className="m-0 font-pre-regular text-[14px] text-content whitespace-nowrap overflow-hidden text-ellipsis">
           {email.snippet}
         </p>
 

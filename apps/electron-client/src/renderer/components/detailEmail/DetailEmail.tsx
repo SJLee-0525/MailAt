@@ -7,7 +7,7 @@ import {
 } from "@data/EMAIL_CONSERVATIONS";
 
 import useUserProgressStore from "@stores/userProgressStore";
-import { getDetailEmail, markEmailAsRead } from "@apis/emailApi";
+import { getDetailEmail } from "@apis/emailApi";
 
 import DetailEmailHeader from "@components/detailEmail/components/DetailEmailHeader";
 import DetailEmailContents from "@components/detailEmail/components/DetailEmailContents";
@@ -35,8 +35,6 @@ const DetailEmail = () => {
       try {
         const response = await getDetailEmail(emailId);
         setDetailEmail(response);
-
-        await markEmailAsRead(emailId, true);
       } catch (error) {
         console.error("Error fetching detail email:", error);
       }
@@ -44,6 +42,13 @@ const DetailEmail = () => {
 
     fetchDetailEmail(selectedMail.messageId);
   }, [selectedMail]);
+
+  function changeIsRead(isRead: boolean) {
+    setDetailEmail((prev) => ({
+      ...prev,
+      isRead: isRead,
+    }));
+  }
 
   function handleClose() {
     setSelectedMail(null);
@@ -65,6 +70,7 @@ const DetailEmail = () => {
         <div className="flex flex-col w-full h-full px-1 pb-1 bg-light1 rounded-b-xl overflow-y-auto">
           <DetailEmailContents
             detailEmail={detailEmail}
+            onChangeIsRead={changeIsRead}
             openChat={() => setChattingIsOpen(!chattingIsOpen)}
             onReply={setReplyData}
           />

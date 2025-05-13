@@ -1,5 +1,9 @@
 import { useId } from "react";
 
+import { AllEmails } from "@/types/emailTypes";
+
+import { markEmailAsRead } from "@apis/emailApi";
+
 import useConservationsStore from "@stores/conversationsStore";
 import userProgressStore from "@stores/userProgressStore";
 
@@ -11,7 +15,7 @@ const InboxFolders = ({ folders }: { folders: Record<string, string[]> }) => {
   const { selectedFolder, setSelectedFolder } = useConservationsStore();
 
   return (
-    <div className="flex w-full p-1 gap-1 bg-white rounded-lg font-pre-bold overflow-y-auto hide-scrollbar">
+    <div className="flex w-full h-fit p-1 gap-1 bg-white rounded-lg font-pre-bold overflow-x-auto hide-scrollbar">
       {folders &&
         Object.keys(folders).map((folder) => {
           return (
@@ -38,11 +42,16 @@ const InboxContents = () => {
   const { folders, conversations } = useConservationsStore();
   const { selectedMail, setSelectedMail } = userProgressStore();
 
+  function openDetailEmail(email: AllEmails) {
+    setSelectedMail(email);
+    markEmailAsRead(email.messageId, !email.isRead);
+  }
+
   return (
-    <div className="flex flex-col items-center justify-between w-full h-full p-2 gap-1 bg-white rounded-lg font-pre-bold overflow-y-auto hide-scrollbar">
+    <div className="flex flex-col items-center justify-between w-full h-full p-2 gap-1 bg-white rounded-lg font-pre-bold ">
       {folders && <InboxFolders folders={folders} />}
       {conversations && (
-        <div className="flex flex-col w-full h-full p-2 gap-1 bg-white rounded-lg font-pre-bold overflow-y-auto hide-scrollbar">
+        <div className="flex flex-col items-start w-full h-full p-2 gap-1 bg-white rounded-lg font-pre-bold overflow-y-auto hide-scrollbar">
           {conversations.map((email) => {
             return (
               <InboxContent
@@ -52,7 +61,7 @@ const InboxContents = () => {
                   selectedMail !== null &&
                   selectedMail.messageId === email.messageId
                 }
-                onClick={() => setSelectedMail(email)}
+                onClick={() => openDetailEmail(email)}
               />
             );
           })}

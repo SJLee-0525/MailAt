@@ -2,9 +2,9 @@ import { useState } from "react";
 
 import useConversationsStore from "@stores/conversationsStore";
 
-import { useGetAllEmails } from "@hooks/useGetConversations";
+// import { useGetAllEmails } from "@hooks/useGetConversations";
 
-import { searchEmails, splitSearchQuery } from "@utils/getEmailData";
+import { splitSearchQuery } from "@utils/getEmailData";
 
 import IconButton from "@components/common/button/IconButton";
 import InboxFilter from "@components/inbox/components/InboxFilter";
@@ -13,9 +13,9 @@ import SearchIcon from "@assets/icons/SearchIcon";
 import FilterIcon from "@assets/icons/FilterIcon";
 
 const InboxSearchForm = () => {
-  const { setConversations, setFilters } = useConversationsStore();
+  const { setFilters } = useConversationsStore();
 
-  const { refetch } = useGetAllEmails();
+  // const { refetch } = useGetAllEmails();
 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isExpanded, setIsExpanded] = useState(false);
@@ -26,8 +26,6 @@ const InboxSearchForm = () => {
 
     const newFilters = splitSearchQuery(searchQuery);
     setFilters(newFilters);
-
-    refetch();
 
     // const filteredEmails = searchEmails(filters);
     // setConversations(filteredEmails); // 필터링된 이메일로 업데이트

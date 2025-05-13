@@ -131,6 +131,7 @@ export interface EmailDetailByThreadId {
 }
 
 export interface EmailSendRequestData {
+  accountId: number;
   to: string[]; // 받는 사람 이메일 주소 배열
   cc: string[]; // 참조 이메일 주소 배열
   bcc: string[]; // 숨은 참조 이메일 주소 배열

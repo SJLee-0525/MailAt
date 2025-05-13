@@ -31,12 +31,12 @@ const InnerList = ({
       const data = await deleteAccount({ accountId: user.accountId });
 
       if (data.success) {
-        alert(`${user.email}\n계정이 삭제되었습니다!`);
+        // alert(`${user.email}\n계정이 삭제되었습니다!`);
         deleteAuthUser(user); // 임시..
       }
     } catch (error) {
       console.error("Error deleting account:", error);
-      alert("계정 삭제에 실패했습니다.");
+      // alert("계정 삭제에 실패했습니다.");
       return;
     }
   }

@@ -1,11 +1,11 @@
-import {
-  useGetEmailFolders,
-  useGetAllEmails,
-} from "@hooks/useGetConversations";
+// import {
+//   useGetEmailFolders,
+//   useGetAllEmails,
+// } from "@hooks/useGetConversations";
 
 const Home = () => {
-  useGetEmailFolders();
-  useGetAllEmails();
+  // useGetEmailFolders();
+  // useGetAllEmails();
 
   return (
     <div className="w-full h-full text-black">

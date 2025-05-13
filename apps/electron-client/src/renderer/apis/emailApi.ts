@@ -111,7 +111,7 @@ export const getEmailSummaryByThreadId = async ({
   };
 
   try {
-    const response = await window.electronAPI.email.getThreads(params);
+    const response = await window.electronAPI.email.getThreads({ params });
     console.log(
       `[GET] window.electronAPI.email.getThreads(${params})`,
       response
@@ -124,29 +124,31 @@ export const getEmailSummaryByThreadId = async ({
 
 // 스레드 id로 이메일 전체 조회
 export const getEmailsByThreadId = async ({
-  userId,
+  accountId,
   email,
   limit = 20,
   offset = 0,
 }: {
-  userId: number | null;
+  accountId: number | null;
   email: string | null;
   limit?: number;
   offset?: number;
 }): Promise<EmailDetailByThreadId> => {
-  if (!userId) {
+  if (!accountId) {
     throw new Error("User ID is required to fetch emails.");
   }
 
   const params = {
-    userId,
+    accountId,
     email,
     limit: limit ? limit : 20,
     offset: offset ? offset : 0,
   };
 
   try {
-    const response = await window.electronAPI.email.getThreadsByEmail(params);
+    const response = await window.electronAPI.email.getThreadsByEmail({
+      params,
+    });
     console.log(
       `[GET] window.electronAPI.email.getThreadsByEmail(${params})`,
       response
@@ -204,12 +206,12 @@ export const sendEmail = async (
   emailData: EmailSendRequestData
 ): Promise<{ success: boolean; messageId: number }> => {
   try {
-    const response = await window.electronAPI.email.sendEmail(emailData);
+    const response = await window.electronAPI.sendEmail(emailData);
     console.log(
       `[POST] window.electronAPI.sendEmail(${JSON.stringify(emailData)})`,
       response
     );
-    return response.data;
+    return response;
   } catch (error: unknown) {
     throw new Error(error as string);
   }

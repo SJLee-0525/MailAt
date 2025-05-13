@@ -4,6 +4,8 @@ import { ReplyData, DetailAttachment } from "@/types/emailTypes";
 
 import useUserProgressStore from "@stores/userProgressStore";
 
+import { markEmailAsRead } from "@apis/emailApi";
+
 import { useDeleteEmail } from "@hooks/useGetConversations";
 
 import { formatDate } from "@utils/getFormattedDate";
@@ -28,6 +30,9 @@ const DetailEmailTitle = ({
   to,
   body,
   attachments,
+  isFlagged,
+  isRead,
+  onChangeIsRead,
   onReply,
   openChat,
 }: {
@@ -39,6 +44,9 @@ const DetailEmailTitle = ({
   to: string;
   body: string;
   attachments: DetailAttachment[];
+  isFlagged: boolean;
+  isRead: boolean;
+  onChangeIsRead: (isRead: boolean) => void;
   onReply: (replyData: ReplyData) => void;
   openChat: () => void;
 }) => {
@@ -51,15 +59,26 @@ const DetailEmailTitle = ({
   const formattedDate = formatDate(date, "dateTime");
   // const parsedFrom = parseEmailFromName(from);
 
+  async function handleChangeIsRead() {
+    try {
+      const response = await markEmailAsRead(id, isRead);
+      if (response.success) {
+        onChangeIsRead(response.isRead);
+      }
+    } catch (error) {
+      console.error("Error marking email as read:", error);
+    }
+  }
+
   async function handleDelete() {
     if (window.confirm("정말로 삭제하시겠습니까?")) {
       const response = await deleteEmail({ messageId: id });
 
-      if (response.success) {
-        alert("삭제되었습니다.");
-      } else {
-        alert("삭제에 실패했습니다.");
-      }
+      // if (response.success) {
+      //   alert("삭제되었습니다.");
+      // } else {
+      //   alert("삭제에 실패했습니다.");
+      // }
     }
   }
 
@@ -93,7 +112,13 @@ const DetailEmailTitle = ({
               </span>
             </div>
           </div>
-          {isExpanded && <DetailEmailInfo to={to} />}
+          {isExpanded && (
+            <DetailEmailInfo
+              isRead={isRead}
+              to={to}
+              handleChangeIsRead={handleChangeIsRead}
+            />
+          )}
         </div>
 
         <div className="flex items-center gap-2">

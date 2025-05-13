@@ -294,7 +294,7 @@ export const syncFolder = async (
     console.log(`Selected folder ${folderName}:`, selectResult);
 
     // 폴더 정보 DB에 저장/업데이트
-    const folderId = await messageRepository.getOrCreateFolder(
+    const folderId = await folderRepository.getOrCreateFolder(
       accountId,
       folderName
     );

@@ -10,8 +10,8 @@ const basename = import.meta.env.VITE_BASE_URL || "/";
 
 async function deferRender() {
   if (import.meta.env.DEV) {
-    const { worker } = await import("./mocks/browser.ts");
-    await worker.start();
+    // const { worker } = await import("./mocks/browser.ts");
+    // await worker.start();
   }
 }
 

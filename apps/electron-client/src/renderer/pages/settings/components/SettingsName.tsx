@@ -12,18 +12,18 @@ const SettingsName = () => {
     const name = Object.fromEntries(fd).name as string;
 
     if (name.trim() === "") {
-      alert("이름을 입력해주세요.");
+      // alert("이름을 입력해주세요.");
       return;
     } else if (/\s/.test(name)) {
-      alert("이름에 공백을 포함할 수 없습니다.");
+      // alert("이름에 공백을 포함할 수 없습니다.");
       return;
     }
 
     if (name.length > 10) {
-      alert("이름은 10자 이하로 입력해주세요.");
+      // alert("이름은 10자 이하로 입력해주세요.");
       return;
     } else if (name.length < 2) {
-      alert("이름은 2자 이상으로 입력해주세요.");
+      // alert("이름은 2자 이상으로 입력해주세요.");
       return;
     }
 
@@ -32,10 +32,10 @@ const SettingsName = () => {
       const response = await createUser(name);
       console.log(response);
       setUserName(response);
-      alert(`${response.username}님 환영합니다!`);
+      // alert(`${response.username}님 환영합니다!`);
     } catch (error) {
       console.error("Error creating user:", error);
-      alert("사용자 생성에 실패했습니다.");
+      // alert("사용자 생성에 실패했습니다.");
       return;
     }
   }

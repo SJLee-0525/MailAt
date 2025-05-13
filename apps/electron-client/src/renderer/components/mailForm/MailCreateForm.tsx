@@ -5,12 +5,14 @@ import { EmailSendRequestData } from "@/types/emailTypes";
 import { sendEmail } from "@apis/emailApi";
 
 import useUserProgressStore from "@stores/userProgressStore";
+import useAuthenticateStore from "@stores/authenticateStore";
 
 import MailFormHeader from "@components/mailForm/components/MailFormHeader";
 import MailForm from "@components/mailForm/components/MailForm";
 
 const MailCreateForm = () => {
   const { setMailFormIsOpen } = useUserProgressStore();
+  const { user } = useAuthenticateStore();
 
   const [sender, setSender] = useState<string[]>([]);
   const [cc, setCc] = useState<string[]>([]);
@@ -33,9 +35,9 @@ const MailCreateForm = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.(com|net|kr|org)$/i;
 
     if (!emailRegex.test(value)) {
-      alert(
-        "유효한 이메일 형식이 아닙니다. 예) user@example.com 또는 user@domain.net"
-      );
+      // alert(
+      //   "유효한 이메일 형식이 아닙니다. 예) user@example.com 또는 user@domain.net"
+      // );
       return;
     }
 
@@ -64,9 +66,9 @@ const MailCreateForm = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.(com|net|kr|org)$/i;
 
     if (!emailRegex.test(value)) {
-      alert(
-        "유효한 이메일 형식이 아닙니다. 예) user@example.com 또는 user@domain.net"
-      );
+      // alert(
+      //   "유효한 이메일 형식이 아닙니다. 예) user@example.com 또는 user@domain.net"
+      // );
       return;
     }
 
@@ -95,9 +97,9 @@ const MailCreateForm = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.(com|net|kr|org)$/i;
 
     if (!emailRegex.test(value)) {
-      alert(
-        "유효한 이메일 형식이 아닙니다. 예) user@example.com 또는 user@domain.net"
-      );
+      // alert(
+      //   "유효한 이메일 형식이 아닙니다. 예) user@example.com 또는 user@domain.net"
+      // );
       return;
     }
 
@@ -118,18 +120,21 @@ const MailCreateForm = () => {
     console.log("제목:", titleRef.current?.value);
     console.log("본문:", html);
 
+    if (!user) return;
+
     if (sender.length === 0) {
-      alert("받는 사람을 입력하세요.");
+      // alert("받는 사람을 입력하세요.");
       return;
     } else if (titleRef.current?.value.trim() === "") {
-      alert("제목을 입력하세요.");
+      // alert("제목을 입력하세요.");
       return;
     } else if (html.trim() === "") {
-      alert("메일 내용을 입력하세요.");
+      // alert("메일 내용을 입력하세요.");
       return;
     }
 
     const emailData = {
+      accountId: user.userId,
       to: sender,
       cc: cc, // 참조인
       bcc: bcc, // 숨은 참조인
