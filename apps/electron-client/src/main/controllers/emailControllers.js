@@ -1,6 +1,7 @@
 // src/controllers/emailController.js
 import { ipcMain } from "electron";
 import emailService from "../services/emailService.js";
+import emailContactRepository from "../repositories/emailContactRepository.js";
 
 /**
  * 이메일 컨트롤러 초기화
