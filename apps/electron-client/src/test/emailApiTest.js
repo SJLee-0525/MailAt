@@ -136,27 +136,39 @@ class EmailApiTest {
       const messageId = emails[0].messageId;
       console.log(`메시지 ID ${messageId}의 상세 정보 조회 중...`);
 
-      const emailDetail = await emailService.getEmailDetail(messageId);
+      try {
+        const emailDetail = await emailService.getEmailDetail(messageId);
 
-      console.log("이메일 상세 정보 조회 성공:");
-      console.log(`  제목: ${emailDetail.subject || "(제목 없음)"}`);
-      console.log(
-        `  발신자: ${emailDetail.fromName || ""} <${emailDetail.fromEmail || ""}>`
-      );
-      console.log(`  수신 시간: ${emailDetail.receivedAt || "알 수 없음"}`);
-      console.log(`  관련 연락처: ${emailDetail.contacts.length}명`);
-      console.log(`  첨부 파일: ${emailDetail.attachments.length}개`);
+        console.log("\n이메일 상세 정보 조회 성공:");
+        console.log(`  제목: ${emailDetail.subject || "(제목 없음)"}`);
+        console.log(
+          `  발신자: ${emailDetail.fromName || ""} <${emailDetail.fromEmail || ""}>`
+        );
+        console.log(`  수신 시간: ${emailDetail.receivedAt || "알 수 없음"}`);
+        console.log(
+          `  관련 연락처: ${emailDetail.contacts ? emailDetail.contacts.length : 0}명`
+        );
+        console.log(
+          `  첨부 파일: ${emailDetail.attachments ? emailDetail.attachments.length : 0}개`
+        );
 
-      // 본문 일부 출력 (너무 길면 생략)
-      const bodyPreview = emailDetail.bodyText
-        ? emailDetail.bodyText.substring(0, 150) +
-          (emailDetail.bodyText.length > 150 ? "..." : "")
-        : "(본문 없음)";
-      console.log(`  본문 미리보기: ${bodyPreview}`);
+        // 본문 일부 출력 (너무 길면 생략)
+        const bodyPreview = emailDetail.bodyHtml
+          ? emailDetail.bodyHtml.substring(0, 150) +
+            (emailDetail.bodyHtml.length > 150 ? "..." : "")
+          : "(본문 없음)";
+        console.log(`  본문 미리보기: ${bodyPreview}`);
 
-      return emailDetail;
+        return emailDetail;
+      } catch (detailError) {
+        console.error("상세 정보 조회 중 오류 발생:", detailError);
+        console.error("오류 메시지:", detailError.message);
+        console.error("오류 스택:", detailError.stack);
+        return null;
+      }
     } catch (error) {
-      console.error("이메일 상세 조회 테스트 실패:", error.message);
+      console.error("이메일 상세 조회 테스트 전체 실패:", error.message);
+      console.error("오류 스택:", error.stack);
       throw error;
     }
   }
@@ -218,25 +230,42 @@ class EmailApiTest {
       // 보통 1번 ID가 존재할 확률이 높음
       const contactId = 1;
 
-      const threadData = await emailService.getThreadsByContact({
-        contactId,
-        limit: 10,
-        offset: 0,
-      });
+      try {
+        const threadData = await emailService.getThreadsByContact({
+          contactId,
+          limit: 10,
+          offset: 0,
+        });
 
-      console.log(`연락처 ${threadData.contact.email}와(과)의 메시지 스레드:`);
-      console.log(`총 ${threadData.messages.length}개 메시지 조회 성공:`);
+        console.log(
+          `연락처 ${threadData.contact.email}와(과)의 메시지 스레드:`
+        );
+        console.log(`총 ${threadData.messages.length}개 메시지 조회 성공:`);
 
-      // 메시지 목록 출력
-      threadData.messages.forEach((msg, index) => {
-        console.log(`  ${index + 1}. 제목: ${msg.subject || "(제목 없음)"}`);
-        console.log(`     날짜: ${msg.sentAt || "알 수 없음"}`);
-        console.log(`     스니펫: ${msg.snippet || "(미리보기 없음)"}`);
-      });
+        // 메시지 목록 출력
+        threadData.messages.forEach((msg, index) => {
+          console.log(`  ${index + 1}. 제목: ${msg.subject || "(제목 없음)"}`);
+          console.log(`     날짜: ${msg.sentAt || "알 수 없음"}`);
+          console.log(`     스니펫: ${msg.snippet || "(미리보기 없음)"}`);
 
-      return threadData;
+          // HTML 본문 첫 10글자 추출해서 출력
+          const htmlPreview = msg.bodyHtml
+            ? msg.bodyHtml.substring(0, 10) +
+              (msg.bodyHtml.length > 10 ? "..." : "")
+            : "(HTML 본문 없음)";
+          console.log(`     HTML 본문 미리보기: ${htmlPreview}`);
+        });
+
+        return threadData;
+      } catch (threadError) {
+        console.error("스레드 조회 중 오류 발생:", threadError);
+        console.error("오류 메시지:", threadError.message);
+        console.error("오류 스택:", threadError.stack);
+        return null;
+      }
     } catch (error) {
-      console.error("이메일 스레드 조회 테스트 실패:", error.message);
+      console.error("이메일 스레드 조회 테스트 전체 실패:", error.message);
+      console.error("오류 스택:", error.stack);
       throw error;
     }
   }
