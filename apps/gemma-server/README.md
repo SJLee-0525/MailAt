@@ -5,7 +5,20 @@ Gemma 모델을 사용하여 이메일 텍스트를 한 줄로 요약하는 Flas
 ## 요구 사항
 
 - Python 3.10
-- 필요 라이브러리: `pip install -r _requirements.txt`
+- Microsoft C++ Build Tools (llama-cpp-python 빌드에 필요):
+  ```bash
+  winget install --id=Microsoft.VisualStudio.2022.BuildTools -e --override "--wait --quiet --norestart --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+  ```
+- 가상 환경 생성 (권장):
+  ```bash
+  python -m venv venv_name  # 또는 python3 -m venv venv_name
+  venv_name\Scripts\activate  # Windows
+  # source venv_name/bin/activate  # Linux/macOS
+  ```
+- 필요 라이브러리:
+  ```bash
+  pip install -r _requirements.txt
+  ```
 
 ## 모델 다운로드
 
