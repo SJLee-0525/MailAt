@@ -61,9 +61,10 @@ python server.py  # 기본 포트: 0.0.0.0:5000
 
 ## EXE 파일 빌드
 
-1. `pip install pyinstaller`
-2. `EmailSummaryServer.spec` 파일에서 `llama_cpp` 라이브러리 경로 확인
-3. `pyinstaller EmailSummaryServer.spec`
+```
+python exe_builder.py
+```
+실행 시 `dist/EmailSummaryServer`에 exe 파일 생성됨. 이 폴더 통쨰로 사용하면 됨.
 
 ## 테스트
 
