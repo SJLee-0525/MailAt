@@ -244,18 +244,24 @@ class MessageRepository {
       return new Promise((resolve, reject) => {
         db.all(
           `SELECT DISTINCT m.*
-           FROM Message m
-           JOIN MessageContact mc ON m.message_id = mc.message_id
-           WHERE mc.contact_id = ?
-           ORDER BY m.sent_at DESC
-           LIMIT ? OFFSET ?`,
+         FROM Message m
+         JOIN MessageContact mc ON m.message_id = mc.message_id
+         WHERE mc.contact_id = ?
+         ORDER BY m.sent_at DESC
+         LIMIT ? OFFSET ?`,
           [contactId, limit, offset],
           (err, rows) => {
             if (err) {
               reject(new Error(`연락처별 메시지 조회 오류: ${err.message}`));
               return;
             }
-            const messages = rows.map((row) => this.formatMessageData(row));
+            const messages = rows.map((row) => {
+              const messageData = this.formatMessageData(row);
+              return {
+                ...messageData,
+                bodyHtml: row.body_html,
+              };
+            });
             resolve(messages);
           }
         );
@@ -647,7 +653,14 @@ class MessageRepository {
               return;
             }
 
-            resolve(this.formatMessageData(row));
+            // 기본 데이터 가져오기
+            const messageData = this.formatMessageData(row);
+
+            // HTML 본문 추가 (bodyText는 제외)
+            resolve({
+              ...messageData,
+              bodyHtml: row.body_html,
+            });
           }
         );
       });
