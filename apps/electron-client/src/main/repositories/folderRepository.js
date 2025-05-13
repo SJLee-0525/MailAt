@@ -113,6 +113,82 @@ class FolderRepository {
       );
     });
   }
+
+  /**
+   * 폴더 조회 또는 생성
+   * @param {Number} accountId - 계정 ID
+   * @param {String} folderName - 폴더 이름
+   * @returns {Promise<Number>} 폴더 ID
+   */
+  async getOrCreateFolder(accountId, folderName) {
+    try {
+      const db = getConnection();
+      const currentDate = new Date().toISOString();
+
+      return new Promise((resolve, reject) => {
+        // 먼저 폴더가 존재하는지 확인
+        db.get(
+          `SELECT folder_id FROM Folder WHERE account_id = ? AND name = ?`,
+          [accountId, folderName],
+          (err, row) => {
+            if (err) {
+              reject(new Error(`폴더 조회 오류: ${err.message}`));
+              return;
+            }
+
+            if (row) {
+              resolve(row.folder_id);
+            } else {
+              // 폴더가 없으면 생성
+              db.run(
+                `INSERT INTO Folder (account_id, name, created_at) VALUES (?, ?, ?)`,
+                [accountId, folderName, currentDate],
+                function (err) {
+                  if (err) {
+                    reject(new Error(`폴더 생성 오류: ${err.message}`));
+                    return;
+                  }
+                  resolve(this.lastID);
+                }
+              );
+            }
+          }
+        );
+      });
+    } catch (error) {
+      console.error("폴더 조회/생성 오류:", error);
+      throw new Error(`폴더 처리 실패: ${error.message}`);
+    }
+  }
+
+  /**
+   * 폴더 이름으로 폴더 ID 조회
+   * @param {Number} accountId - 계정 ID
+   * @param {String} folderName - 폴더 이름
+   * @returns {Promise<Number>} 폴더 ID
+   */
+  async getFolderIdByName(accountId, folderName) {
+    try {
+      const db = getConnection();
+
+      return new Promise((resolve, reject) => {
+        db.get(
+          `SELECT folder_id FROM Folder WHERE account_id = ? AND name = ?`,
+          [accountId, folderName],
+          (err, row) => {
+            if (err) {
+              reject(new Error(`폴더 ID 조회 오류: ${err.message}`));
+              return;
+            }
+            resolve(row ? row.folder_id : null);
+          }
+        );
+      });
+    } catch (error) {
+      console.error("폴더 ID 조회 오류:", error);
+      throw new Error(`폴더 ID 조회 실패: ${error.message}`);
+    }
+  }
 }
 
 export default new FolderRepository();

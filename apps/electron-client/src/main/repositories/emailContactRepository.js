@@ -129,6 +129,41 @@ class EmailContactRepository {
       throw new Error(`연락처 통계 조회 실패: ${error.message}`);
     }
   }
+
+  /**
+   * 연락처 ID로 연락처 조회
+   * @param {Number} contactId - 연락처 ID
+   * @returns {Promise<Object>} 연락처 정보
+   */
+  async getContactById(contactId) {
+    try {
+      const db = getConnection();
+
+      return new Promise((resolve, reject) => {
+        db.get(
+          `SELECT 
+           contact_id as contactId, 
+           email, 
+           name, 
+           created_at as createdAt, 
+           last_seen_at as lastSeenAt
+         FROM EmailContact 
+         WHERE contact_id = ?`,
+          [contactId],
+          (err, row) => {
+            if (err) {
+              reject(new Error(`연락처 조회 오류: ${err.message}`));
+              return;
+            }
+            resolve(row);
+          }
+        );
+      });
+    } catch (error) {
+      console.error("연락처 조회 오류:", error);
+      throw new Error(`연락처 조회 실패: ${error.message}`);
+    }
+  }
 }
 
 export default new EmailContactRepository();

@@ -177,6 +177,12 @@ class UserRepository {
             created_at DATETIME NULL DEFAULT CURRENT_TIMESTAMP
           )`);
 
+          // Category 테이블 생성
+          db.run(`CREATE TABLE IF NOT EXISTS Category (
+            category_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            category_name TEXT NOT NULL
+          )`);
+
           // Account 테이블 생성
           db.run(`CREATE TABLE IF NOT EXISTS Account (
             account_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -235,11 +241,16 @@ class UserRepository {
             is_flagged INTEGER DEFAULT 0,
             has_attachments INTEGER DEFAULT 0,
             uid TEXT NULL,
+            uid_validity TEXT NULL,
+            category_id INTEGER NULL,
+            sub_category_id INTEGER NULL,
             created_at DATETIME NOT NULL,
             FOREIGN KEY (account_id) REFERENCES Account(account_id) ON DELETE CASCADE,
             FOREIGN KEY (folder_id) REFERENCES Folder(folder_id) ON DELETE CASCADE,
+            FOREIGN KEY (category_id) REFERENCES Category(category_id) ON DELETE SET NULL,
+            FOREIGN KEY (sub_category_id) REFERENCES Category(category_id) ON DELETE SET NULL,
             UNIQUE(account_id, external_message_id),
-            UNIQUE(folder_id, uid)
+            UNIQUE(account_id, folder_id, uid, uid_validity)  -- 복합 유니크 제약조건
           )`);
 
           // EmailContact 테이블

@@ -139,18 +139,18 @@ export const runImapTests = async () => {
             console.log("---");
           });
 
-          // 5. Test Sync Specific Folder
-          console.log("\n5. Test Sync Specific Folder");
-          try {
-            const folderSyncResult = await imapService.syncFolder(
-              accountId,
-              "INBOX",
-              5 // 최대 5개만 가져오기
-            );
-            console.log("Folder Sync Result:", folderSyncResult);
-          } catch (folderSyncError) {
-            console.error("Folder sync error:", folderSyncError.message);
-          }
+          // // 5. Test Sync Specific Folder
+          // console.log("\n5. Test Sync Specific Folder");
+          // try {
+          //   const folderSyncResult = await imapService.syncFolder(
+          //     accountId,
+          //     "INBOX",
+          //     5 // 최대 5개만 가져오기
+          //   );
+          //   console.log("Folder Sync Result:", folderSyncResult);
+          // } catch (folderSyncError) {
+          //   console.error("Folder sync error:", folderSyncError.message);
+          // }
 
           // 6. Check recipients data
           console.log("6. Check Message Contacts Data");
