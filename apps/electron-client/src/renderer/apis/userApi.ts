@@ -1,15 +1,14 @@
-import instance from "./instance";
+// import instance from "./instance";
 
 import {
   User,
-  AccountsResponse,
+  // AccountsResponse,
   CreateAccountRequest,
   CreateAccountResponse,
 } from "@/types/authType";
 
-const { VITE_DEV_API_URL } = import.meta.env;
+// const { VITE_DEV_API_URL } = import.meta.env;
 
-// 사용자 추가
 // 사용자 추가
 export const createUser = async (username: string): Promise<User> => {
   try {
@@ -66,40 +65,48 @@ export const deleteUser = async (
   }
 };
 
-// 계정 추가
+// 이메일 계정 등록
 export const createAccount = async (
-  payload: CreateAccountRequest
-): Promise<CreateAccountResponse> => {
+  accountData: CreateAccountRequest
+): Promise<CreateAccountResponse[]> => {
   try {
-    const response = await instance.post(`/accounts`, payload);
-    console.log(`[POST] ${VITE_DEV_API_URL}/accounts`, payload);
+    const response = await window.electronAPI.account.create(accountData);
+    console.log(
+      `[POST] window.electronAPI.account.create(${JSON.stringify(
+        accountData
+      )})`,
+      response
+    );
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
   }
 };
 
-// 계정 목록 조회
-export const getAccounts = async (): Promise<AccountsResponse[]> => {
+// 등록된 이메일 계정 목록 조회
+export const getAccounts = async (): Promise<CreateAccountResponse[]> => {
   try {
-    const response = await instance.get(`/accounts`);
-    console.log(`[GET] ${VITE_DEV_API_URL}/accounts`);
+    const response = await window.electronAPI.account.getAll();
+    console.log(`[GET] window.electronAPI.account.getAll()`, response);
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
   }
 };
 
-// 계정 삭제
+// 등록된 이메일 계정 삭제
 export const deleteAccount = async ({
   accountId,
 }: {
   accountId: number;
 }): Promise<{ success: boolean }> => {
   try {
-    const response = await instance.delete(`/accounts/${accountId}`);
-    console.log(`[DELETE] ${VITE_DEV_API_URL}/accounts/${accountId}`);
-    return response.data;
+    const response = await window.electronAPI.account.delete(accountId);
+    console.log(
+      `[DELETE] window.electronAPI.account.delete(${accountId})`,
+      response
+    );
+    return response;
   } catch (error: unknown) {
     throw new Error(error as string);
   }

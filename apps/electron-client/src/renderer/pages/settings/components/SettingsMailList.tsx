@@ -1,4 +1,4 @@
-import { AccountsResponse } from "@/types/authType";
+import { CreateAccountResponse } from "@/types/authType";
 
 import useAuthenticateStore from "@stores/authenticateStore";
 
@@ -15,8 +15,8 @@ const InnerList = ({
   user,
   onEdit,
 }: {
-  user: AccountsResponse;
-  onEdit: (account: AccountsResponse | null) => void;
+  user: CreateAccountResponse;
+  onEdit: (account: CreateAccountResponse | null) => void;
 }) => {
   const { deleteAuthUser } = useAuthenticateStore();
 
@@ -28,7 +28,7 @@ const InnerList = ({
     if (!confirm(`${user.email}\n계정을 삭제하시겠습니까?`)) return;
 
     try {
-      const data = await deleteAccount({ accountId: user.id });
+      const data = await deleteAccount({ accountId: user.accountId });
 
       if (data.success) {
         alert(`${user.email}\n계정이 삭제되었습니다!`);
@@ -67,7 +67,7 @@ const InnerList = ({
         </span>
 
         <div className="flex flex-col items-start justify-between w-fit h-full">
-          <h3 className="font-pre-bold">{user.name}</h3>
+          <h3 className="font-pre-bold">{user.username}</h3>
           <p className="font-pre-medium text-sm text-gray-500">{user.email}</p>
         </div>
       </div>
@@ -96,13 +96,13 @@ const SettingsMailList = ({
   users,
   onEdit,
 }: {
-  users: AccountsResponse[];
-  onEdit: (account: AccountsResponse | null) => void;
+  users: CreateAccountResponse[];
+  onEdit: (account: CreateAccountResponse | null) => void;
 }) => {
   return (
     <div className="flex flex-col justify-center items-center p-1 gap-1 rounded-2xl bg-white">
       {users.map((user, index) => (
-        <span key={user.id} className="w-full h-fit">
+        <span key={user.accountId} className="w-full h-fit">
           <InnerList user={user} onEdit={onEdit} />
           {users.length - 1 !== index && (
             <hr className="border-t border-light1 w-[95%]" />

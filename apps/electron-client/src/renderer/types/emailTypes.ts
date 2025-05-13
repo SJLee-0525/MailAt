@@ -1,3 +1,12 @@
+export interface FolderResponse {
+  folderId: number; // 폴더 ID
+  accountId: number; // 계정 ID
+  name: string; // 폴더 이름
+  type: "system" | "custom"; // 폴더 타입(system 또는 custom)
+  messagesTotal: number; // 총 메시지 수
+  createdAt: string; // 생성 시간
+}
+
 export interface Folder {
   name: string;
   color: string;
@@ -13,14 +22,16 @@ export interface ReplyData {
 export interface Attachment {
   filename: string;
   mimeType: string;
-  size: number;
 }
 
 export interface DetailAttachment {
-  filename: string;
-  mimeType: string;
-  size?: number; // 바이트 단위
-  attachmentId?: string; // 필요하면 포함
+  attachmentId: number; // 첨부파일 ID
+  messageId: number; // 메시지 ID
+  filename: string; // 파일명
+  mimeType: string; // MIME 타입
+  path: string; // 저장 경로
+  size: number; // 파일 크기(바이트)
+  createdAt: string; // 저장 시간
 }
 
 export interface EmailSearchFilters {
@@ -34,17 +45,39 @@ export interface EmailSearchFilters {
   endDate?: Date; // 날짜 필터: 이 날짜 이전(포함)
 }
 
+export interface EmailSearchFiltersParams {
+  accountId: number;
+  folderName: string;
+  from?: string[]; // 선택: 보낸 사람 필터링
+  to?: string[]; // 선택: 받는 사람 필터링
+  subject?: string[]; // 선택: 제목 필터링
+  includeKeywords?: string[]; // 선택: 본문에서 포함할 키워드
+  excludeKeywords?: string[]; // 선택: 본문에서 제외할 키워드
+  startDate?: string; // 선택: 조회 시작 날짜
+  endDate?: string; // 선택: 조회 종료 날짜
+  limit: number; // 선택: 조회 개수 제한 (기본값: 50)
+  offset: number; // 선택: 조회 시작 위치 (기본값: 0)
+  sort: "sent_at" | "created_at"; // 선택: 정렬 기준 (기본값: "sent_at")
+  order: "DESC" | "ASC"; // 선택: 정렬 방향 (기본값: "DESC")
+}
+
 export interface AllEmails {
-  id: number;
-  threadId: string;
-  subject: string;
-  from: string;
-  to: string;
-  date: string;
-  snippet: string;
-  attachments: Attachment[];
-  isRead: boolean;
-  labelIds: string[];
+  messageId: number; // 메시지 ID
+  externalMessageId: string; // 외부 메시지 ID
+  threadId: string; // 스레드 ID
+  accountId: number; // 계정 ID
+  folderId: number; // 폴더 ID
+  folderName: string; // 폴더 이름
+  fromEmail: string; // 발신자 이메일
+  fromName: string; // 발신자 이름
+  subject: string; // 제목
+  snippet: string; // 내용 미리보기
+  sentAt: string; // 발송 시간
+  receivedAt: string; // 수신 시간
+  isRead: boolean; // 읽음 상태
+  isFlagged: boolean; // 플래그 상태
+  hasAttachments: boolean; // 첨부파일 여부
+  attachmentCount: number; // 첨부파일 개수
 }
 
 export interface EmailSummary {
@@ -61,17 +94,40 @@ export interface EmailSummary {
 }
 
 export interface EmailDetail {
-  id: number;
-  threadId: string;
-  labelIds: string[];
-  subject: string;
-  from: string;
-  to: string;
-  date: string;
-  internalDate: string;
-  snippet: string;
-  body: string;
-  attachments: DetailAttachment[];
+  messageId: number; // 메시지 ID
+  externalMessageId: string; // 외부 메시지 ID
+  threadId: string; // 스레드 ID
+  accountId: number; // 계정 ID
+  folderId: number; // 폴더 ID
+  folderName: string; // 폴더 이름
+  fromEmail: string; // 발신자 이메일
+  fromName: string; // 발신자 이름
+  subject: string; // 제목
+  snippet: string; // 내용 미리보기
+  bodyText: string; // 본문 텍스트 (HTML이 아닌 일반 텍스트)
+  bodyHtml: string; // 본문 HTML (HTML 형식)
+  sentAt: string; // 발송 시간
+  receivedAt: string; // 수신 시간
+  isRead: boolean; // 읽음 상태 (상세 조회 시 자동으로 true로 변경)
+  isFlagged: boolean; // 플래그 상태
+  hasAttachments: boolean; // 첨부파일 여부
+
+  contacts?: Contact[]; // 연락처 정보 (선택적)
+  attachments?: DetailAttachment[]; // 첨부파일 정보 (선택적)
+}
+
+export interface Contact {
+  contactId: number;
+  email: string;
+  name: string;
+  createdAt: string;
+  lastSeenAt: string;
+}
+
+// 임시로 상세 메일로 변경
+export interface EmailDetailByThreadId {
+  contact: Contact;
+  messages: EmailDetail[];
 }
 
 export interface EmailSendRequestData {

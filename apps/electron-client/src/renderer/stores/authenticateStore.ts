@@ -1,17 +1,17 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware"; // StateStorage 추가
 
-import { User, AccountsResponse } from "@/types/authType";
+import { User, CreateAccountResponse } from "@/types/authType";
 
 interface AuthenticateStore {
   user: User | null;
   setUserName: (userData: User | null) => void;
   deleteUser: () => void;
-  authUsers: AccountsResponse[];
-  setAuthUsers: (authUsers: AccountsResponse[]) => void;
-  deleteAuthUser: (authUsers: AccountsResponse | null) => void;
-  selectedUser: AccountsResponse | null;
-  setSelectedUser: (user: AccountsResponse | null) => void;
+  authUsers: CreateAccountResponse[];
+  setAuthUsers: (authUsers: CreateAccountResponse[]) => void;
+  deleteAuthUser: (authUsers: CreateAccountResponse | null) => void;
+  selectedUser: CreateAccountResponse | null;
+  setSelectedUser: (user: CreateAccountResponse | null) => void;
 }
 
 // 실제로 persist될 상태의 타입 정의
@@ -30,16 +30,16 @@ const useAuthenticateStore = create<AuthenticateStore>()(
       authUsers: [],
       setAuthUsers: (users) => set({ authUsers: users }),
       selectedUser: {
-        id: 1,
+        accountId: 1,
         email: "hong.jiwoo@example.com",
-        name: "홍지우",
+        username: "홍지우",
         imapHost: "imap.example.com",
         smtpHost: "smtp.example.com",
       },
       deleteAuthUser: (user) =>
         set((state) => ({
           authUsers: state.authUsers.filter(
-            (authUser) => authUser.id !== user?.id
+            (authUser) => authUser.accountId !== user?.accountId
           ),
         })),
       setSelectedUser: (user) =>

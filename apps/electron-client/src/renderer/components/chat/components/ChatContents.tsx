@@ -58,24 +58,24 @@ const ChatContents = ({ chatData }: { chatData: EmailDetail[] }) => {
       {chatData && chatData.length > 0 && (
         <div className="flex flex-col w-full h-full py-2 gap-1 bg-white rounded-lg font-pre-bold overflow-y-auto hide-scrollbar">
           {chatData.map((chat) => {
-            const isFromMe = chat.from === ME;
-            const formattedDate = formatDate(chat.date, "dateTime");
+            const isFromMe = chat.fromEmail === ME;
+            const formattedDate = formatDate(chat.receivedAt, "dateTime");
 
             return (
               <div
-                key={chat.id}
+                key={chat.messageId}
                 className={`flex items-center w-full h-fit ${isFromMe ? "justify-end" : "justify-start"}`}
               >
                 {isFromMe ? (
                   <ToChatContent
                     subject={chat.subject}
-                    body={chat.body}
+                    body={chat.bodyText}
                     date={formattedDate}
                   />
                 ) : (
                   <FromChatContent
                     subject={chat.subject}
-                    body={chat.body}
+                    body={chat.bodyText}
                     date={formattedDate}
                   />
                 )}

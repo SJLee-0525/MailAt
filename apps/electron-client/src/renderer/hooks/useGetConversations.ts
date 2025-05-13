@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { AllEmails } from "@/types/emailTypes";
+import { AllEmails, FolderResponse } from "@/types/emailTypes";
 
 import useAuthenticateStore from "@stores/authenticateStore";
 
@@ -9,6 +9,7 @@ import { getFolders, getEmailsData, deleteEmail } from "@apis/emailApi";
 
 import useConversationsStore from "@stores/conversationsStore";
 
+// 폴더 목록 조회
 export const useGetEmailFolders = () => {
   const { user } = useAuthenticateStore();
   const { setFolders } = useConversationsStore();
@@ -28,7 +29,7 @@ export const useGetEmailFolders = () => {
 
   const userId = user?.userId || 1;
 
-  const query = useQuery<string[]>({
+  const query = useQuery<FolderResponse[]>({
     queryKey: ["folders", userId],
     queryFn: () => getFolders({ accountId: userId }),
     enabled: !!userId, // userId가 truthy(빈 문자열이 아님)일 때만 활성화
@@ -40,7 +41,7 @@ export const useGetEmailFolders = () => {
       const foldersWithColor: Record<string, string[]> = {};
 
       query.data.forEach((folder, index) => {
-        foldersWithColor[folder] = [
+        foldersWithColor[folder.name] = [
           COLOR_BOX[index % COLOR_BOX.length][0],
           COLOR_BOX[index % COLOR_BOX.length][1],
         ];
@@ -84,9 +85,9 @@ export const useDeleteEmail = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation<
-    { success: boolean },
+    { success: boolean; messageId: number },
     Error,
-    { emailId: number }
+    { messageId: number }
   >({
     mutationFn: deleteEmail,
     onSuccess: () => {

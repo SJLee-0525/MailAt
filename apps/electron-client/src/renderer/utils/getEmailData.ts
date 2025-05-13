@@ -1,4 +1,8 @@
-import { AllEmails, EmailSearchFilters } from "@/types/emailTypes";
+import {
+  AllEmails,
+  EmailSearchFilters,
+  EmailSearchFiltersParams,
+} from "@/types/emailTypes";
 
 import { mockAllEmails } from "@data/EMAIL_CONSERVATIONS";
 
@@ -42,14 +46,14 @@ export function searchEmails(filters: EmailSearchFilters): AllEmails[] {
   return mockAllEmails.filter((email) => {
     // 1) 날짜 범위 검사
     if (startDate || endDate) {
-      const sent = new Date(email.date).getTime();
+      const sent = new Date(email.receivedAt).getTime();
       if (startDate && sent < startDate.getTime()) return false;
       if (endDate && sent > endDate.getTime()) return false;
     }
 
     // 2) from 필터
     if (from) {
-      const fromLower = email.from.toLowerCase();
+      const fromLower = email.fromEmail.toLowerCase();
       const fromMatch = from.some((f) => fromLower.includes(f.toLowerCase()));
       if (!fromMatch) {
         return false;
@@ -57,13 +61,13 @@ export function searchEmails(filters: EmailSearchFilters): AllEmails[] {
     }
 
     // 3) to 필터
-    if (to) {
-      const toLower = email.to.toLowerCase();
-      const toMatch = to.some((t) => toLower.includes(t.toLowerCase()));
-      if (!toMatch) {
-        return false;
-      }
-    }
+    // if (to) {
+    //   const toLower = email.to.toLowerCase();
+    //   const toMatch = to.some((t) => toLower.includes(t.toLowerCase()));
+    //   if (!toMatch) {
+    //     return false;
+    //   }
+    // }
 
     // 4) subject 필터
     if (subject) {
@@ -80,8 +84,8 @@ export function searchEmails(filters: EmailSearchFilters): AllEmails[] {
     if (includeKeywords && includeKeywords.length > 0) {
       const haystack = [
         email.subject,
-        email.from,
-        email.to,
+        email.fromName,
+        email.fromEmail,
         email.snippet,
         // email.body,
       ]
@@ -99,8 +103,8 @@ export function searchEmails(filters: EmailSearchFilters): AllEmails[] {
     if (excludeKeywords && excludeKeywords.length > 0) {
       const haystack = [
         email.subject,
-        email.from,
-        email.to,
+        email.fromName,
+        email.fromEmail,
         email.snippet,
         // email.body,
       ]
@@ -115,15 +119,15 @@ export function searchEmails(filters: EmailSearchFilters): AllEmails[] {
     }
 
     // 7) minAttachmentSize 필터
-    if (attachmentSize != null) {
-      // 첨부파일 중 하나라도 size >= minAttachmentSize 여야 통과
-      const hasLarge = email.attachments.some(
-        (att) => att.size >= attachmentSize!
-      );
-      if (!hasLarge) {
-        return false;
-      }
-    }
+    // if (attachmentSize != null) {
+    //   // 첨부파일 중 하나라도 size >= minAttachmentSize 여야 통과
+    //   const hasLarge = email.attachments.some(
+    //     (att) => att.size >= attachmentSize!
+    //   );
+    //   if (!hasLarge) {
+    //     return false;
+    //   }
+    // }
 
     // 통과한 이메일 반환
     return true;
@@ -363,3 +367,66 @@ export const buildFilterQueryString = (
 
   return params.toString();
 };
+
+export function getEmailParams({
+  userId,
+  folderName,
+  filters,
+  limit = 50,
+  offset = 0,
+  sort = "sent_at",
+  order = "DESC",
+}: {
+  userId: number;
+  folderName: string | null;
+  filters: EmailSearchFilters;
+  limit?: number;
+  offset?: number;
+  sort?: "sent_at" | "created_at";
+  order?: "DESC" | "ASC";
+}): EmailSearchFiltersParams {
+  const params: EmailSearchFiltersParams = {
+    accountId: userId,
+    folderName: folderName ? folderName : "INBOX",
+
+    limit,
+    offset,
+    sort,
+    order,
+  };
+
+  // 필터 추가
+  if (filters.from) {
+    params.from = filters.from;
+  }
+
+  if (filters.to) {
+    params.to = filters.to;
+  }
+
+  if (filters.subject) {
+    params.subject = filters.subject;
+  }
+
+  if (filters.includeKeywords) {
+    params.includeKeywords = filters.includeKeywords;
+  }
+
+  if (filters.excludeKeywords) {
+    params.excludeKeywords = filters.excludeKeywords;
+  }
+
+  // if (filters.attachmentSize) {
+  //   params.attachmentSize = filters.attachmentSize;
+  // }
+
+  if (filters.startDate) {
+    params.startDate = filters.startDate.toISOString();
+  }
+
+  if (filters.endDate) {
+    params.endDate = filters.endDate.toISOString();
+  }
+
+  return params;
+}

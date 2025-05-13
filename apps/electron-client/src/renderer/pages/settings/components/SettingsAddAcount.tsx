@@ -1,9 +1,9 @@
-import useAuthenticateStore from "@stores/authenticateStore";
+// import useAuthenticateStore from "@stores/authenticateStore";
 
 import { useCreateAccount } from "@hooks/useGetUser";
 
 const SettingsAddAccount = ({ closeAction }: { closeAction: () => void }) => {
-  const { setAuthUsers } = useAuthenticateStore();
+  // const { setAuthUsers } = useAuthenticateStore();
 
   const { mutateAsync: createAccount } = useCreateAccount();
 
@@ -41,14 +41,14 @@ const SettingsAddAccount = ({ closeAction }: { closeAction: () => void }) => {
       smtpPort: Number(smtpPort),
     };
 
-    // api 호출
+    // api 호출 (!!!!!!!추후 보완 필요)
     try {
-      const data = await createAccount(payload);
+      createAccount(payload);
 
       alert(`${email}\n계정이 추가되었습니다!`);
-      setAuthUsers([
-        { id: data.id, email, name: email.split("@")[0], imapHost, smtpHost },
-      ]);
+      // setAuthUsers([
+      //   { id: data[0].accountId, email, name: email.split("@")[0], imapHost, smtpHost },
+      // ]);
     } catch (error) {
       console.error("Error creating account:", error);
       alert("계정 추가에 실패했습니다.");

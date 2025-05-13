@@ -9,13 +9,13 @@ export interface User {
 //   name: string;
 // }
 
-export interface AccountsResponse {
-  id: number;
-  email: string;
-  name: string;
-  imapHost: string;
-  smtpHost: string;
-}
+// export interface AccountsResponse {
+//   id: number;
+//   email: string;
+//   name: string;
+//   imapHost: string;
+//   smtpHost: string;
+// }
 
 export interface CreateAccountRequest {
   email: string;
@@ -24,9 +24,13 @@ export interface CreateAccountRequest {
   imapPort: number;
   smtpHost: string;
   smtpPort: number;
+  authMethod?: string;
 }
 
 export interface CreateAccountResponse {
-  id: number;
+  accountId: number;
   email: string;
+  imapHost: string;
+  smtpHost: string;
+  username: string;
 }

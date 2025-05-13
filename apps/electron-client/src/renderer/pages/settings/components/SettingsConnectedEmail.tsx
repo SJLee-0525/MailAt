@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { AccountsResponse } from "@/types/authType";
+import { CreateAccountResponse } from "@/types/authType";
 
 import useAuthenticateStore from "@stores/authenticateStore";
 
@@ -16,9 +16,8 @@ const SettingConnectedEmail = () => {
   const { user, authUsers } = useAuthenticateStore();
 
   const [isAddAccount, setIsAddAccount] = useState(false);
-  const [isEditAccount, setIsEditAccount] = useState<AccountsResponse | null>(
-    null
-  );
+  const [isEditAccount, setIsEditAccount] =
+    useState<CreateAccountResponse | null>(null);
 
   const accountsQuery = useGetAccounts();
   if (accountsQuery.isLoading) return <div>Loading...</div>;

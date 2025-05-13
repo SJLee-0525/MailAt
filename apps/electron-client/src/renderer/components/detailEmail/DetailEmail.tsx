@@ -42,7 +42,7 @@ const DetailEmail = () => {
       }
     }
 
-    fetchDetailEmail(selectedMail.id);
+    fetchDetailEmail(selectedMail.messageId);
   }, [selectedMail]);
 
   function handleClose() {
@@ -56,7 +56,7 @@ const DetailEmail = () => {
         <MailReplyForm
           replyData={replyData}
           threadId={detailEmail.threadId}
-          replyId={detailEmail.id}
+          replyId={detailEmail.messageId} // 이 값 보내는 게 맞는지 확인 필요
         />
       )}
 
