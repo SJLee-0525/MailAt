@@ -5,7 +5,8 @@ import os
 import time
 import logging
 import threading
-import psutil # psutil 모듈 추가
+import psutil
+import json
 
 # --- 로거 설정 ---
 logging.basicConfig(level=logging.INFO,
@@ -98,12 +99,34 @@ def summarize_email():
     t_start = time.perf_counter()
     logger.info(f"요약 요청 수신 - 이메일 앞부분: {email_text[:50]}...")
 
-    llm = get_model() # 캐시 또는 새로 로드된 모델 가져오기
+    llm = get_model()
 
     try:
         messages = [
-            {"role": "system", "content": "이메일 요약 전문가."},
-            {"role": "user", "content": f"아래 이메일을 한줄로 요약: {email_text}"}
+            {
+                "role": "system",
+                "content": (
+                    "이메일 요약 전문가이자 일정/할일 추출자. "
+                    "주어진 이메일 본문에서 요약(summary), 일정(schedule), 할 일(task)을 "
+                    "JSON 형태로 반환하세요. 일정이나 할 일이 없으면 None으로 표기하세요."
+                )
+            },
+            {
+                "role": "system",
+                "content": (
+                    "FewShot 예:\n"
+                    "이메일 예시: '안녕하세요. 내일 3시에 회의가 있습니다. 준비할 자료 리스트 보내드릴게요.'\n"
+                    "결과 JSON: {\n"
+                    '  "summary": "내일 회의와 자료 준비 요청",\n'
+                    '  "schedule": "내일 3시 회의",\n'
+                    '  "task": "자료 리스트 준비"\n'
+                    "}"
+                )
+            },
+            {
+                "role": "user",
+                "content": f"아래 이메일을 요약하고, 일정과 할 일을 JSON으로 반환하세요.\n\n{email_text}"
+            }
         ]
 
         response = llm.create_chat_completion(
@@ -113,29 +136,31 @@ def summarize_email():
             top_p=0.9,
             repeat_penalty=1.5,
         )
-        summary = response["choices"][0]["message"]["content"].strip()
-        logger.debug("요약 생성 완료.")
+        content = response["choices"][0]["message"]["content"].strip()
 
-        # 모델 사용 시간 갱신 (get_model에서 이미 처리됨)
+        # 모델 응답을 JSON으로 파싱
+        try:
+            parsed = json.loads(content)
+            summary = parsed.get("summary", "")
+            schedule = parsed.get("schedule", None)
+            task = parsed.get("task", None)
+        except json.JSONDecodeError:
+            logger.warning("JSON 형식 파싱 실패. 결과를 그대로 요약으로 사용합니다.")
+            summary = content
+            schedule = None
+            task = None
+
         with MODEL_CACHE["lock"]:
             MODEL_CACHE["last_used_time"] = time.time()
 
-
     except Exception as e:
         logger.error(f"요약 처리 중 오류 발생: {e}", exc_info=True)
-        # 오류 발생 시에도 모델 사용 시간을 갱신하여 바로 해제되지 않도록 할 수 있으나,
-        # 여기서는 오류 시에는 갱신하지 않아 다음 체크 때 해제될 수 있도록 함.
         return jsonify({"error": "요약 처리 중 오류가 발생했습니다."}), 500
-    # finally 블록에서 del llm 제거 (자동 해제 로직이 담당)
 
     t_end = time.perf_counter()
     logger.info(f"요약 요청 처리 완료. 소요 시간: {t_end - t_start:.2f}초")
 
-    return jsonify({"summary": summary})
+    return jsonify({"summary": summary, "schedule": schedule, "task": task})
 
 if __name__ == "__main__":
-    # 프로덕션 환경에서는 Flask 자체의 debug 모드를 False로 설정하는 것이 일반적입니다.
-    # Gunicorn, uWSGI 등의 WSGI 서버를 사용하는 것이 권장됩니다.
-    # 여기서는 간단하게 debug=False로 설정합니다.
-    # Flask의 기본 로거 외에 위에서 설정한 로거가 사용됩니다.
     app.run(host="0.0.0.0", port=5000, debug=False)
