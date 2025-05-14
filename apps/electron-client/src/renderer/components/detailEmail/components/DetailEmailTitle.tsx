@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ReplyData, DetailAttachment } from "@/types/emailTypes";
 
 import useUserProgressStore from "@stores/userProgressStore";
+import useModalStore from "@stores/modalStore";
 
 import { useDeleteEmail, useMarkEmailAsRead } from "@hooks/useGetConversations";
 
@@ -49,6 +50,7 @@ const DetailEmailTitle = ({
   openChat: () => void;
 }) => {
   const { setIsReplying } = useUserProgressStore();
+  const { openAlertModal } = useModalStore();
 
   const { mutateAsync: deleteEmail } = useDeleteEmail();
   const { mutateAsync: markEmailAsRead } = useMarkEmailAsRead();
@@ -68,6 +70,10 @@ const DetailEmailTitle = ({
         onChangeIsRead(!isRead);
       }
     } catch (error) {
+      openAlertModal({
+        title: "읽음 표시 실패",
+        content: "읽음 표시를 변경하는 데 실패했습니다.",
+      });
       console.error("Error marking email as read:", error);
     }
   }
@@ -77,9 +83,16 @@ const DetailEmailTitle = ({
       const response = await deleteEmail({ messageId: id });
 
       if (response.success) {
-        console.log("삭제 성공");
+        openAlertModal({
+          title: "삭제 성공",
+          content: "이메일이 삭제되었습니다.",
+        });
       } else {
-        console.error("삭제 실패");
+        openAlertModal({
+          title: "삭제 실패",
+          content: "이메일 삭제에 실패했습니다.",
+        });
+        console.error("Error deleting email:", response);
       }
     }
   }

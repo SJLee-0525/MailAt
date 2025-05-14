@@ -1,9 +1,11 @@
 // import useAuthenticateStore from "@stores/authenticateStore";
+import useModalStore from "@stores/modalStore";
 
 import { useCreateAccount } from "@hooks/useGetUser";
 
 const SettingsAddAccount = ({ closeAction }: { closeAction: () => void }) => {
   // const { setAuthUsers } = useAuthenticateStore();
+  const { openAlertModal } = useModalStore();
 
   const { mutateAsync: createAccount } = useCreateAccount();
 
@@ -28,7 +30,10 @@ const SettingsAddAccount = ({ closeAction }: { closeAction: () => void }) => {
       smtpHost.trim() === "" ||
       smtpPort.trim() === ""
     ) {
-      // alert("모든 필드를 입력하세요.");
+      openAlertModal({
+        title: "입력 오류",
+        content: "모든 필드를 입력해주세요.",
+      });
       return;
     }
 
@@ -47,13 +52,19 @@ const SettingsAddAccount = ({ closeAction }: { closeAction: () => void }) => {
     try {
       await createAccount(payload);
 
-      // alert(`${email}\n계정이 추가되었습니다!`);
+      openAlertModal({
+        title: "계정 추가 성공",
+        content: "계정이 추가되었습니다.",
+      });
       // setAuthUsers([
       //   { id: data[0].accountId, email, name: email.split("@")[0], imapHost, smtpHost },
       // ]);
     } catch (error) {
+      openAlertModal({
+        title: "계정 추가 실패",
+        content: "계정 추가에 실패했습니다. 다시 시도해주세요.",
+      });
       console.error("Error creating account:", error);
-      // alert("계정 추가에 실패했습니다.");
       return;
     }
 

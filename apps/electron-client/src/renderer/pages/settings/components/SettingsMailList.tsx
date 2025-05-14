@@ -1,6 +1,7 @@
 import { CreateAccountResponse } from "@/types/authType";
 
 import useAuthenticateStore from "@stores/authenticateStore";
+import useModalStore from "@stores/modalStore";
 
 import { useDeleteAccount } from "@hooks/useGetUser";
 
@@ -19,6 +20,7 @@ const InnerList = ({
   onEdit: (account: CreateAccountResponse | null) => void;
 }) => {
   const { deleteAuthUser } = useAuthenticateStore();
+  const { openAlertModal } = useModalStore();
 
   const { mutateAsync: deleteAccount } = useDeleteAccount();
 
@@ -31,12 +33,18 @@ const InnerList = ({
       const data = await deleteAccount({ accountId: user.accountId });
 
       if (data.success) {
-        // alert(`${user.email}\n계정이 삭제되었습니다!`);
+        openAlertModal({
+          title: "계정 삭제 성공",
+          content: "계정이 삭제되었습니다.",
+        });
         deleteAuthUser(user); // 임시..
       }
     } catch (error) {
+      openAlertModal({
+        title: "계정 삭제 실패",
+        content: "계정 삭제에 실패했습니다.",
+      });
       console.error("Error deleting account:", error);
-      // alert("계정 삭제에 실패했습니다.");
       return;
     }
   }

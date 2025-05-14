@@ -11,8 +11,9 @@ import { getUser } from "@apis/userApi";
 import MainLayout from "@layouts/MainLayout";
 import Home from "@pages/home/Home";
 
-import Modal from "@components/common/modal/Modal";
+import Alert from "@components/common/modal/Alert";
 import NewMailFormModal from "@components/mailForm/NewMailFormModal";
+import Modal from "@components/common/modal/Modal";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,8 @@ export default function App() {
         </Route>
       </Routes>
 
+      {/* 모달 컴포넌트들 */}
+      <Alert />
       <NewMailFormModal />
       <Modal />
     </QueryClientProvider>

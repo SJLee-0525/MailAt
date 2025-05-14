@@ -9,6 +9,17 @@
   }
 }
 
+@keyframes slideDownAlert {
+  from {
+    transform: translateY(20vh);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(60vh);
+    opacity: 1;
+  }
+}
+
 @keyframes slideDownClose {
   from {
     transform: translateY(50vh);
@@ -27,6 +38,17 @@
   }
   to {
     transform: translateY(-50vh);
+    opacity: 0;
+  }
+}
+
+@keyframes slideUpClose {
+  from {
+    transform: translateY(60vh);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(20vh);
     opacity: 0;
   }
 }

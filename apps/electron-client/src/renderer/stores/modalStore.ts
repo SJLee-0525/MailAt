@@ -8,6 +8,12 @@ interface ModalState {
   modalContent: React.ReactNode | null;
   openModal: (content: React.ReactNode) => void;
   closeModal: () => void;
+
+  alertIsOpen: boolean;
+  alertIsClosing: boolean;
+  alertModalContent: { title: string; content: string } | null;
+  openAlertModal: (content: { title: string; content: string }) => void;
+  closeAlertModal: () => void;
 }
 
 const useModalStore = create<ModalState>((set) => ({
@@ -20,6 +26,23 @@ const useModalStore = create<ModalState>((set) => ({
 
     setTimeout(() => {
       set({ isClosing: false, isOpen: false, modalContent: null });
+    }, 300);
+  },
+
+  alertIsOpen: false,
+  alertIsClosing: false,
+  alertModalContent: null,
+  openAlertModal: (content) =>
+    set({ alertIsOpen: true, alertModalContent: content }),
+  closeAlertModal: () => {
+    set({ alertIsClosing: true });
+
+    setTimeout(() => {
+      set({
+        alertIsClosing: false,
+        alertIsOpen: false,
+        alertModalContent: null,
+      });
     }, 300);
   },
 }));

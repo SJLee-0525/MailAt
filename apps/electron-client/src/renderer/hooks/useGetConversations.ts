@@ -16,6 +16,7 @@ import {
 // import { base64ToUtf16 } from "@utils/getEmailData";
 
 import useAuthenticateStore from "@stores/authenticateStore";
+import useConversationsStore from "@stores/conversationsStore";
 
 import {
   getFolders,
@@ -23,8 +24,6 @@ import {
   deleteEmail,
   markEmailAsRead,
 } from "@apis/emailApi";
-
-import useConversationsStore from "@stores/conversationsStore";
 
 const PAGE_SIZE = 5; // 페이지당 이메일 수 (임시)
 
@@ -165,7 +164,6 @@ export const useDeleteEmail = () => {
     },
     onError: (error) => {
       console.error("Error deleting email:", error);
-      alert("이메일 삭제에 실패했습니다.");
     },
   });
 
@@ -187,7 +185,6 @@ export const useMarkEmailAsRead = () => {
     },
     onError: (error) => {
       console.error("Error marking email as read:", error);
-      alert("이메일 읽음 처리에 실패했습니다.");
     },
   });
 
