@@ -36,7 +36,7 @@ const Inbox = () => {
   }, [user.userId, selectedFolder, filters, setConversations]);
 
   return (
-    <div className="relative flex flex-col w-md min-w-md h-full max-h-full">
+    <div className="relative flex flex-col w-md min-w-md h-full max-h-full pointer-events-auto">
       <div className="flex flex-col w-full h-full bg-light1 rounded-xl">
         <InboxHeader />
         <div className="w-full h-full px-1 pb-1 bg-light1 rounded-b-xl overflow-y-auto">

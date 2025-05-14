@@ -16,14 +16,14 @@ const PopUpLayout = () => {
 
   if (calendarIsOpen) {
     return (
-      <div className="absolute top-0 right-0 flex flex-row-reverse p-1 gap-1.5 w-full h-full">
+      <div className="absolute top-0 right-0 flex flex-row-reverse p-1 gap-1.5 w-full h-full pointer-events-none">
         <Calendar />
       </div>
     );
   }
 
   return (
-    <div className="absolute top-0 right-0 flex flex-row-reverse p-1 gap-1.5 w-full h-full">
+    <div className="absolute top-0 right-0 flex flex-row-reverse p-1 gap-1.5 w-full h-full pointer-events-none">
       {inboxIsOpen && !isReplying && <Inbox />}
       {selectedMail !== null && <DetailEmail />}
     </div>
@@ -33,13 +33,16 @@ const PopUpLayout = () => {
 const MainLayout = () => {
   // const { refetch } = useGetAllEmails();
 
+  const { inboxIsOpen } = useUserProgressStore();
+
   return (
     <div className="flex w-screen h-screen font-pre-regular">
       <SideNav />
-      <main className="relative flex-1 overflow-auto">
+      <main className="relative flex-1 overflow-auto ">
         <div className="flex w-full h-full">
           <Outlet />
           <PopUpLayout />
+          {inboxIsOpen && <div className="w-md min-w-md h-full max-h-full" />}
         </div>
 
         <HoverZone />

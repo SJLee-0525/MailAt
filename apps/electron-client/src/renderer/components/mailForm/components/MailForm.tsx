@@ -53,67 +53,69 @@ const MailForm = forwardRef<HTMLInputElement, MailFormProps>(
           />
         )}
 
-        <form
-          onSubmit={addSender}
-          className="flex justify-between items-center h-fit border-b-2 border-light1"
-        >
+        <div className="flex flex-col w-full h-full">
+          <form
+            onSubmit={addSender}
+            className="flex justify-between items-center h-fit border-b-2 border-light1"
+          >
+            <input
+              name="sender"
+              type="text"
+              placeholder="받는 사람"
+              className="w-full h-9 text-sm focus:outline-none focus:bg-gray-100"
+            />
+            <span className="flex items-center justify-between w-fit h-9 gap-1.5 text-sm">
+              <button
+                onClick={() => setIsCcOpen(!isCcOpen)}
+                className={`font-pre-bold text-xs px-1.5 py-0.5 rounded-full whitespace-nowrap ${isCcOpen ? "bg-orange-400 text-white" : ""}`}
+              >
+                참조
+              </button>
+              <button
+                onClick={() => setIsBccOpen(!isBccOpen)}
+                className={`font-pre-bold text-xs px-1.5 py-0.5 rounded-full whitespace-nowrap ${isBccOpen ? "bg-red-500 text-white" : ""}`}
+              >
+                숨은 참조
+              </button>
+            </span>
+          </form>
+
+          {isCcOpen && (
+            <form className="h-fit" onSubmit={addCc}>
+              <input
+                name="cc"
+                type="text"
+                placeholder="참조"
+                className="w-full h-9 text-sm border-b-2 border-light1 focus:outline-none focus:bg-gray-100"
+              />
+            </form>
+          )}
+
+          {isBccOpen && (
+            <form className="h-fit" onSubmit={addBcc}>
+              <input
+                name="bcc"
+                type="text"
+                placeholder="숨은 참조"
+                className="w-full h-9 text-sm border-b-2 border-light1 focus:outline-none focus:bg-gray-100"
+              />
+            </form>
+          )}
+
           <input
-            name="sender"
+            ref={titleRef}
+            name="title"
             type="text"
-            placeholder="받는 사람"
-            className="w-full h-9 text-sm focus:outline-none focus:bg-gray-100"
+            placeholder="제목"
+            className="w-full h-10 text-sm border-b-2 border-light1 focus:outline-none focus:bg-gray-100"
           />
-          <span className="flex items-center justify-between w-fit h-9 gap-2.5 text-sm">
-            <button
-              onClick={() => setIsCcOpen(!isCcOpen)}
-              className="font-pre-bold text-xs whitespace-nowrap"
-            >
-              참조
-            </button>
-            <button
-              onClick={() => setIsBccOpen(!isBccOpen)}
-              className="font-pre-bold text-xs whitespace-nowrap"
-            >
-              숨은 참조
-            </button>
-          </span>
-        </form>
 
-        {isCcOpen && (
-          <form className="h-fit" onSubmit={addCc}>
-            <input
-              name="cc"
-              type="text"
-              placeholder="참조"
-              className="w-full h-9 text-sm border-b-2 border-light1 focus:outline-none focus:bg-gray-100"
-            />
-          </form>
-        )}
-
-        {isBccOpen && (
-          <form className="h-fit" onSubmit={addBcc}>
-            <input
-              name="bcc"
-              type="text"
-              placeholder="숨은 참조"
-              className="w-full h-9 text-sm border-b-2 border-light1 focus:outline-none focus:bg-gray-100"
-            />
-          </form>
-        )}
-
-        <input
-          ref={titleRef}
-          name="title"
-          type="text"
-          placeholder="제목"
-          className="w-full h-10 text-sm border-b-2 border-light1 focus:outline-none focus:bg-gray-100"
-        />
-
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between w-full h-9 text-sm">
-            본문
+          <div className="flex flex-col h-full">
+            <div className="flex items-center justify-between w-full h-9 text-sm">
+              본문
+            </div>
+            <MailTextEditor initialHtml={initialHtml} setHtml={setHtml} />
           </div>
-          <MailTextEditor initialHtml={initialHtml} setHtml={setHtml} />
         </div>
       </div>
     );

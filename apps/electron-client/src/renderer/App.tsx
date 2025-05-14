@@ -9,11 +9,14 @@ import useAuthenticateStore from "@stores/authenticateStore";
 import { getUser } from "@apis/userApi";
 
 import MainLayout from "@layouts/MainLayout";
-import Home from "@pages/home/Home";
+// import Home from "@pages/home/Home";
+import EmailGraph from "@pages/emailGraph/EmailGraph";
 
 import Alert from "@components/common/modal/Alert";
 import NewMailFormModal from "@components/mailForm/NewMailFormModal";
 import Modal from "@components/common/modal/Modal";
+
+import { GRAPH_EMAIL_DATA } from "@data/GRAPH_EMAIL_DATA";
 
 const queryClient = new QueryClient();
 
@@ -43,8 +46,17 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <Routes>
         {/* 모든 페이지에 공통 레이아웃 적용 */}
-        <Route path="/" element={<MainLayout />}>
-          <Route index element={<Home />} />
+        <Route path="/renderer.html" element={<MainLayout />}>
+          {/* <Route index element={<Home />} /> */}
+          <Route
+            index
+            element={
+              <EmailGraph
+                rawNodes={GRAPH_EMAIL_DATA.result.nodes}
+                rawEmails={GRAPH_EMAIL_DATA.result.emails}
+              />
+            }
+          />
           <Route path="*" element={<div>Not Found</div>} />
         </Route>
       </Routes>

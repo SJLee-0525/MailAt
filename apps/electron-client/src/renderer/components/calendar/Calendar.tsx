@@ -10,7 +10,7 @@ const Calendar = () => {
   return (
     <>
       {selectedDate.date && <CalendarDetail selectedDate={selectedDate.date} />}
-      <div className="flex flex-col w-full min-w-96 h-full bg-light1 rounded-xl transition-all duration-300 ease-in-out">
+      <div className="flex flex-col w-full min-w-96 h-full bg-light1 rounded-xl transition-all duration-300 ease-in-out pointer-events-auto">
         <CalendarHeader
           currentDate={currentDate}
           dispatch={dispatch}

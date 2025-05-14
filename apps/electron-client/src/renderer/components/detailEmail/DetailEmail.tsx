@@ -52,6 +52,7 @@ const DetailEmail = () => {
 
   function handleClose() {
     setSelectedMail(null);
+    setChattingIsOpen(false);
     setIsReplying(false);
   }
 
@@ -65,7 +66,7 @@ const DetailEmail = () => {
         />
       )}
 
-      <div className="flex flex-col w-full min-w-96 h-full bg-light1 rounded-xl transition-all duration-300 ease-in-out">
+      <div className="flex flex-col w-full min-w-96 h-full bg-light1 rounded-xl transition-all duration-300 ease-in-out pointer-events-auto">
         <DetailEmailHeader onClose={handleClose} />
         <div className="flex flex-col w-full h-full px-1 pb-1 bg-light1 rounded-b-xl overflow-y-auto">
           <DetailEmailContents
