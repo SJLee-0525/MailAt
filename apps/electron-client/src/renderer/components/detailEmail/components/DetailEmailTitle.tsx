@@ -91,12 +91,6 @@ const DetailEmailTitle = ({
         </div>
 
         <span className="flex items-center gap-2">
-          <button
-            className="font-pre-semi-bold px-1.5 py-0.5 rounded-full bg-content text-white text-xs whitespace-nowrap"
-            onClick={handleChangeIsRead}
-          >
-            {isRead ? "읽음" : "읽지 않음"}
-          </button>
           <p className="font-pre-medium text-sm text-content">
             {formattedDate}
           </p>
@@ -127,6 +121,12 @@ const DetailEmailTitle = ({
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            className="font-pre-semi-bold px-1.5 py-0.5 rounded-full bg-content text-white text-xs whitespace-nowrap"
+            onClick={handleChangeIsRead}
+          >
+            {isRead ? "읽음" : "읽지 않음"}
+          </button>
           <ReplyIcon
             width={24}
             height={24}

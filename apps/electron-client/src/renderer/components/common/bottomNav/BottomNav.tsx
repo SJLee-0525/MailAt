@@ -7,8 +7,12 @@ import EditIcon from "@assets/icons/EditIcon";
 import InboxIcon from "@assets/icons/InboxIcon";
 
 const BottomNav = () => {
-  const { setBottomNavProgress, setMailFormIsOpen, setInboxIsOpen } =
-    useUserProgressStore();
+  const {
+    inboxIsOpen,
+    setBottomNavProgress,
+    setMailFormIsOpen,
+    setInboxIsOpen,
+  } = useUserProgressStore();
 
   return (
     <div className="flex justify-between items-center mb-10 w-fit gap-8">
@@ -30,7 +34,7 @@ const BottomNav = () => {
         icon={<InboxIcon />}
         onClick={() => {
           console.log("Inbox");
-          setInboxIsOpen(true);
+          setInboxIsOpen(!inboxIsOpen);
         }}
       />
     </div>

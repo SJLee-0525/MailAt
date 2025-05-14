@@ -43,7 +43,6 @@ const Chat = ({
     }
   }, [selectedMail]);
 
-  // 여기 타입 에러 왜난느 거임..!!!!!!!!!!!!!!!!!!!!!
   return (
     <div className="absolute z-10 flex flex-col w-md min-w-md h-full max-h-full bg-light1 rounded-xl">
       <ChatHeader

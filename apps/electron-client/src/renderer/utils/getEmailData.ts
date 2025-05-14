@@ -372,16 +372,16 @@ export function getEmailParams({
   userId,
   folderName,
   filters,
-  limit = 50,
-  offset = 0,
+  limit,
+  offset,
   sort = "sent_at",
   order = "DESC",
 }: {
   userId: number;
   folderName: string | null;
   filters: EmailSearchFilters;
-  limit?: number;
-  offset?: number;
+  limit: number;
+  offset: number;
   sort?: "sent_at" | "created_at";
   order?: "DESC" | "ASC";
 }): EmailSearchFiltersParams {

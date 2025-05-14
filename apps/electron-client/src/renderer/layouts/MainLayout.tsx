@@ -2,7 +2,7 @@ import { Outlet } from "react-router-dom";
 
 import useUserProgressStore from "@stores/userProgressStore";
 
-import { useGetAllEmails } from "@hooks/useGetConversations";
+// import { useGetAllEmails } from "@hooks/useGetConversations";
 
 import HoverZone from "@layouts/HoverZone";
 import SideNav from "@components/common/nav/SideNav";
@@ -32,7 +32,7 @@ const PopUpLayout = () => {
 };
 
 const MainLayout = () => {
-  const { refetch } = useGetAllEmails();
+  // const { refetch } = useGetAllEmails();
 
   return (
     <div className="flex w-screen h-screen">

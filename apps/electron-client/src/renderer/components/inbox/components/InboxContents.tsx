@@ -1,8 +1,11 @@
-import { useId } from "react";
+import { useInView } from "react-intersection-observer";
+import { useId, useEffect } from "react";
 
 import { AllEmails } from "@/types/emailTypes";
 
 import { markEmailAsRead } from "@apis/emailApi";
+
+import { useInfiniteEmails } from "@hooks/useGetConversations";
 
 import useConservationsStore from "@stores/conversationsStore";
 import userProgressStore from "@stores/userProgressStore";
@@ -41,6 +44,21 @@ const InboxFolders = ({ folders }: { folders: Record<string, string[]> }) => {
 const InboxContents = () => {
   const { folders, conversations, setConversations } = useConservationsStore();
   const { selectedMail, setSelectedMail } = userProgressStore();
+
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteEmails();
+
+  // 바닥 감시용 sentinel
+  const { ref: bottomRef, inView } = useInView({
+    rootMargin: "20px", // 200px 전에 미리 로드
+  });
+
+  // sentinel 이 화면에 들어오면 다음 페이지 요청
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   async function openDetailEmail(email: AllEmails) {
     if (email.isRead) {
@@ -83,6 +101,9 @@ const InboxContents = () => {
               />
             );
           })}
+
+          {/* 무한 스크롤 sentinel */}
+          <div ref={bottomRef} />
         </div>
       )}
     </div>

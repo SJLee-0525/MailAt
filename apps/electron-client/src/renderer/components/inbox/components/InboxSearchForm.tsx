@@ -34,9 +34,9 @@ const InboxSearchForm = () => {
   }
 
   return (
-    <div className="relative flex justify-center items-center z-10 w-full h-full px-3 py-1.5">
+    <div className="relative flex justify-center items-center z-10 w-full h-full px-3 ">
       <form
-        className="flex items-center justify-between p-1 w-full h-full bg-white text-gray-700 rounded-full"
+        className="flex items-center justify-between px-1.5 w-full h-12 bg-white text-gray-700 rounded-full"
         onSubmit={handleSearch}
       >
         <input

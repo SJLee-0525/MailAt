@@ -44,10 +44,14 @@ export const getEmailsData = async ({
   userId,
   folderName,
   filters,
+  limit,
+  offset,
 }: {
   userId: number | null;
   folderName: string | null;
   filters: EmailSearchFilters;
+  limit: number;
+  offset: number;
 }): Promise<AllEmails[]> => {
   if (!userId) {
     throw new Error("User ID is required to fetch emails.");
@@ -57,6 +61,8 @@ export const getEmailsData = async ({
     userId,
     folderName: folderName || "INBOX",
     filters,
+    limit,
+    offset,
   });
 
   // const qs = buildFilterQueryString(userId, folderName, filters);

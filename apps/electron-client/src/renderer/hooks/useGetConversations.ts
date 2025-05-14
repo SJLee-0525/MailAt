@@ -1,7 +1,17 @@
 import { useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useInfiniteQuery,
+  useQueryClient,
+  InfiniteData,
+} from "@tanstack/react-query";
 
-import { AllEmails, FolderResponse } from "@/types/emailTypes";
+import {
+  AllEmails,
+  FolderResponse,
+  EmailSearchFilters,
+} from "@/types/emailTypes";
 
 // import { base64ToUtf16 } from "@utils/getEmailData";
 
@@ -10,6 +20,8 @@ import useAuthenticateStore from "@stores/authenticateStore";
 import { getFolders, getEmailsData, deleteEmail } from "@apis/emailApi";
 
 import useConversationsStore from "@stores/conversationsStore";
+
+const PAGE_SIZE = 10; // 페이지당 이메일 수
 
 // 폴더 목록 조회
 export const useGetEmailFolders = () => {
@@ -60,30 +72,77 @@ export const useGetEmailFolders = () => {
   return query;
 };
 
-export const useGetAllEmails = () => {
+// export const useGetAllEmails = () => {
+//   const { user } = useAuthenticateStore();
+//   const {
+//     selectedFolder: folderName,
+//     setConversations,
+//     filters,
+//   } = useConversationsStore();
+
+//   const userId = user?.userId || null;
+
+//   const query = useQuery<AllEmails[]>({
+//     queryKey: ["emails"],
+//     queryFn: () => getEmailsData({ userId, folderName, filters }),
+//     enabled: !userId || !folderName, // queryKey가 빈 배열이 아니면 쿼리 실행
+//     throwOnError: true,
+//   });
+
+//   useEffect(() => {
+//     if (query.data) {
+//       setConversations(query.data || []);
+//     }
+//   }, [query.data, setConversations]);
+
+//   return query;
+// };
+
+export const useInfiniteEmails = () => {
   const { user } = useAuthenticateStore();
   const {
     selectedFolder: folderName,
-    setConversations,
     filters,
+    setConversations,
   } = useConversationsStore();
 
-  const userId = user?.userId || null;
+  const userId = user?.userId ?? null;
 
-  const query = useQuery<AllEmails[]>({
-    queryKey: ["emails"],
-    queryFn: () => getEmailsData({ userId, folderName, filters }),
-    enabled: !userId || !folderName, // queryKey가 빈 배열이 아니면 쿼리 실행
+  const query = useInfiniteQuery<
+    AllEmails[],
+    Error,
+    InfiniteData<AllEmails[]>,
+    (string | number | EmailSearchFilters | null)[],
+    number
+  >({
+    queryKey: ["emails", userId, folderName, filters], // 버스트 캐싱
+    enabled: !!userId,
     throwOnError: true,
+    queryFn: ({ pageParam = 0 }) =>
+      getEmailsData({
+        userId,
+        folderName,
+        filters,
+        limit: PAGE_SIZE,
+        offset: pageParam, // ← 핵심
+      }),
+    initialPageParam: 0, // Added: initial page parameter
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length < PAGE_SIZE
+        ? undefined // 더 없음
+        : allPages.length * PAGE_SIZE, // 다음 offset
   });
 
+  // store 와 동기화 (append)
   useEffect(() => {
     if (query.data) {
-      setConversations(query.data || []);
+      console.log("iiiiiiiii 이메일 목록:", query.data);
+      const flat = query.data.pages.flat();
+      setConversations(flat);
     }
   }, [query.data, setConversations]);
 
-  return query;
+  return query; // hasNextPage, fetchNextPage 도 포함
 };
 
 export const useDeleteEmail = () => {
