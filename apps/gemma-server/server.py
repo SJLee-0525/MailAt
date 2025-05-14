@@ -27,7 +27,7 @@ def resource_path(relative_path):
 app = Flask(__name__)
 
 # GGUF_PATH 설정
-GGUF_MODEL_FILENAME = "gemma-3-4b-it-Q2_K.gguf"
+GGUF_MODEL_FILENAME = "gemma-3-4b-it-q4_0.gguf"
 GGUF_PATH = resource_path(os.path.join("models", GGUF_MODEL_FILENAME))
 
 # --- 리소스 모니터링 함수 ---
@@ -113,11 +113,8 @@ def summarize_email():
                 "role": "system",
                 "content": (
                     "이메일 요약 전문가이자 일정/할일 추출자. "
-                    "절대 배열이나 불필요한 문장 없이, 정확히 다음과 같은 JSON을 반환하세요: "
-                    '{"summary":"<single-line string>",'
-                    '"schedule":"<YYYY-MM-DD(요일) 또는 null>",'
-                    '"task":"<10글자 이내 한 줄 문자열 또는 null>"}. '
-                    "schedule에는 괄호나 추가 설명 없이 YYYY-MM-DD(요일) 형태로만, "
+                    "절대 배열이나 불필요한 문장 없이, 정확히 JSON을 반환하세요: "
+                    "schedule에는 괄호나 추가 설명 없이 YYYY-MM-DD(요일) 형태로만 작성하며 내일 회의일 경우 D+1 그리고 다음 주 라고 작성되어 있을 경우 요일을 계산하여 작성함, "
                     "task도 단일 문자열(최대 10글자)만 작성하세요. "
                     "Key값은 영어로 작성하고, 엔터나 백틱 등은 절대 포함하지 마세요."
                 )
@@ -134,7 +131,7 @@ def summarize_email():
             {
                 "role": "user",
                 "content": (
-                f"아래 이메일을 최대 두 줄로 요약하고, 일정과 할 일을 JSON으로 반환하세요.\n\n{email_text}"
+                f"\n\n아래 이메일을 최대 두 줄로 요약하고, 일정과 할 일을 JSON으로 반환하세요.\n\n{email_text}"
                     f'오늘 날짜 : {today_str}\n\n'
                     '{"summary":"<single-line string>",'
                     '"schedule":"<YYYY-MM-DD(요일) 또는 null>",'
@@ -157,7 +154,7 @@ def summarize_email():
 
         response = llm.create_chat_completion(
             messages=messages,
-            max_tokens=1024,
+            max_tokens=512,
             temperature=0.0,
             top_p=0.8,
             repeat_penalty=1.2,
