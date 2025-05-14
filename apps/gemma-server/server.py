@@ -103,14 +103,21 @@ def summarize_email():
     llm = get_model()
 
     try:
-        today_str = f"{time.localtime().tm_year}-{time.localtime().tm_mon:02d}-{time.localtime().tm_mday:02d}T00:00"
+        weekday_map = ["월", "화", "수", "목", "금", "토", "일"]
+        current_weekday = time.localtime().tm_wday  # 0=월, 6=일
+        weekday_kr = weekday_map[current_weekday]
+
+        today_str = f"{time.localtime().tm_year}-{time.localtime().tm_mon:02d}-{time.localtime().tm_mday:02d}({weekday_kr})"
         messages = [
             {
                 "role": "system",
                 "content": (
                     "이메일 요약 전문가이자 일정/할일 추출자. "
                     "절대 배열이나 불필요한 문장 없이, 정확히 다음과 같은 JSON을 반환하세요: "
-                    "schedule에는 괄호나 추가 설명 없이 YYYY-MM-DDTHH:mm 형태만, "
+                    '{"summary":"<single-line string>",'
+                    '"schedule":"<YYYY-MM-DD(요일) 또는 null>",'
+                    '"task":"<10글자 이내 한 줄 문자열 또는 null>"}. '
+                    "schedule에는 괄호나 추가 설명 없이 YYYY-MM-DD(요일) 형태로만, "
                     "task도 단일 문자열(최대 10글자)만 작성하세요. "
                     "Key값은 영어로 작성하고, 엔터나 백틱 등은 절대 포함하지 마세요."
                 )
@@ -119,9 +126,9 @@ def summarize_email():
                 "role": "system",
                 "content": (
                     "Few-shot 예시:\n"
-                    "오늘 날짜 : 2025-05-15T00:00\n"
-                    "이메일: '안녕하세요. 내일 3시에 회의가 있습니다. 준비할 자료 리스트 보내드릴게요.'\n"
-                    '응답: {"summary":"내일 회의와 자료 준비 요청","schedule":"2025-05-16T10:00","task":"회의"}'
+                    "오늘 날짜 : 2025-05-15(목)\n"
+                    "이메일: '안녕하세요. 내일 회의가 있습니다.'\n"
+                    '응답: {"summary":"내일 회의 안내","schedule":"2025-05-16(금)","task":"회신"}'
                 )
             },
             {
@@ -130,7 +137,7 @@ def summarize_email():
                 f"아래 이메일을 최대 두 줄로 요약하고, 일정과 할 일을 JSON으로 반환하세요.\n\n{email_text}"
                     f'오늘 날짜 : {today_str}\n\n'
                     '{"summary":"<single-line string>",'
-                    '"schedule":"<YYYY-MM-DDTHH:mm 또는 null>",'
+                    '"schedule":"<YYYY-MM-DD(요일) 또는 null>",'
                     '"task":"<10글자 이내 한 줄 문자열 또는 null>"}. '
                 )
             }
