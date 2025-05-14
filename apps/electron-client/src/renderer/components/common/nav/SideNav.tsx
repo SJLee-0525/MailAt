@@ -13,10 +13,12 @@ import IconButton from "@components/common/button/IconButton";
 
 const SideNav = () => {
   const { openModal, closeModal } = useModalStore();
-  const { setInboxIsOpen } = useUserProgressStore();
+  const { setCalendarIsOpen, setInboxIsOpen } = useUserProgressStore();
 
   function handleCloseAllModal() {
+    setCalendarIsOpen(false);
     setInboxIsOpen(false);
+
     closeModal();
   }
 
@@ -33,6 +35,10 @@ const SideNav = () => {
           type="button"
           className="p-2 transition-all duration-200 hover:bg-light2"
           icon={<CalendarIcon />}
+          onClick={() => {
+            setInboxIsOpen(false);
+            setCalendarIsOpen(true);
+          }}
         />
         <IconButton
           type="button"

@@ -6,26 +6,25 @@ import useUserProgressStore from "@stores/userProgressStore";
 
 import HoverZone from "@layouts/HoverZone";
 import SideNav from "@components/common/nav/SideNav";
+import Calendar from "@components/calendar/Calendar";
 import Inbox from "@components/inbox/Inbox";
-// import Chat from "@components/chat/Chat";
 import DetailEmail from "@components/detailEmail/DetailEmail";
 
 const PopUpLayout = () => {
-  const {
-    inboxIsOpen,
-    selectedMail,
-    isReplying,
-    // chattingIsOpen,
-    // setChattingIsOpen,
-  } = useUserProgressStore();
+  const { inboxIsOpen, calendarIsOpen, selectedMail, isReplying } =
+    useUserProgressStore();
+
+  if (calendarIsOpen) {
+    return (
+      <div className="absolute top-0 right-0 flex flex-row-reverse p-1 gap-1.5 w-full h-full">
+        <Calendar />
+      </div>
+    );
+  }
 
   return (
     <div className="absolute top-0 right-0 flex flex-row-reverse p-1 gap-1.5 w-full h-full">
       {inboxIsOpen && !isReplying && <Inbox />}
-      {/* {inboxIsOpen && chattingIsOpen && (
-        <Chat onClose={() => setChattingIsOpen(false)} />
-      )} */}
-
       {selectedMail !== null && <DetailEmail />}
     </div>
   );

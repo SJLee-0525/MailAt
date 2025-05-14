@@ -12,6 +12,7 @@ const BottomNav = () => {
     setBottomNavProgress,
     setMailFormIsOpen,
     setInboxIsOpen,
+    setCalendarIsOpen,
   } = useUserProgressStore();
 
   return (
@@ -34,6 +35,7 @@ const BottomNav = () => {
         icon={<InboxIcon />}
         onClick={() => {
           console.log("Inbox");
+          setCalendarIsOpen(false);
           setInboxIsOpen(!inboxIsOpen);
         }}
       />

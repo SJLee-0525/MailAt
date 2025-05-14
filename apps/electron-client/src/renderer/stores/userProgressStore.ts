@@ -6,6 +6,8 @@ interface UserProgressStore {
   bottomNavProgress: "search" | null;
   mailFormIsOpen: boolean;
   mailFormIsClosing: boolean;
+  calendarIsOpen: boolean;
+  calendarIsClosing: boolean;
   inboxIsOpen: boolean;
   inboxIsClosing: boolean;
   selectedMail: AllEmails | null;
@@ -14,6 +16,7 @@ interface UserProgressStore {
   setBottomNavProgress: (progress: "search" | null) => void;
   setMailFormIsOpen: (isOpen: boolean) => void;
   setInboxIsOpen: (isOpen: boolean) => void;
+  setCalendarIsOpen: (isOpen: boolean) => void;
   setSelectedMail: (email: AllEmails | null) => void;
   setIsReplying: (isReplying: boolean) => void;
   setChattingIsOpen: (isOpen: boolean) => void;
@@ -25,6 +28,8 @@ const useUserProgressStore = create<UserProgressStore>((set) => ({
   mailFormIsClosing: false,
   inboxIsOpen: false,
   inboxIsClosing: false,
+  calendarIsOpen: false,
+  calendarIsClosing: false,
   selectedMail: null,
   isReplying: false,
   chattingIsOpen: false,
@@ -48,6 +53,17 @@ const useUserProgressStore = create<UserProgressStore>((set) => ({
 
       setTimeout(() => {
         set({ inboxIsOpen: false, inboxIsClosing: false, selectedMail: null });
+      }, 300);
+    }
+  },
+  setCalendarIsOpen: (isOpen) => {
+    if (isOpen) {
+      set({ calendarIsOpen: isOpen });
+    } else {
+      set({ calendarIsClosing: true });
+
+      setTimeout(() => {
+        set({ calendarIsOpen: false, calendarIsClosing: false });
       }, 300);
     }
   },

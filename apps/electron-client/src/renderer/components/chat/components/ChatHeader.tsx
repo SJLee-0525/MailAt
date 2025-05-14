@@ -13,7 +13,7 @@ const ChatHeader = ({
   return (
     <div className="flex items-center justify-between w-full h-16 min-h-16 px-4 bg-light1 rounded-t-xl">
       <div>
-        <h1 className="text-2xl font-pre-medium">
+        <h1 className="text-xl font-pre-bold">
           {contact ? contact.name : "기록"}
         </h1>
       </div>
