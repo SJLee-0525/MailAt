@@ -158,6 +158,10 @@ async function createWindow() {
     height: 800,
     show: false, // 처음에는 창을 숨깁니다.
 
+    // 최소 크기 설정
+    minWidth: 800,
+    minHeight: 600,
+
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,
