@@ -111,7 +111,7 @@ export const getEmailSummaryByThreadId = async ({
   };
 
   try {
-    const response = await window.electronAPI.email.getThreads({ params });
+    const response = await window.electronAPI.email.getThreads(params);
     console.log(
       `[GET] window.electronAPI.email.getThreads(${params})`,
       response
@@ -138,8 +138,6 @@ export const getEmailsByThreadId = async ({
     throw new Error("User ID is required to fetch emails.");
   }
 
-  console.log(111111111111111);
-
   const params = {
     accountId,
     email: email,
@@ -148,9 +146,7 @@ export const getEmailsByThreadId = async ({
   };
 
   try {
-    const response = await window.electronAPI.email.getThreadsByEmail({
-      params,
-    });
+    const response = await window.electronAPI.email.getThreadsByEmail(params);
     console.log(
       `[GET]121321312 window.electronAPI.email.getThreadsByEmail(${params})`,
       response

@@ -78,29 +78,21 @@ interface ElectronAPI {
     }>;
 
     // 나와 상대간의 전체 이메일 스레드 요약 조회
-    getThreads({
-      params,
-    }: {
-      params: {
-        contactId: number;
-        limit: number;
-        offset: number;
-      };
+    getThreads(params: {
+      contactId: number;
+      limit: number;
+      offset: number;
     }): Promise<{
       success: boolean;
       data: EmailDetailByThreadId[];
     }>;
 
     // 스레드 id로 이메일 전체 조회
-    getThreadsByEmail({
-      params,
-    }: {
-      params: {
-        accountId: number | null;
-        email: string | null;
-        limit?: number;
-        offset?: number;
-      };
+    getThreadsByEmail(params: {
+      accountId: number | null;
+      email: string | null;
+      limit?: number;
+      offset?: number;
     }): Promise<{
       success: boolean;
       data: EmailDetailByThreadId;

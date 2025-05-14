@@ -51,8 +51,6 @@ const ChatContents = ({
   contactEmail: string | null;
   chatData: EmailDetail[];
 }) => {
-  const ME = "me@example.com";
-
   return (
     <div className="flex flex-col items-center justify-between w-full h-full p-2 gap-1 bg-white rounded-lg font-pre-bold overflow-y-auto hide-scrollbar">
       {chatData && chatData.length === 0 && (
@@ -64,7 +62,7 @@ const ChatContents = ({
       {chatData && chatData.length > 0 && (
         <div className="flex flex-col w-full h-full py-2 gap-1 bg-white rounded-lg font-pre-bold overflow-y-auto hide-scrollbar">
           {chatData.map((chat) => {
-            const isFromMe = chat.fromEmail !== contactEmail;
+            const isFromMe = chat.fromEmail === contactEmail;
             const formattedDate = formatDate(chat.receivedAt, "dateTime");
 
             return (

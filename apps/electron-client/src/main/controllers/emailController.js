@@ -32,7 +32,7 @@ export const initEmailController = () => {
   });
 
   // 이메일 스레드 조회 요청 처리
-  ipcMain.handle("email:getThreads", async ({ event, params }) => {
+  ipcMain.handle("email:getThreads", async (event, params) => {
     try {
       const threads = await emailService.getThreadsByContact(params);
       console.log("조회된 스레드 목록", threads);
@@ -44,15 +44,14 @@ export const initEmailController = () => {
   });
 
   // 특정 이메일 주소와 주고받은 스레드 조회
-  ipcMain.handle("email:getThreadsByEmail", async ({ event, params }) => {
-    console.log("이메일 주소별 스레드 조###################회 요청", params);
+  ipcMain.handle("email:getThreadsByEmail", async (event, params) => {
     try {
       // params는 { accountId, email, limit, offset } 형태
       const contact = await emailContactRepository.getOrCreateContact(
         params.email
       );
       const threads = await emailService.getThreadsByContact({
-        contactId: contact.contactId,
+        contactId: contact,
         limit: params.limit,
         offset: params.offset,
       });

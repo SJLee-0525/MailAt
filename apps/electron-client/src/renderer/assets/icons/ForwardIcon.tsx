@@ -16,7 +16,9 @@ const ForwardIcon = ({
       fill="none"
       onClick={onClick}
       className={className}
+      aria-label="전달"
     >
+      <title>전달</title>
       <g clipPath="url(#clip0_127_9193)">
         <path d="M12 8V4L20 12L12 20V16H4V8H12Z" fill={strokeColor} />
       </g>

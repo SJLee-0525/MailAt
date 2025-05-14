@@ -92,7 +92,7 @@ const DetailEmailTitle = ({
 
         <span className="flex items-center gap-2">
           <button
-            className="font-pre-semi-bold text-xs bg-transparent whitespace-nowrap"
+            className="font-pre-semi-bold px-1.5 py-0.5 rounded-full bg-content text-white text-xs whitespace-nowrap"
             onClick={handleChangeIsRead}
           >
             {isRead ? "읽음" : "읽지 않음"}
