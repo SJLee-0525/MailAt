@@ -66,6 +66,7 @@ def get_model():
             MODEL_CACHE["llm"] = Llama(
                 model_path=GGUF_PATH,
                 chat_format="gemma",
+                n_ctx=4096,
                 n_gpu_layers=0,
                 verbose=False
             )
@@ -102,53 +103,72 @@ def summarize_email():
     llm = get_model()
 
     try:
+        today_str = f"{time.localtime().tm_year}-{time.localtime().tm_mon:02d}-{time.localtime().tm_mday:02d}T00:00"
         messages = [
             {
                 "role": "system",
                 "content": (
                     "이메일 요약 전문가이자 일정/할일 추출자. "
-                    "주어진 이메일 본문에서 요약(summary), 일정(schedule), 할 일(task)을 "
-                    "JSON 형태로 반환하세요. 일정이나 할 일이 없으면 None으로 표기하세요."
+                    "절대 배열이나 불필요한 문장 없이, 정확히 다음과 같은 JSON을 반환하세요: "
+                    "schedule에는 괄호나 추가 설명 없이 YYYY-MM-DDTHH:mm 형태만, "
+                    "task도 단일 문자열(최대 10글자)만 작성하세요. "
+                    "Key값은 영어로 작성하고, 엔터나 백틱 등은 절대 포함하지 마세요."
                 )
             },
             {
                 "role": "system",
                 "content": (
-                    "FewShot 예:\n"
-                    "이메일 예시: '안녕하세요. 내일 3시에 회의가 있습니다. 준비할 자료 리스트 보내드릴게요.'\n"
-                    "결과 JSON: {\n"
-                    '  "summary": "내일 회의와 자료 준비 요청",\n'
-                    '  "schedule": "내일 3시 회의",\n'
-                    '  "task": "자료 리스트 준비"\n'
-                    "}"
+                    "Few-shot 예시:\n"
+                    "오늘 날짜 : 2025-05-15T00:00\n"
+                    "이메일: '안녕하세요. 내일 3시에 회의가 있습니다. 준비할 자료 리스트 보내드릴게요.'\n"
+                    '응답: {"summary":"내일 회의와 자료 준비 요청","schedule":"2025-05-16T10:00","task":"회의"}'
                 )
             },
             {
                 "role": "user",
-                "content": f"아래 이메일을 요약하고, 일정과 할 일을 JSON으로 반환하세요.\n\n{email_text}"
+                "content": (
+                f"아래 이메일을 최대 두 줄로 요약하고, 일정과 할 일을 JSON으로 반환하세요.\n\n{email_text}"
+                    f'오늘 날짜 : {today_str}\n\n'
+                    '{"summary":"<single-line string>",'
+                    '"schedule":"<YYYY-MM-DDTHH:mm 또는 null>",'
+                    '"task":"<10글자 이내 한 줄 문자열 또는 null>"}. '
+                )
             }
         ]
 
+        JSON_SCHEMA = {
+            "type": "object",
+            "properties": {
+                "summary":  {"type": "string"},
+                "schedule": {"type": "string"},
+                "task":     {"type": "string"}
+            },
+            "required": ["summary", "schedule", "task"],
+            "additionalProperties": False
+        }
+
+
         response = llm.create_chat_completion(
-            messages,
-            max_tokens=256,
-            temperature=0.3,
-            top_p=0.9,
-            repeat_penalty=1.5,
+            messages=messages,
+            max_tokens=1024,
+            temperature=0.0,
+            top_p=0.8,
+            repeat_penalty=1.2,
+            response_format={
+                "type": "json_object",
+                "schema": JSON_SCHEMA,
+            }
         )
+        
         content = response["choices"][0]["message"]["content"].strip()
+        print("응답 형식 : ",content)
+        print("===========================")
+        parsed = json.loads(content)
 
         # 모델 응답을 JSON으로 파싱
-        try:
-            parsed = json.loads(content)
-            summary = parsed.get("summary", "")
-            schedule = parsed.get("schedule", None)
-            task = parsed.get("task", None)
-        except json.JSONDecodeError:
-            logger.warning("JSON 형식 파싱 실패. 결과를 그대로 요약으로 사용합니다.")
-            summary = content
-            schedule = None
-            task = None
+        summary = parsed.get("summary", "")
+        schedule = parsed.get("schedule", None)
+        task = parsed.get("task", None)
 
         with MODEL_CACHE["lock"]:
             MODEL_CACHE["last_used_time"] = time.time()
