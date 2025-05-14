@@ -4,9 +4,7 @@ import { ReplyData, DetailAttachment } from "@/types/emailTypes";
 
 import useUserProgressStore from "@stores/userProgressStore";
 
-import { markEmailAsRead } from "@apis/emailApi";
-
-import { useDeleteEmail } from "@hooks/useGetConversations";
+import { useDeleteEmail, useMarkEmailAsRead } from "@hooks/useGetConversations";
 
 import { formatDate } from "@utils/getFormattedDate";
 // import { parseEmailFromName } from "@utils/getEmailData";
@@ -53,6 +51,7 @@ const DetailEmailTitle = ({
   const { setIsReplying } = useUserProgressStore();
 
   const { mutateAsync: deleteEmail } = useDeleteEmail();
+  const { mutateAsync: markEmailAsRead } = useMarkEmailAsRead();
 
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -61,9 +60,12 @@ const DetailEmailTitle = ({
 
   async function handleChangeIsRead() {
     try {
-      const response = await markEmailAsRead(id, !isRead);
+      const response = await markEmailAsRead({
+        messageId: id,
+        isRead: !isRead,
+      });
       if (response.success) {
-        onChangeIsRead(response.isRead);
+        onChangeIsRead(!isRead);
       }
     } catch (error) {
       console.error("Error marking email as read:", error);

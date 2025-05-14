@@ -3,9 +3,10 @@ import { useId, useEffect } from "react";
 
 import { AllEmails } from "@/types/emailTypes";
 
-import { markEmailAsRead } from "@apis/emailApi";
-
-import { useInfiniteEmails } from "@hooks/useGetConversations";
+import {
+  useInfiniteEmails,
+  useMarkEmailAsRead,
+} from "@hooks/useGetConversations";
 
 import useConservationsStore from "@stores/conversationsStore";
 import userProgressStore from "@stores/userProgressStore";
@@ -47,6 +48,7 @@ const InboxContents = () => {
 
   const { fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteEmails();
+  const { mutateAsync: markEmailAsRead } = useMarkEmailAsRead();
 
   // 바닥 감시용 sentinel
   const { ref: bottomRef, inView } = useInView({
@@ -66,21 +68,18 @@ const InboxContents = () => {
       return;
     }
 
-    const response = await markEmailAsRead(email.messageId, true);
-    const updatedConversations = conversations.map((item) => {
-      if (item.messageId === email.messageId) {
-        return { ...item, isRead: true };
+    try {
+      const response = await markEmailAsRead({
+        messageId: email.messageId,
+        isRead: true,
+      });
+
+      if (response.success) {
+        setSelectedMail(email);
       }
-      return item;
-    });
-
-    if (response.success) {
-      setSelectedMail({ ...email, isRead: true });
-    } else {
-      setSelectedMail(email);
+    } catch (error) {
+      console.error("Error marking email as read:", error);
     }
-
-    setConversations(updatedConversations);
   }
 
   return (

@@ -17,11 +17,16 @@ import {
 
 import useAuthenticateStore from "@stores/authenticateStore";
 
-import { getFolders, getEmailsData, deleteEmail } from "@apis/emailApi";
+import {
+  getFolders,
+  getEmailsData,
+  deleteEmail,
+  markEmailAsRead,
+} from "@apis/emailApi";
 
 import useConversationsStore from "@stores/conversationsStore";
 
-const PAGE_SIZE = 10; // 페이지당 이메일 수
+const PAGE_SIZE = 5; // 페이지당 이메일 수 (임시)
 
 // 폴더 목록 조회
 export const useGetEmailFolders = () => {
@@ -161,6 +166,28 @@ export const useDeleteEmail = () => {
     onError: (error) => {
       console.error("Error deleting email:", error);
       alert("이메일 삭제에 실패했습니다.");
+    },
+  });
+
+  return mutation;
+};
+
+export const useMarkEmailAsRead = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation<
+    { success: boolean; messageId: number; isRead: boolean },
+    Error,
+    { messageId: number; isRead: boolean }
+  >({
+    mutationFn: ({ messageId, isRead }) => markEmailAsRead(messageId, isRead),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      queryClient.invalidateQueries({ queryKey: ["folders"] });
+    },
+    onError: (error) => {
+      console.error("Error marking email as read:", error);
+      alert("이메일 읽음 처리에 실패했습니다.");
     },
   });
 
