@@ -32,7 +32,7 @@ const SettingConnectedEmail = () => {
 
           <div className="flex flex-col w-full h-fit gap-2.5 py-2 font-pre-bold rounded-lg">
             <div className="flex items-center justify-between w-full h-fit px-1.5 text-center font-pre-bold">
-              <h2 className="font-pre-bold font-bold text-lg">연결된 계정</h2>
+              <h2 className="font-pre-bold text-lg">연결된 계정</h2>
               <Button
                 type="button"
                 content="추가"
@@ -48,7 +48,7 @@ const SettingConnectedEmail = () => {
       )}
       {user && authUsers.length === 0 && (
         <div className="flex flex-col items-center justify-center w-full h-36 gap-3 text-center font-pre-bold rounded-lg bg-white">
-          <h2 className="font-pre-extra-bold font-bold text-center">
+          <h2 className="font-pre-extra-bold text-center">
             연결된 계정이 없습니다.
           </h2>
           <Button

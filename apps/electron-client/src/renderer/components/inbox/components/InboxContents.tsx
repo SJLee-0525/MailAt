@@ -1,8 +1,12 @@
-import { useId } from "react";
+import { useInView } from "react-intersection-observer";
+import { useId, useEffect } from "react";
 
 import { AllEmails } from "@/types/emailTypes";
 
-import { markEmailAsRead } from "@apis/emailApi";
+import {
+  useInfiniteEmails,
+  useMarkEmailAsRead,
+} from "@hooks/useGetConversations";
 
 import useConservationsStore from "@stores/conversationsStore";
 import userProgressStore from "@stores/userProgressStore";
@@ -39,12 +43,43 @@ const InboxFolders = ({ folders }: { folders: Record<string, string[]> }) => {
 };
 
 const InboxContents = () => {
-  const { folders, conversations } = useConservationsStore();
+  const { folders, conversations, setConversations } = useConservationsStore();
   const { selectedMail, setSelectedMail } = userProgressStore();
 
-  function openDetailEmail(email: AllEmails) {
-    setSelectedMail(email);
-    markEmailAsRead(email.messageId, !email.isRead);
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteEmails();
+  const { mutateAsync: markEmailAsRead } = useMarkEmailAsRead();
+
+  // 바닥 감시용 sentinel
+  const { ref: bottomRef, inView } = useInView({
+    rootMargin: "20px", // 200px 전에 미리 로드
+  });
+
+  // sentinel 이 화면에 들어오면 다음 페이지 요청
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  async function openDetailEmail(email: AllEmails) {
+    if (email.isRead) {
+      setSelectedMail(email);
+      return;
+    }
+
+    try {
+      const response = await markEmailAsRead({
+        messageId: email.messageId,
+        isRead: true,
+      });
+
+      if (response.success) {
+        setSelectedMail(email);
+      }
+    } catch (error) {
+      console.error("Error marking email as read:", error);
+    }
   }
 
   return (
@@ -65,6 +100,9 @@ const InboxContents = () => {
               />
             );
           })}
+
+          {/* 무한 스크롤 sentinel */}
+          <div ref={bottomRef} />
         </div>
       )}
     </div>

@@ -1,9 +1,11 @@
 // import useAuthenticateStore from "@stores/authenticateStore";
+import useModalStore from "@stores/modalStore";
 
 import { useCreateAccount } from "@hooks/useGetUser";
 
 const SettingsAddAccount = ({ closeAction }: { closeAction: () => void }) => {
   // const { setAuthUsers } = useAuthenticateStore();
+  const { openAlertModal } = useModalStore();
 
   const { mutateAsync: createAccount } = useCreateAccount();
 
@@ -28,7 +30,10 @@ const SettingsAddAccount = ({ closeAction }: { closeAction: () => void }) => {
       smtpHost.trim() === "" ||
       smtpPort.trim() === ""
     ) {
-      // alert("모든 필드를 입력하세요.");
+      openAlertModal({
+        title: "입력 오류",
+        content: "모든 필드를 입력해주세요.",
+      });
       return;
     }
 
@@ -47,13 +52,19 @@ const SettingsAddAccount = ({ closeAction }: { closeAction: () => void }) => {
     try {
       await createAccount(payload);
 
-      // alert(`${email}\n계정이 추가되었습니다!`);
+      openAlertModal({
+        title: "계정 추가 성공",
+        content: "계정이 추가되었습니다.",
+      });
       // setAuthUsers([
       //   { id: data[0].accountId, email, name: email.split("@")[0], imapHost, smtpHost },
       // ]);
     } catch (error) {
+      openAlertModal({
+        title: "계정 추가 실패",
+        content: "계정 추가에 실패했습니다. 다시 시도해주세요.",
+      });
       console.error("Error creating account:", error);
-      // alert("계정 추가에 실패했습니다.");
       return;
     }
 
@@ -62,16 +73,14 @@ const SettingsAddAccount = ({ closeAction }: { closeAction: () => void }) => {
 
   return (
     <div className="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] w-5/6 h-fit z-10 py-2 bg-white rounded-lg shadow-xl">
-      <h1 className="font-pre-bold text-2xl font-bold px-8 mt-4">
-        계정 등록하기
-      </h1>
+      <h1 className="font-pre-bold text-2xl px-8 mt-4">계정 등록하기</h1>
       <form
         onSubmit={handleSubmit}
         className="flex flex-col items-center justify-center w-full h-fit gap-4 p-4 text-center font-pre-bold"
       >
         <div className="flex flex-col items-center justify-center w-full h-fit gap-4 p-4 text-center font-pre-bold">
           <div className="flex flex-col items-start w-full h-fit gap-1">
-            <label className="font-pre-bold font-bold text-xs">이메일</label>
+            <label className="font-pre-bold text-xs">이메일</label>
             <span className="flex items-center justify-between w-full border-b-1 border-accept">
               <input
                 type="text"
@@ -89,9 +98,7 @@ const SettingsAddAccount = ({ closeAction }: { closeAction: () => void }) => {
           </div>
 
           <div className="flex flex-col items-start w-full h-fit gap-1">
-            <label className="font-pre-bold font-bold text-xs">
-              앱 비밀번호
-            </label>
+            <label className="font-pre-bold text-xs">앱 비밀번호</label>
             <input
               type="text"
               name="password"
@@ -104,9 +111,7 @@ const SettingsAddAccount = ({ closeAction }: { closeAction: () => void }) => {
           smtpPort: 465, */}
           <div className="flex items-center justify-between w-full h-fit gap-2">
             <div className="flex flex-col items-start w-1/2 h-fit gap-1">
-              <label className="font-pre-bold font-bold text-xs">
-                IMAP Host
-              </label>
+              <label className="font-pre-bold text-xs">IMAP Host</label>
               <input
                 type="text"
                 name="imapHost"
@@ -115,9 +120,7 @@ const SettingsAddAccount = ({ closeAction }: { closeAction: () => void }) => {
             </div>
 
             <div className="flex flex-col items-start w-1/2 h-fit gap-1">
-              <label className="font-pre-bold font-bold text-xs">
-                IMAP Port
-              </label>
+              <label className="font-pre-bold text-xs">IMAP Port</label>
               <input
                 type="text"
                 name="imapPort"
@@ -128,9 +131,7 @@ const SettingsAddAccount = ({ closeAction }: { closeAction: () => void }) => {
 
           <div className="flex items-center justify-between w-full h-fit gap-2">
             <div className="flex flex-col items-start w-1/2 h-fit gap-1">
-              <label className="font-pre-bold font-bold text-xs">
-                SMTP Host
-              </label>
+              <label className="font-pre-bold text-xs">SMTP Host</label>
               <input
                 type="text"
                 name="smtpHost"
@@ -139,9 +140,7 @@ const SettingsAddAccount = ({ closeAction }: { closeAction: () => void }) => {
             </div>
 
             <div className="flex flex-col items-start w-1/2 h-fit gap-1">
-              <label className="font-pre-bold font-bold text-xs">
-                SMTP Port
-              </label>
+              <label className="font-pre-bold text-xs">SMTP Port</label>
               <input
                 type="text"
                 name="smtpPort"
@@ -154,14 +153,14 @@ const SettingsAddAccount = ({ closeAction }: { closeAction: () => void }) => {
         <div className="flex justify-between items-center w-full px-4 gap-4">
           <button
             type="button"
-            className="w-full h-11 rounded-full font-bold text-white text-xs transition-all duration-200 bg-default hover:bg-theme"
+            className="w-full h-11 rounded-full text-white text-xs transition-all duration-200 bg-default hover:bg-theme"
             onClick={closeAction}
           >
             취소
           </button>
           <button
             type="submit"
-            className="w-full h-11 rounded-full font-bold text-white text-xs transition-all duration-200 bg-accept hover:bg-theme"
+            className="w-full h-11 rounded-full text-white text-xs transition-all duration-200 bg-accept hover:bg-theme"
           >
             등록
           </button>

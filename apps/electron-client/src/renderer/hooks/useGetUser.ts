@@ -54,7 +54,6 @@ export const useCreateAccount = () => {
     },
     onError: (error) => {
       console.error("Error creating account:", error);
-      // alert("계정 추가에 실패했습니다.");
     },
   });
 
@@ -75,7 +74,6 @@ export const useDeleteAccount = () => {
     },
     onError: (error) => {
       console.error("Error deleting account:", error);
-      // alert("계정 삭제에 실패했습니다.");
     },
   });
 

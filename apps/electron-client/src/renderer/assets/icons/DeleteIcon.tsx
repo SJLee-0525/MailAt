@@ -16,7 +16,9 @@ const DeleteIcon = ({
       fill="none"
       className={className}
       onClick={onClick}
+      aria-label="삭제"
     >
+      <title>삭제</title>
       <path
         d="M6.50001 18.4167C6.50001 19.425 7.32501 20.25 8.33334 20.25H15.6667C16.675 20.25 17.5 19.425 17.5 18.4167V7.41667H6.50001V18.4167ZM18.4167 4.66667H15.2083L14.2917 3.75H9.70834L8.79168 4.66667H5.58334V6.5H18.4167V4.66667Z"
         fill={strokeColor}

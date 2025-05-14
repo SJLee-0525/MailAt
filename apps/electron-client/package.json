@@ -7,7 +7,7 @@
   "scripts": {
     "renderer:dev": "npx vite --config src/vite.config.ts",
     "electron:dev": "npx wait-on http://localhost:5173 && electron .",
-    "dev": "npm run build:addon && npx cross-env NODE_ENV=development npx concurrently \"npm:renderer:dev\" \"npm:electron:dev\"",
+    "dev": "npx electron-rebuild && npx cross-env NODE_ENV=development npx concurrently \"npm:renderer:dev\" \"npm:electron:dev\"",
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:user": "electron . --test",

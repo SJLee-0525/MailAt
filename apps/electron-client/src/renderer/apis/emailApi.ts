@@ -44,10 +44,14 @@ export const getEmailsData = async ({
   userId,
   folderName,
   filters,
+  limit,
+  offset,
 }: {
   userId: number | null;
   folderName: string | null;
   filters: EmailSearchFilters;
+  limit: number;
+  offset: number;
 }): Promise<AllEmails[]> => {
   if (!userId) {
     throw new Error("User ID is required to fetch emails.");
@@ -57,6 +61,8 @@ export const getEmailsData = async ({
     userId,
     folderName: folderName || "INBOX",
     filters,
+    limit,
+    offset,
   });
 
   // const qs = buildFilterQueryString(userId, folderName, filters);
@@ -111,7 +117,7 @@ export const getEmailSummaryByThreadId = async ({
   };
 
   try {
-    const response = await window.electronAPI.email.getThreads({ params });
+    const response = await window.electronAPI.email.getThreads(params);
     console.log(
       `[GET] window.electronAPI.email.getThreads(${params})`,
       response
@@ -140,17 +146,15 @@ export const getEmailsByThreadId = async ({
 
   const params = {
     accountId,
-    email,
+    email: email,
     limit: limit ? limit : 20,
     offset: offset ? offset : 0,
   };
 
   try {
-    const response = await window.electronAPI.email.getThreadsByEmail({
-      params,
-    });
+    const response = await window.electronAPI.email.getThreadsByEmail(params);
     console.log(
-      `[GET] window.electronAPI.email.getThreadsByEmail(${params})`,
+      `[GET]121321312 window.electronAPI.email.getThreadsByEmail(${params})`,
       response
     );
     return response.data;

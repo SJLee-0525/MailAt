@@ -1,9 +1,17 @@
 function removeStylesFromHtml(html: string) {
   const div = document.createElement("div");
   div.innerHTML = html;
-  // <style> 태그를 제거
-  const styles = div.querySelectorAll("style");
-  styles.forEach((style) => style.remove());
+
+  // ❶ <style> 태그 제거
+  div.querySelectorAll("style").forEach((style) => style.remove());
+
+  // ❷ 모든 <a> 태그가 새 창(탭)에서 열리도록 설정
+  div.querySelectorAll<HTMLAnchorElement>("a").forEach((anchor) => {
+    anchor.setAttribute("target", "_blank");
+    // 보안을 위해 noopener‧noreferrer 추가
+    anchor.setAttribute("rel", "noopener noreferrer");
+  });
+
   return div.innerHTML;
 }
 

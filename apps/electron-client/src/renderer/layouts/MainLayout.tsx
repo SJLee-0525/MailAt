@@ -2,40 +2,39 @@ import { Outlet } from "react-router-dom";
 
 import useUserProgressStore from "@stores/userProgressStore";
 
-import { useGetAllEmails } from "@hooks/useGetConversations";
+// import { useGetAllEmails } from "@hooks/useGetConversations";
 
 import HoverZone from "@layouts/HoverZone";
 import SideNav from "@components/common/nav/SideNav";
+import Calendar from "@components/calendar/Calendar";
 import Inbox from "@components/inbox/Inbox";
-// import Chat from "@components/chat/Chat";
 import DetailEmail from "@components/detailEmail/DetailEmail";
 
 const PopUpLayout = () => {
-  const {
-    inboxIsOpen,
-    selectedMail,
-    isReplying,
-    // chattingIsOpen,
-    // setChattingIsOpen,
-  } = useUserProgressStore();
+  const { inboxIsOpen, calendarIsOpen, selectedMail, isReplying } =
+    useUserProgressStore();
+
+  if (calendarIsOpen) {
+    return (
+      <div className="absolute top-0 right-0 flex flex-row-reverse p-1 gap-1.5 w-full h-full">
+        <Calendar />
+      </div>
+    );
+  }
 
   return (
     <div className="absolute top-0 right-0 flex flex-row-reverse p-1 gap-1.5 w-full h-full">
       {inboxIsOpen && !isReplying && <Inbox />}
-      {/* {inboxIsOpen && chattingIsOpen && (
-        <Chat onClose={() => setChattingIsOpen(false)} />
-      )} */}
-
       {selectedMail !== null && <DetailEmail />}
     </div>
   );
 };
 
 const MainLayout = () => {
-  const { refetch } = useGetAllEmails();
+  // const { refetch } = useGetAllEmails();
 
   return (
-    <div className="flex w-screen h-screen">
+    <div className="flex w-screen h-screen font-pre-regular">
       <SideNav />
       <main className="relative flex-1 overflow-auto">
         <div className="flex w-full h-full">

@@ -4,6 +4,7 @@ import { EmailSendRequestData } from "@/types/emailTypes";
 
 import { sendEmail } from "@apis/emailApi";
 
+import useModalStore from "@stores/modalStore";
 import useUserProgressStore from "@stores/userProgressStore";
 import useAuthenticateStore from "@stores/authenticateStore";
 
@@ -13,6 +14,7 @@ import MailForm from "@components/mailForm/components/MailForm";
 const MailCreateForm = () => {
   const { setMailFormIsOpen } = useUserProgressStore();
   const { user } = useAuthenticateStore();
+  const { openAlertModal } = useModalStore();
 
   const [sender, setSender] = useState<string[]>([]);
   const [cc, setCc] = useState<string[]>([]);
@@ -35,9 +37,11 @@ const MailCreateForm = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.(com|net|kr|org)$/i;
 
     if (!emailRegex.test(value)) {
-      // alert(
-      //   "유효한 이메일 형식이 아닙니다. 예) user@example.com 또는 user@domain.net"
-      // );
+      openAlertModal({
+        title: "이메일 형식 오류",
+        content:
+          "유효한 이메일 형식이 아닙니다.\n예) user@example.com 또는 user@domain.net",
+      });
       return;
     }
 
@@ -66,9 +70,11 @@ const MailCreateForm = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.(com|net|kr|org)$/i;
 
     if (!emailRegex.test(value)) {
-      // alert(
-      //   "유효한 이메일 형식이 아닙니다. 예) user@example.com 또는 user@domain.net"
-      // );
+      openAlertModal({
+        title: "이메일 형식 오류",
+        content:
+          "유효한 이메일 형식이 아닙니다. 예) user@example.com 또는 user@domain.net",
+      });
       return;
     }
 
@@ -97,9 +103,11 @@ const MailCreateForm = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.(com|net|kr|org)$/i;
 
     if (!emailRegex.test(value)) {
-      // alert(
-      //   "유효한 이메일 형식이 아닙니다. 예) user@example.com 또는 user@domain.net"
-      // );
+      openAlertModal({
+        title: "이메일 형식 오류",
+        content:
+          "유효한 이메일 형식이 아닙니다. 예) user@example.com 또는 user@domain.net",
+      });
       return;
     }
 
@@ -123,13 +131,22 @@ const MailCreateForm = () => {
     if (!user) return;
 
     if (sender.length === 0) {
-      // alert("받는 사람을 입력하세요.");
+      openAlertModal({
+        title: "받는 사람 입력 오류",
+        content: "받는 사람을 입력하세요.",
+      });
       return;
     } else if (titleRef.current?.value.trim() === "") {
-      // alert("제목을 입력하세요.");
+      openAlertModal({
+        title: "제목 입력 오류",
+        content: "제목을 입력하세요.",
+      });
       return;
     } else if (html.trim() === "") {
-      // alert("메일 내용을 입력하세요.");
+      openAlertModal({
+        title: "메일 내용 입력 오류",
+        content: "메일 내용을 입력하세요.",
+      });
       return;
     }
 
@@ -157,6 +174,10 @@ const MailCreateForm = () => {
         setMailFormIsOpen(false); // 메일 폼 닫기
       }
     } catch (error) {
+      openAlertModal({
+        title: "이메일 전송 오류",
+        content: "이메일 전송에 실패했습니다.",
+      });
       console.error("Error sending email:", error);
     }
   }

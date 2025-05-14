@@ -60,7 +60,7 @@ const SenderList = ({ bcc, deleteBcc }: BccListProps) => {
       </span>
       {bcc.length > 0 && (
         <span
-          className="flex justify-center items-center h-full aspect-[1/1] rounded-full bg-blue-500 font-pre-bold font-bold text-white text-xs"
+          className="flex justify-center items-center h-full aspect-[1/1] rounded-full bg-blue-500 font-pre-bold text-white text-xs"
           onClick={toggleSenderList}
         >
           {isOpen ? (

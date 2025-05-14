@@ -8,7 +8,7 @@ import useConversationsStore from "@stores/conversationsStore";
 
 import {
   useGetEmailFolders,
-  useGetAllEmails,
+  // useGetAllEmails,
 } from "@hooks/useGetConversations";
 
 import InboxHeader from "@components/inbox/components/InboxHeader";
@@ -27,12 +27,12 @@ const Inbox = () => {
   useGetEmailFolders();
 
   // 이메일 목록 조회
-  const { refetch: refetchEmails } = useGetAllEmails();
+  // const { refetch: refetchEmails } = useGetAllEmails();
 
   useEffect(() => {
     if (!user) return;
 
-    refetchEmails();
+    // refetchEmails();
   }, [user.userId, selectedFolder, filters, setConversations]);
 
   return (

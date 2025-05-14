@@ -40,7 +40,7 @@ const SettingsWelcome = ({
             alt="1"
             className="w-40 h-40 aspect-[1/1] rounded-full object-cover"
           />
-          <h2 className="font-pre-extra-bold font-bold text-xl">
+          <h2 className="font-pre-extra-bold text-xl">
             안녕하세요! {user.username}님!
           </h2>
           <button onClick={() => handleDeleteUser(user.userId)}>삭제</button>
@@ -52,7 +52,7 @@ const SettingsWelcome = ({
             alt="1"
             className="w-40 h-40 rounded-full object-cover"
           />
-          <h2 className="font-pre-extra-bold font-bold text-xl text-center">
+          <h2 className="font-pre-extra-bold text-xl text-center">
             MAIL@에 오신 것을 환영합니다!
           </h2>
           <div className="flex justify-center items-center w-fit h-20">

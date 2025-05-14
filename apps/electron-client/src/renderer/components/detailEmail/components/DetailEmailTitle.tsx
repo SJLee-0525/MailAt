@@ -3,10 +3,9 @@ import { useState } from "react";
 import { ReplyData, DetailAttachment } from "@/types/emailTypes";
 
 import useUserProgressStore from "@stores/userProgressStore";
+import useModalStore from "@stores/modalStore";
 
-import { markEmailAsRead } from "@apis/emailApi";
-
-import { useDeleteEmail } from "@hooks/useGetConversations";
+import { useDeleteEmail, useMarkEmailAsRead } from "@hooks/useGetConversations";
 
 import { formatDate } from "@utils/getFormattedDate";
 // import { parseEmailFromName } from "@utils/getEmailData";
@@ -51,8 +50,10 @@ const DetailEmailTitle = ({
   openChat: () => void;
 }) => {
   const { setIsReplying } = useUserProgressStore();
+  const { openAlertModal } = useModalStore();
 
   const { mutateAsync: deleteEmail } = useDeleteEmail();
+  const { mutateAsync: markEmailAsRead } = useMarkEmailAsRead();
 
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -61,11 +62,18 @@ const DetailEmailTitle = ({
 
   async function handleChangeIsRead() {
     try {
-      const response = await markEmailAsRead(id, isRead);
+      const response = await markEmailAsRead({
+        messageId: id,
+        isRead: !isRead,
+      });
       if (response.success) {
-        onChangeIsRead(response.isRead);
+        onChangeIsRead(!isRead);
       }
     } catch (error) {
+      openAlertModal({
+        title: "읽음 표시 실패",
+        content: "읽음 표시를 변경하는 데 실패했습니다.",
+      });
       console.error("Error marking email as read:", error);
     }
   }
@@ -74,11 +82,18 @@ const DetailEmailTitle = ({
     if (window.confirm("정말로 삭제하시겠습니까?")) {
       const response = await deleteEmail({ messageId: id });
 
-      // if (response.success) {
-      //   alert("삭제되었습니다.");
-      // } else {
-      //   alert("삭제에 실패했습니다.");
-      // }
+      if (response.success) {
+        openAlertModal({
+          title: "삭제 성공",
+          content: "이메일이 삭제되었습니다.",
+        });
+      } else {
+        openAlertModal({
+          title: "삭제 실패",
+          content: "이메일 삭제에 실패했습니다.",
+        });
+        console.error("Error deleting email:", response);
+      }
     }
   }
 
@@ -87,9 +102,14 @@ const DetailEmailTitle = ({
       <div className="flex justify-between items-center w-full h-fit">
         <div className="flex items-center gap-2.5">
           <StarIcon width={22} height={22} />
-          <h1 className="font-pre-bold font-bold text-xl">{subject}</h1>
+          <h1 className="font-pre-extra-bold text-xl">{subject}</h1>
         </div>
-        <p className="font-pre-medium text-sm text-content">{formattedDate}</p>
+
+        <span className="flex items-center gap-2">
+          <p className="font-pre-medium text-sm text-content">
+            {formattedDate}
+          </p>
+        </span>
       </div>
 
       <div className="flex justify-between items-start w-full h-fit">
@@ -101,7 +121,7 @@ const DetailEmailTitle = ({
               <ArrowDownIcon onClick={() => setIsExpanded(true)} />
             )}
             <div className="flex items-center justify-start gap-2">
-              <h3 className="font-pre-semi-bold font-sm font-bold whitespace-nowrap">
+              <h3 className="font-pre-semi-bold font-sm whitespace-nowrap">
                 보낸 사람
               </h3>
               <span
@@ -112,16 +132,16 @@ const DetailEmailTitle = ({
               </span>
             </div>
           </div>
-          {isExpanded && (
-            <DetailEmailInfo
-              isRead={isRead}
-              to={to}
-              handleChangeIsRead={handleChangeIsRead}
-            />
-          )}
+          {isExpanded && <DetailEmailInfo isRead={isRead} to={to} />}
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            className="font-pre-semi-bold px-1.5 py-0.5 rounded-full bg-content text-white text-xs whitespace-nowrap"
+            onClick={handleChangeIsRead}
+          >
+            {isRead ? "읽음" : "읽지 않음"}
+          </button>
           <ReplyIcon
             width={24}
             height={24}
