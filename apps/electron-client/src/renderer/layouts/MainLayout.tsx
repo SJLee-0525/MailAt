@@ -34,7 +34,7 @@ const MainLayout = () => {
   // const { refetch } = useGetAllEmails();
 
   return (
-    <div className="flex w-screen h-screen">
+    <div className="flex w-screen h-screen font-pre-regular">
       <SideNav />
       <main className="relative flex-1 overflow-auto">
         <div className="flex w-full h-full">

@@ -51,7 +51,7 @@ const SettingsName = () => {
       />
       <button
         type="submit"
-        className="w-14 aspect-[1/1] rounded-full font-bold text-white text-xs transition-all duration-200 bg-theme hover:bg-theme-dark"
+        className="w-14 aspect-[1/1] rounded-full text-white text-xs transition-all duration-200 bg-theme hover:bg-theme-dark"
       >
         등록
       </button>

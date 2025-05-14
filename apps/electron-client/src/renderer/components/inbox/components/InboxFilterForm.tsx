@@ -47,9 +47,7 @@ const InboxFilterForm = ({
       className="flex justify-between items-center w-full gap-2"
       onSubmit={handleSubmit}
     >
-      <label className="font-pre-bold font-bold text-xs w-1/4 max-w-1/4">
-        {label}
-      </label>
+      <label className="font-pre-bold text-xs w-1/4 max-w-1/4">{label}</label>
       <input
         name={name}
         type={type}

@@ -24,7 +24,7 @@ const ExpandedSenderList = ({
     <div className="absolute flex flex-col gap-2 top-10 left-0 z-50 w-full max-h-40 p-2 mb-1 overflow-y-auto hide-scrollbar bg-white rounded-b-lg shadow-lg">
       {sender.length > 0 && (
         <>
-          <p className="font-pre-bold text-xs font-bold">수신자</p>{" "}
+          <p className="font-pre-bold text-xs">수신자</p>{" "}
           <span className="flex flex-wrap gap-2 w-full h-fit">
             {sender.map((person) => (
               <span
@@ -48,7 +48,7 @@ const ExpandedSenderList = ({
 
       {cc.length > 0 && (
         <>
-          <p className="font-pre-bold text-xs font-bold">참조</p>
+          <p className="font-pre-bold text-xs">참조</p>
           <span className="flex flex-wrap gap-2 w-full h-fit">
             {cc.map((person) => (
               <span
@@ -72,7 +72,7 @@ const ExpandedSenderList = ({
 
       {bcc.length > 0 && (
         <>
-          <p className="font-pre-bold text-xs font-bold">숨은 참조</p>
+          <p className="font-pre-bold text-xs">숨은 참조</p>
           <span className="flex flex-wrap gap-2 w-full h-fit">
             {bcc.map((person) => (
               <span
@@ -167,7 +167,7 @@ const SenderList = ({
       </span>
       {sender.length > 0 && (
         <span
-          className="flex justify-center items-center h-full aspect-[1/1] rounded-full bg-blue-500 font-pre-bold font-bold text-white text-xs"
+          className="flex justify-center items-center h-full aspect-[1/1] rounded-full bg-blue-500 font-pre-bold text-white text-xs"
           onClick={toggleSenderList}
         >
           {isOpen ? (
@@ -179,7 +179,7 @@ const SenderList = ({
       )}
       {cc.length > 0 && (
         <span
-          className="flex justify-center items-center h-full aspect-[1/1] rounded-full bg-warning font-pre-bold font-bold text-white text-xs"
+          className="flex justify-center items-center h-full aspect-[1/1] rounded-full bg-warning font-pre-bold text-white text-xs"
           onClick={toggleSenderList}
         >
           {isOpen ? (
@@ -191,7 +191,7 @@ const SenderList = ({
       )}
       {bcc.length > 0 && (
         <span
-          className="flex justify-center items-center h-full aspect-[1/1] rounded-full bg-error font-pre-bold font-bold text-white text-xs"
+          className="flex justify-center items-center h-full aspect-[1/1] rounded-full bg-error font-pre-bold text-white text-xs"
           onClick={toggleSenderList}
         >
           {isOpen ? (
