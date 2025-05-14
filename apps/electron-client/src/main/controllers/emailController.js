@@ -45,6 +45,7 @@ export const initEmailController = () => {
 
   // 특정 이메일 주소와 주고받은 스레드 조회
   ipcMain.handle("email:getThreadsByEmail", async ({ event, params }) => {
+    console.log("이메일 주소별 스레드 조###################회 요청", params);
     try {
       // params는 { accountId, email, limit, offset } 형태
       const contact = await emailContactRepository.getOrCreateContact(

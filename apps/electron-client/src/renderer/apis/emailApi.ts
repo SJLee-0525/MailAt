@@ -138,9 +138,11 @@ export const getEmailsByThreadId = async ({
     throw new Error("User ID is required to fetch emails.");
   }
 
+  console.log(111111111111111);
+
   const params = {
     accountId,
-    email,
+    email: email,
     limit: limit ? limit : 20,
     offset: offset ? offset : 0,
   };
@@ -150,7 +152,7 @@ export const getEmailsByThreadId = async ({
       params,
     });
     console.log(
-      `[GET] window.electronAPI.email.getThreadsByEmail(${params})`,
+      `[GET]121321312 window.electronAPI.email.getThreadsByEmail(${params})`,
       response
     );
     return response.data;

@@ -39,12 +39,19 @@ const InboxFolders = ({ folders }: { folders: Record<string, string[]> }) => {
 };
 
 const InboxContents = () => {
-  const { folders, conversations } = useConservationsStore();
+  const { folders, conversations, setConversations } = useConservationsStore();
   const { selectedMail, setSelectedMail } = userProgressStore();
 
   function openDetailEmail(email: AllEmails) {
     setSelectedMail(email);
-    markEmailAsRead(email.messageId, !email.isRead);
+    markEmailAsRead(email.messageId, email.isRead);
+    const updatedConversations = conversations.map((item) => {
+      if (item.messageId === email.messageId) {
+        return { ...item, isRead: true };
+      }
+      return item;
+    });
+    setConversations(updatedConversations);
   }
 
   return (

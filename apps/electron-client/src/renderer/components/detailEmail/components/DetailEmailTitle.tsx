@@ -61,7 +61,7 @@ const DetailEmailTitle = ({
 
   async function handleChangeIsRead() {
     try {
-      const response = await markEmailAsRead(id, isRead);
+      const response = await markEmailAsRead(id, !isRead);
       if (response.success) {
         onChangeIsRead(response.isRead);
       }
@@ -74,11 +74,11 @@ const DetailEmailTitle = ({
     if (window.confirm("정말로 삭제하시겠습니까?")) {
       const response = await deleteEmail({ messageId: id });
 
-      // if (response.success) {
-      //   alert("삭제되었습니다.");
-      // } else {
-      //   alert("삭제에 실패했습니다.");
-      // }
+      if (response.success) {
+        console.log("삭제 성공");
+      } else {
+        console.error("삭제 실패");
+      }
     }
   }
 
@@ -89,7 +89,18 @@ const DetailEmailTitle = ({
           <StarIcon width={22} height={22} />
           <h1 className="font-pre-bold font-bold text-xl">{subject}</h1>
         </div>
-        <p className="font-pre-medium text-sm text-content">{formattedDate}</p>
+
+        <span className="flex items-center gap-2">
+          <button
+            className="font-pre-semi-bold text-xs bg-transparent whitespace-nowrap"
+            onClick={handleChangeIsRead}
+          >
+            {isRead ? "읽음" : "읽지 않음"}
+          </button>
+          <p className="font-pre-medium text-sm text-content">
+            {formattedDate}
+          </p>
+        </span>
       </div>
 
       <div className="flex justify-between items-start w-full h-fit">
@@ -112,13 +123,7 @@ const DetailEmailTitle = ({
               </span>
             </div>
           </div>
-          {isExpanded && (
-            <DetailEmailInfo
-              isRead={isRead}
-              to={to}
-              handleChangeIsRead={handleChangeIsRead}
-            />
-          )}
+          {isExpanded && <DetailEmailInfo isRead={isRead} to={to} />}
         </div>
 
         <div className="flex items-center gap-2">

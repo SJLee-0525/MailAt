@@ -46,9 +46,15 @@ const Chat = ({
   // 여기 타입 에러 왜난느 거임..!!!!!!!!!!!!!!!!!!!!!
   return (
     <div className="absolute z-10 flex flex-col w-md min-w-md h-full max-h-full bg-light1 rounded-xl">
-      <ChatHeader onClose={onClose} />
+      <ChatHeader
+        contact={chatData ? chatData.contact : null}
+        onClose={onClose}
+      />
       <div className="w-full h-full px-1 pb-1 bg-light1 rounded-b-xl overflow-y-auto">
-        <ChatContents chatData={chatData ? chatData.messages : []} />
+        <ChatContents
+          contactEmail={chatData ? chatData.contact.email : null}
+          chatData={chatData ? chatData.messages : []}
+        />
       </div>
     </div>
   );
