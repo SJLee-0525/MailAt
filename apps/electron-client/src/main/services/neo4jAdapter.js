@@ -68,6 +68,10 @@ function runPythonScript(scriptName, operation, args = {}) {
 
 // --- Public API 함수들 ---
 
+export async function testGraph() {
+  return runPythonScript("graph_operations.py", "testConnection");
+}
+
 export async function readGraphData() {
   return runPythonScript("graph_operations.py", "readGraphData");
 }

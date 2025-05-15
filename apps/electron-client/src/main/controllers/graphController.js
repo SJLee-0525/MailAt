@@ -6,6 +6,25 @@ import * as graphService from "../services/neo4jAdapter.js"; // neo4jAdapter.js�
  */
 export const initGraphController = () => {
   // 그래프 데이터 읽기 요청 처리
+  ipcMain.handle("graph:testGraph", async (event) => {
+    try {
+      const result = await graphService.testGraph();
+      console.log("그래프 IPC 통신 테스트 결과:", result);
+      if (result.status === "success") {
+        return { success: true, data: result.result };
+      } else {
+        return { success: false, message: result.message, error: result.message };
+      }
+    } catch (error) {
+      console.error("그래프 IPC 컨트롤러 오류:", error);
+      return {
+        success: false,
+        message: error.message,
+        error: error.message,
+      };
+    }
+  });
+
   ipcMain.handle("graph:readData", async (event) => {
     try {
       const result = await graphService.readGraphData();

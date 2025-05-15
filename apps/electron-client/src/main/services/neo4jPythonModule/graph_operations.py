@@ -103,7 +103,9 @@ if __name__ == "__main__":
         args = input_data.get("args", {})
         result = None
 
-        if operation == "readGraphData":
+        if operation == "testConnection":
+            result = test_connection()
+        elif operation == "readGraphData":
             result = read_graph_data_py()
         elif operation == "createNode":
             result = create_node_py(args.get("nodeData"))
