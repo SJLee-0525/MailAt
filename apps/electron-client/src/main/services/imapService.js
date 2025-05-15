@@ -4,6 +4,7 @@ import accountRepository from "../repositories/accountRepository.js";
 import messageRepository from "../repositories/messageRepository.js";
 import folderRepository from "../repositories/folderRepository.js";
 import { parseRawEmail } from "../utils/emailParser.js";
+import calendarService from "./calendarService.js";
 
 /**
  * IMAP 서버 인증 테스트
@@ -370,8 +371,45 @@ export const syncFolder = async (
           isFlagged: false,
         };
 
-        await messageRepository.saveMessage(messageData);
+        const savedMessageResult = await messageRepository.saveMessage(messageData);
         syncedCount++;
+
+        // 메시지 저장 완료되었다면 캘린더 서비스 호출
+        if (savedMessageResult && savedMessageResult.messageId) {
+          console.log(`[ImapService] Message saved: ID ${savedMessageResult.messageId}, UID ${parsedEmail.uid}`);
+
+          const emailBodyForCalendar = savedMessageResult.bodyText;
+          if (emailBodyForCalendar && emailBodyForCalendar.trim() !== "") {
+            calendarService.processNewEmailForCalendar({
+              messageId: savedMessageResult.messageId,
+              accountId: accountId,
+              emailBody: emailBodyForCalendar,
+            }).catch(calendarError => {
+              console.error(`[ImapService] MessageID: ${savedMessageResult.messageId}, UID: ${currentParsedEmail.uid} - 캘린더 처리 중 오류 (동기화는 계속):`, calendarError.message);
+
+              errors.push({ 
+                seq, 
+                uid: parsedEmail.uid, 
+                messageId: savedMessageResult.messageId, 
+                error: `CalendarService Error: ${calendarError.message}`, 
+                action: "calendar_process_error" 
+              });
+            });
+          } else {
+            console.log(`[ImapService] MessageID: ${savedMessageResult.messageId}, UID: ${currentParsedEmail.uid} - 캘린더 처리를 위한 이메일 본문이 없습니다.`);
+          } 
+        } else {
+          console.log(`[ImapService] MessageID: ${savedMessageResult.messageId} - 메시지 저장 실패`);
+          errors.push({ 
+            seq, 
+            uid: parsedEmail.uid, 
+            error: "Message save failed", 
+            action: "message_save_error" 
+          });
+        }
+
+
+
       } catch (error) {
         errors.push({
           seq,
