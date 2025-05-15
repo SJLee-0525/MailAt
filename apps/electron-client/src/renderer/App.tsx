@@ -16,8 +16,6 @@ import Alert from "@components/common/modal/Alert";
 import NewMailFormModal from "@components/mailForm/NewMailFormModal";
 import Modal from "@components/common/modal/Modal";
 
-import { GRAPH_EMAIL_DATA } from "@data/GRAPH_EMAIL_DATA";
-
 const queryClient = new QueryClient();
 
 export default function App() {

@@ -30,7 +30,7 @@ export const GRAPH_EMAIL_DATA = {
       {
         id: 3,
         C_ID: 6,
-        C_type: 1,
+        C_type: 3,
         data: {
           label: "Glasp",
         },
@@ -46,7 +46,7 @@ export const GRAPH_EMAIL_DATA = {
       {
         id: 5,
         C_ID: 4,
-        C_type: 1,
+        C_type: 2,
         data: {
           label: "원티드 추천 포지션",
         },

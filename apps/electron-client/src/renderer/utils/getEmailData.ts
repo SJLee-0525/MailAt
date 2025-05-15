@@ -46,7 +46,7 @@ export function searchEmails(filters: EmailSearchFilters): AllEmails[] {
   return mockAllEmails.filter((email) => {
     // 1) 날짜 범위 검사
     if (startDate || endDate) {
-      const sent = new Date(email.receivedAt).getTime();
+      const sent = new Date(email.sentAt).getTime();
       if (startDate && sent < startDate.getTime()) return false;
       if (endDate && sent > endDate.getTime()) return false;
     }

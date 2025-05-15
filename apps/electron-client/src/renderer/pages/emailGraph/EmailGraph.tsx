@@ -12,7 +12,9 @@ import ForceGraph2D, { ForceGraphMethods } from "react-force-graph-2d";
 
 import { buildGraph } from "@utils/getBuildGraph";
 
-import type {
+import EmailGraphRightClick from "@pages/emailGraph/components/EmailGraphRightClick";
+
+import {
   RawNode,
   RawEmail,
   GraphNode,
@@ -26,8 +28,22 @@ interface Props {
   onMerge: (srcId: number, tgtId: number) => void;
 }
 
+interface CtxMenuState {
+  visible: boolean;
+  x: number;
+  y: number;
+  node: GraphNode | null;
+}
+
 const EmailGraph = memo(({ rawNodes, rawEmails, onSelect, onMerge }: Props) => {
-  console.log(1232, onSelect, onMerge);
+  // console.log(1232, onSelect, onMerge);
+  const [ctxMenu, setCtxMenu] = useState<CtxMenuState>({
+    visible: false,
+    x: 0,
+    y: 0,
+    node: null,
+  });
+
   // 그래프 데이터 가공
   const graph = useMemo(
     () => buildGraph(rawNodes, rawEmails), // {nodes:{id,val,name,color}, links:…}
@@ -68,7 +84,7 @@ const EmailGraph = memo(({ rawNodes, rawEmails, onSelect, onMerge }: Props) => {
 
     let frameId: number;
 
-    const step = () => {
+    function step() {
       setAnim((prev) => {
         const next: Record<string, number> = {};
         let running = false;
@@ -82,7 +98,7 @@ const EmailGraph = memo(({ rawNodes, rawEmails, onSelect, onMerge }: Props) => {
         if (running) frameId = requestAnimationFrame(step); // 다음 프레임 예약
         return running ? next : prev; // 다 찼으면 state 유지
       });
-    };
+    }
 
     frameId = requestAnimationFrame(step); // 첫 프레임
 
@@ -128,13 +144,18 @@ const EmailGraph = memo(({ rawNodes, rawEmails, onSelect, onMerge }: Props) => {
   );
 
   // 우클릭 시 동작
-  const handleRightClick = useCallback(
-    (node: any, e: MouseEvent) => {
-      e.preventDefault();
-      console.log("우클릭:", node);
-    },
-    [onSelect]
-  );
+  const handleRightClick = useCallback((node: any, e: MouseEvent) => {
+    e.preventDefault(); // 기본 브라우저 메뉴 막기
+
+    console.log("우클릭!", e);
+    // Math.min(x, window.innerWidth - menuWidth)
+    setCtxMenu({
+      visible: true,
+      x: Math.min(e.offsetX, window.innerWidth - 200),
+      y: Math.min(e.offsetY, window.innerHeight - 80),
+      node,
+    });
+  }, []);
 
   // 드래그 종료 시 동작
   const handleDragEnd = useCallback(
@@ -213,33 +234,83 @@ const EmailGraph = memo(({ rawNodes, rawEmails, onSelect, onMerge }: Props) => {
           graphData={graph}
           enableNodeDrag
           nodeId="id"
-          nodeRelSize={6}
+          // nodeRelSize={6} // Controlled by getRadius via nodeCanvasObject/nodePointerAreaPaint
           onNodeClick={handleNodeClick}
           onNodeDragEnd={handleDragEnd}
           onNodeRightClick={handleRightClick}
           linkCanvasObject={linkCanvasObject}
+          // 노드 그리기
           nodeCanvasObject={(n: any, ctx, gs) => {
-            const r = getRadius(n);
+            const baseSize = getRadius(n); // Use getRadius for a base size metric
+
             ctx.beginPath();
-            ctx.arc(n.x!, n.y!, r, 0, 2 * Math.PI);
-            ctx.fillStyle = n.color;
+
+            if (n.C_type === 2 || n.C_type === 3) {
+              // Draw a rounded rectangle (wider than tall)
+              const rectHeight = baseSize * 1.2; // Adjust multiplier as needed
+              const rectWidth = baseSize * 2; // Adjust multiplier to make it wider
+              const cornerRadius = Math.min(rectHeight, rectWidth) * 0.15; // Proportional corner radius
+
+              // Ensure n.x and n.y are defined before using them
+              const nodeX = n.x ?? 0;
+              const nodeY = n.y ?? 0;
+
+              ctx.roundRect(
+                nodeX - rectWidth / 2,
+                nodeY - rectHeight / 2,
+                rectWidth,
+                rectHeight,
+                cornerRadius
+              );
+            } else {
+              // Draw a circle (original logic)
+              ctx.arc(n.x ?? 0, n.y ?? 0, baseSize, 0, 2 * Math.PI, false);
+            }
+
+            ctx.fillStyle = n.color || "#9CA3AF"; // Default color if n.color is not set
             ctx.fill();
+
+            // Text rendering (common for both shapes)
             ctx.font = `${12 / gs}px Sans-Serif`;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillStyle = "#fff";
-            ctx.fillText(n.name, n.x!, n.y!);
+            ctx.fillStyle = "#fff"; // Text color
+            ctx.fillText(n.name || "", n.x ?? 0, n.y ?? 0);
           }}
           // 드래그·클릭 판정용 히트 영역 직접 그리기
           nodePointerAreaPaint={(n, color, ctx) => {
-            ctx.fillStyle = color;
-            const r = getRadius(n);
+            const baseSize = getRadius(n);
+            ctx.fillStyle = color; // Hit area color (usually transparent)
+
             ctx.beginPath();
-            ctx.arc(n.x!, n.y!, r, 0, 2 * Math.PI);
+
+            if (n.C_type === 2 || n.C_type === 3) {
+              // Hit area for the rounded rectangle
+              const rectHeight = baseSize * 1.5;
+              const rectWidth = baseSize * 2.2;
+              const cornerRadius = Math.min(rectHeight, rectWidth) * 0.15;
+
+              const nodeX = n.x ?? 0;
+              const nodeY = n.y ?? 0;
+
+              ctx.roundRect(
+                nodeX - rectWidth / 2,
+                nodeY - rectHeight / 2,
+                rectWidth,
+                rectHeight,
+                cornerRadius
+              );
+            } else {
+              // Hit area for the circle
+              ctx.arc(n.x ?? 0, n.y ?? 0, baseSize, 0, 2 * Math.PI, false);
+            }
             ctx.fill();
           }}
           cooldownTicks={100}
         />
+      )}
+      {ctxMenu.visible && (
+        <EmailGraphRightClick ctxMenu={ctxMenu} setCtxMenu={setCtxMenu} />
       )}
     </div>
   );

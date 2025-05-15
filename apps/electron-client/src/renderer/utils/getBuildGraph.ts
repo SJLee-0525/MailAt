@@ -1,5 +1,8 @@
 import { RawNode, RawEmail, GraphNode, GraphLink } from "@/types/graphType";
 
+// C_type: 0=Root,1=Person,2=Category,3=Subcategory
+// IO_type: 1=in,2=out,3=both
+
 export function buildGraph(
   nodes: RawNode[],
   emails: RawEmail[]
@@ -9,7 +12,7 @@ export function buildGraph(
     ...n,
     name: n.data.label,
     val: n.id === 0 ? 4 : 2, // ‘Me’를 조금 크게
-    color: n.C_type === 0 ? "#4F46E5" : "#10B981", // 타입별 색
+    color: ["#022d48", "#0a5685", "#e76f51", "#ffb45c"][n.C_type], // 타입별 색
   }));
 
   // 간단히 ‘Me(0)’ ↔︎ 나머지 로 엣지 연결
