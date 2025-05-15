@@ -300,8 +300,8 @@ class UserRepository {
             account_id INTEGER NOT NULL,
             schedule TEXT NULL,
             task TEXT NULL,
-            FOREIGN KEY (message_id) REFERENCES Message(message_id) ON DELETE CASCADE
-            FOREIGN KEY (account_id) REFERENCES Account(account_id) ON DELETE CASCADE,
+            FOREIGN KEY (message_id) REFERENCES Message(message_id) ON DELETE CASCADE,
+            FOREIGN KEY (account_id) REFERENCES Account(account_id) ON DELETE CASCADE
           );`)
 
           resolve();
