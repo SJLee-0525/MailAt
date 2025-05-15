@@ -97,6 +97,9 @@ async function initializeControllers() {
     const emailControllerModule = await import(
       "./src/main/controllers/emailController.js"
     );
+    const graphControllerModule = await import(
+      "./src/main/controllers/graphController.js"
+    );
 
     // 컨트롤러 초기화 함수 실행
     userControllerModule.initUserController();
@@ -116,6 +119,9 @@ async function initializeControllers() {
 
     emailControllerModule.initEmailController();
     console.log("[MAIN] Email 컨트롤러 초기화 완료");
+
+    graphControllerModule.initGraphController();
+    console.log("[MAIN] Graph 컨트롤러 초기화 완료");
 
     return true;
   } catch (error) {
