@@ -66,7 +66,7 @@ def get_model():
             MODEL_CACHE["llm"] = Llama(
                 model_path=GGUF_PATH,
                 chat_format="gemma",
-                n_ctx=4096,
+                n_ctx=2048,
                 n_gpu_layers=0,
                 verbose=False
             )
@@ -125,7 +125,7 @@ def summarize_email():
                     "Few-shot 예시:\n"
                     "오늘 날짜 : 2025-05-15(목)\n"
                     "이메일: '안녕하세요. 내일 회의가 있습니다.'\n"
-                    '응답: {"summary":"내일 회의 안내","schedule":"2025-05-16(금)","task":"회신"}'
+                    '응답: {"summary":"내일 회의 안내","schedule":"2025-05-16(금)","task":"회의"}'
                 )
             },
             {
