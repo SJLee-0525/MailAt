@@ -23,7 +23,6 @@ const EmailGraphRightClick = ({
     if (!ctxMenu.visible) return;
 
     function handleClickOutside(event: MouseEvent) {
-      console.log("클릭한 곳:", event.target, "버튼:", event.button); // Added event.button for debugging
       if (htmlRef.current && !htmlRef.current.contains(event.target as Node)) {
         // 클릭한 곳이 메뉴 외부일 때
         setCtxMenu((m) => ({ ...m, visible: false }));

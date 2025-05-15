@@ -11,8 +11,10 @@ interface UserProgressStore {
   inboxIsOpen: boolean;
   inboxIsClosing: boolean;
   selectedMail: AllEmails | null;
+  selectedMailIsClosing: boolean;
   isReplying: boolean;
   chattingIsOpen: boolean;
+  chattingIsClosing: boolean;
   setBottomNavProgress: (progress: "search" | null) => void;
   setMailFormIsOpen: (isOpen: boolean) => void;
   setInboxIsOpen: (isOpen: boolean) => void;
@@ -31,8 +33,10 @@ const useUserProgressStore = create<UserProgressStore>((set) => ({
   calendarIsOpen: false,
   calendarIsClosing: false,
   selectedMail: null,
+  selectedMailIsClosing: false,
   isReplying: false,
   chattingIsOpen: false,
+  chattingIsClosing: false,
   setBottomNavProgress: (progress) => set({ bottomNavProgress: progress }),
   setMailFormIsOpen: (isOpen) => {
     if (isOpen) {
@@ -68,10 +72,28 @@ const useUserProgressStore = create<UserProgressStore>((set) => ({
     }
   },
   setSelectedMail: (mailId) => {
-    set({ selectedMail: mailId !== null ? mailId : null });
+    if (mailId) {
+      set({ selectedMail: mailId });
+    } else {
+      set({ selectedMailIsClosing: true });
+
+      setTimeout(() => {
+        set({ selectedMail: null, selectedMailIsClosing: false });
+      }, 300);
+    }
   },
   setIsReplying: (isReplying) => set({ isReplying: isReplying }),
-  setChattingIsOpen: (isOpen) => set({ chattingIsOpen: isOpen }),
+  setChattingIsOpen: (isOpen) => {
+    if (isOpen) {
+      set({ chattingIsOpen: isOpen });
+    } else {
+      set({ chattingIsClosing: true });
+
+      setTimeout(() => {
+        set({ chattingIsOpen: false, chattingIsClosing: false });
+      }, 300);
+    }
+  },
 }));
 
 export default useUserProgressStore;

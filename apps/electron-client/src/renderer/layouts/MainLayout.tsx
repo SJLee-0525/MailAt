@@ -1,3 +1,5 @@
+import clsx from "clsx";
+
 import { Outlet } from "react-router-dom";
 
 import useUserProgressStore from "@stores/userProgressStore";
@@ -35,14 +37,23 @@ const MainLayout = () => {
 
   const { inboxIsOpen } = useUserProgressStore();
 
+  const sidePaneClass = clsx(
+    "transition-[width,min-width] h-full duration-300 ease-in-out",
+    "overflow-hidden", // 내용 잘림 방지
+    inboxIsOpen
+      ? "w-md min-w-md" // 열렸을 때
+      : "w-0 min-w-0" // 닫혔을 때
+  );
+
   return (
     <div className="flex w-screen h-screen font-pre-regular">
       <SideNav />
-      <main className="relative flex-1 overflow-auto ">
-        <div className="flex w-full h-full">
+      <main className="relative flex-1 overflow-hidden">
+        <div className="flex w-full h-full transition-all duration-300 ease-in-out">
           <Outlet />
           <PopUpLayout />
-          {inboxIsOpen && <div className="w-md min-w-md h-full max-h-full" />}
+
+          <div className={sidePaneClass} />
         </div>
 
         <HoverZone />

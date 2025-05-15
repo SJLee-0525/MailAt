@@ -1,3 +1,7 @@
+import "@components/calendar/Calendar.css";
+
+import useUserProgressStore from "@stores/userProgressStore";
+
 import { useCalendar } from "@hooks/useCalendarHook";
 
 import CalendarHeader from "@components/calendar/components/CalendarHeader";
@@ -5,12 +9,21 @@ import CalendarContents from "@components/calendar/components/CalendarContents";
 import CalendarDetail from "@components/calendar/components/CalendarDetail";
 
 const Calendar = () => {
+  const { calendarIsClosing } = useUserProgressStore();
+
   const { currentDate, daysInMonth, dispatch, selectedDate } = useCalendar();
 
   return (
     <>
-      {selectedDate.date && <CalendarDetail selectedDate={selectedDate.date} />}
-      <div className="flex flex-col w-full min-w-96 h-full bg-light1 rounded-xl transition-all duration-300 ease-in-out pointer-events-auto">
+      {selectedDate.date && (
+        <CalendarDetail
+          selectedDate={selectedDate.date}
+          isClosing={calendarIsClosing}
+        />
+      )}
+      <div
+        className={`flex flex-col w-full min-w-96 h-full bg-light1 rounded-xl transition-all duration-300 ease-in-out pointer-events-auto ${calendarIsClosing ? "calendar-is-closing" : "calendar-is-open"}`}
+      >
         <CalendarHeader
           currentDate={currentDate}
           dispatch={dispatch}

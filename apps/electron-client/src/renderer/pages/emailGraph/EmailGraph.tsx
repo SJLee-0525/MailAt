@@ -71,6 +71,15 @@ const EmailGraph = memo(({ rawNodes, rawEmails, onSelect, onMerge }: Props) => {
   // 포스 그래프 ref
   const fgRef = useRef<ForceGraphMethods<any, any> | undefined>(undefined);
 
+  // 초기 배율 및 확대/축소 비활성화를 위한 설정
+  const INITIAL_ZOOM_LEVEL = 6.5;
+  useEffect(() => {
+    if (fgRef.current && graph.nodes.length > 0 && w > 0 && h > 0) {
+      // 그래프 인스턴스가 있고, 노드가 있으며, 크기가 설정된 경우에만 실행
+      fgRef.current.zoom(INITIAL_ZOOM_LEVEL, 0); // (배율, 전환 시간 ms)
+    }
+  }, [graph, w, h]); // graph 데이터, 너비, 높이가 변경될 때마다 실행될 수 있도록 의존성 배열에 추가
+
   // 노드 반지름 계산
   const getRadius = useCallback(
     (n: any) => (n.id === 0 ? 12 : Math.max(Math.min(n.val * 0.5 + 6, 24), 8)),
@@ -186,8 +195,6 @@ const EmailGraph = memo(({ rawNodes, rawEmails, onSelect, onMerge }: Props) => {
         return dist < rDragged + getRadius(n); // 두 원이 겹치면 병합
       });
 
-      console.log(1312, onMerge);
-
       if (tgt) {
         console.log("병합", d, tgt);
         onMerge(d.id, tgt.id); // 병합
@@ -232,26 +239,29 @@ const EmailGraph = memo(({ rawNodes, rawEmails, onSelect, onMerge }: Props) => {
           width={w}
           height={h}
           graphData={graph}
+          // 확대/축소 및 이동 상호작용 비활성화
+          enableZoomInteraction={false}
+          enablePanInteraction={false}
           enableNodeDrag
           nodeId="id"
-          // nodeRelSize={6} // Controlled by getRadius via nodeCanvasObject/nodePointerAreaPaint
+          // nodeRelSize={6} // 노드 크기 조정
           onNodeClick={handleNodeClick}
           onNodeDragEnd={handleDragEnd}
           onNodeRightClick={handleRightClick}
           linkCanvasObject={linkCanvasObject}
           // 노드 그리기
           nodeCanvasObject={(n: any, ctx, gs) => {
-            const baseSize = getRadius(n); // Use getRadius for a base size metric
+            const baseSize = getRadius(n); // 노드 반지름
 
             ctx.beginPath();
 
             if (n.C_type === 2 || n.C_type === 3) {
-              // Draw a rounded rectangle (wider than tall)
-              const rectHeight = baseSize * 1.2; // Adjust multiplier as needed
-              const rectWidth = baseSize * 2; // Adjust multiplier to make it wider
-              const cornerRadius = Math.min(rectHeight, rectWidth) * 0.15; // Proportional corner radius
+              // 사각형 그리기
+              const rectHeight = baseSize * 1.3;
+              const rectWidth = baseSize * 2;
+              const cornerRadius = Math.min(rectHeight, rectWidth) * 0.15;
 
-              // Ensure n.x and n.y are defined before using them
+              // 사각형의 중심 좌표
               const nodeX = n.x ?? 0;
               const nodeY = n.y ?? 0;
 
@@ -263,15 +273,15 @@ const EmailGraph = memo(({ rawNodes, rawEmails, onSelect, onMerge }: Props) => {
                 cornerRadius
               );
             } else {
-              // Draw a circle (original logic)
+              // 원 그리기
               ctx.arc(n.x ?? 0, n.y ?? 0, baseSize, 0, 2 * Math.PI, false);
             }
 
-            ctx.fillStyle = n.color || "#9CA3AF"; // Default color if n.color is not set
+            ctx.fillStyle = n.color || "#9CA3AF"; // 노드 색상 (기본값)
             ctx.fill();
 
-            // Text rendering (common for both shapes)
-            ctx.font = `${12 / gs}px Sans-Serif`;
+            // 텍스트 그리기
+            ctx.font = `${12 / gs}px Pretendard`;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillStyle = "#fff"; // Text color
@@ -280,12 +290,12 @@ const EmailGraph = memo(({ rawNodes, rawEmails, onSelect, onMerge }: Props) => {
           // 드래그·클릭 판정용 히트 영역 직접 그리기
           nodePointerAreaPaint={(n, color, ctx) => {
             const baseSize = getRadius(n);
-            ctx.fillStyle = color; // Hit area color (usually transparent)
+            ctx.fillStyle = color;
 
             ctx.beginPath();
 
             if (n.C_type === 2 || n.C_type === 3) {
-              // Hit area for the rounded rectangle
+              // 사각형 히트 영역
               const rectHeight = baseSize * 1.5;
               const rectWidth = baseSize * 2.2;
               const cornerRadius = Math.min(rectHeight, rectWidth) * 0.15;
@@ -301,12 +311,12 @@ const EmailGraph = memo(({ rawNodes, rawEmails, onSelect, onMerge }: Props) => {
                 cornerRadius
               );
             } else {
-              // Hit area for the circle
+              // 원 히트 영역
               ctx.arc(n.x ?? 0, n.y ?? 0, baseSize, 0, 2 * Math.PI, false);
             }
             ctx.fill();
           }}
-          cooldownTicks={100}
+          cooldownTicks={300}
         />
       )}
       {ctxMenu.visible && (

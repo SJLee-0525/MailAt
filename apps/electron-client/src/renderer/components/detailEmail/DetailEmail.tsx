@@ -1,3 +1,5 @@
+import "@components/detailEmail/DetailEmail.css";
+
 import { useEffect, useState } from "react";
 
 import { ReplyData, EmailDetail } from "@/types/emailTypes";
@@ -16,6 +18,7 @@ import MailReplyForm from "@components/mailForm/MailReplyForm";
 const DetailEmail = () => {
   const {
     selectedMail,
+    selectedMailIsClosing,
     isReplying,
     chattingIsOpen,
     setSelectedMail,
@@ -51,8 +54,9 @@ const DetailEmail = () => {
   }
 
   function handleClose() {
-    setSelectedMail(null);
+    // 순서 중요
     setChattingIsOpen(false);
+    setSelectedMail(null);
     setIsReplying(false);
   }
 
@@ -66,7 +70,9 @@ const DetailEmail = () => {
         />
       )}
 
-      <div className="flex flex-col w-full min-w-96 h-full bg-light1 rounded-xl transition-all duration-300 ease-in-out pointer-events-auto">
+      <div
+        className={`flex flex-col w-full min-w-96 h-full bg-light1 rounded-xl transition-all duration-300 ease-in-out pointer-events-auto ${selectedMailIsClosing ? "detail-email-is-closing" : "detail-email-is-open "}`}
+      >
         <DetailEmailHeader onClose={handleClose} />
         <div className="flex flex-col w-full h-full px-1 pb-1 bg-light1 rounded-b-xl overflow-y-auto">
           <DetailEmailContents
