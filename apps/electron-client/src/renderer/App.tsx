@@ -10,7 +10,7 @@ import { getUser } from "@apis/userApi";
 
 import MainLayout from "@layouts/MainLayout";
 // import Home from "@pages/home/Home";
-import EmailGraph from "@pages/emailGraph/EmailGraph";
+import EmailGraphPage from "@pages/emailGraph/EmailGraphPage";
 
 import Alert from "@components/common/modal/Alert";
 import NewMailFormModal from "@components/mailForm/NewMailFormModal";
@@ -48,15 +48,7 @@ export default function App() {
         {/* 모든 페이지에 공통 레이아웃 적용 */}
         <Route path="/renderer.html" element={<MainLayout />}>
           {/* <Route index element={<Home />} /> */}
-          <Route
-            index
-            element={
-              <EmailGraph
-                rawNodes={GRAPH_EMAIL_DATA.result.nodes}
-                rawEmails={GRAPH_EMAIL_DATA.result.emails}
-              />
-            }
-          />
+          <Route index element={<EmailGraphPage />} />
           <Route path="*" element={<div>Not Found</div>} />
         </Route>
       </Routes>

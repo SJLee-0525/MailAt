@@ -10,6 +10,7 @@ const NetworkPage = () => {
   const { graphData } = useConversationsStore();
 
   const [local, setLocal] = useState<GraphData | null>(null);
+  const [selected, setSelected] = useState<number | null>(null);
 
   useEffect(() => {
     if (graphData) {
@@ -19,14 +20,17 @@ const NetworkPage = () => {
     }
   }, [graphData]);
 
-  const [selected, setSelected] = useState<number | null>(null);
+  const handleMerge = (srcId: number, tgtId: number) => {
+    console.log("Merge", srcId, tgtId);
+  };
 
   return (
-    <div className="flex w-full h-full">
+    <div className="flex w-full h-full justify-center items-center overflow-hidden">
       <EmailGraph
         rawNodes={local?.nodes || []} // Ensure local is not null before accessing nodes
         rawEmails={local?.emails || []} // Ensure local is not null before accessing emails
         onSelect={setSelected}
+        onMerge={handleMerge}
       />
     </div>
   );

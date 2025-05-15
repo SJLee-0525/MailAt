@@ -12,23 +12,29 @@ import ForceGraph2D, { ForceGraphMethods } from "react-force-graph-2d";
 
 import { buildGraph } from "@utils/getBuildGraph";
 
-import type { RawNode, RawEmail } from "@/types/graphType";
+import type {
+  RawNode,
+  RawEmail,
+  GraphNode,
+  // GraphLink,
+} from "@/types/graphType";
 
 interface Props {
   rawNodes: RawNode[];
   rawEmails: RawEmail[];
   onSelect?: (idx: number) => void;
-  onMerge?: (srcId: string, tgtId: string) => void;
+  onMerge: (srcId: number, tgtId: number) => void;
 }
 
 const EmailGraph = memo(({ rawNodes, rawEmails, onSelect, onMerge }: Props) => {
-  /* --------- 0. 그래프 데이터 --------- */
+  console.log(1232, onSelect, onMerge);
+  // 그래프 데이터 가공
   const graph = useMemo(
     () => buildGraph(rawNodes, rawEmails), // {nodes:{id,val,name,color}, links:…}
     [rawNodes, rawEmails]
   );
 
-  /* --------- 1. 반응형 width/height --------- */
+  // 반응형 width/height
   const wrapRef = useRef<HTMLDivElement>(null);
   const [{ w, h }, setSize] = useState({ w: 0, h: 0 });
   useLayoutEffect(() => {
@@ -42,83 +48,138 @@ const EmailGraph = memo(({ rawNodes, rawEmails, onSelect, onMerge }: Props) => {
     return () => ro.disconnect();
   }, []);
 
-  /* --------- 2. 포스그래프 ref --------- */
+  // 클릭 시 더블클릭 판별을 위한 ref
+  const clickTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const DBL_GAP = 200; // ms
+
+  // 포스 그래프 ref
   const fgRef = useRef<ForceGraphMethods<any, any> | undefined>(undefined);
 
-  /* --------- 3. 노드 반지름 계산 --------- */
+  // 노드 반지름 계산
   const getRadius = useCallback(
     (n: any) => (n.id === 0 ? 12 : Math.max(Math.min(n.val * 0.5 + 6, 24), 8)),
     []
   );
 
-  /* --------- 4. 링크 애니메이션 state --------- */
+  // 링크 애니메이션 루프 state
   const [animMap, setAnim] = useState<Record<string, number>>({});
-  // 애니메이션 루프
   useEffect(() => {
-    let f: number;
-    const step = () =>
+    if (!Object.keys(animMap).length) return; // 애니메이션 없으면 패스
+
+    let frameId: number;
+
+    const step = () => {
       setAnim((prev) => {
         const next: Record<string, number> = {};
         let running = false;
+
         for (const [k, p] of Object.entries(prev)) {
-          const np = Math.min(p + 0.03, 1);
-          if (np < 1) running = true;
+          const np = Math.min(p + 0.03, 1); // 0 → 1 로 보간
+          if (np < 1) running = true; // 아직 덜 찼으면 계속
           next[k] = np;
         }
-        if (running) f = requestAnimationFrame(step);
-        return next;
+
+        if (running) frameId = requestAnimationFrame(step); // 다음 프레임 예약
+        return running ? next : prev; // 다 찼으면 state 유지
       });
-    if (Object.keys(animMap).length) f = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(f);
+    };
+
+    frameId = requestAnimationFrame(step); // 첫 프레임
+
+    return () => cancelAnimationFrame(frameId); // 클린업
   }, [animMap]);
 
-  /* --------- 5. 이벤트 핸들러 --------- */
+  // 노드 클릭 시 동작
   const handleNodeClick = useCallback(
-    (node: any) => {
-      if (node.id === 0) return;
-      // ① InfoPanel 선택
-      if (onSelect) onSelect(node.idx ?? node.id);
-      // ② 애니메이션 초기화
-      const map: Record<string, number> = {};
-      graph.links.forEach((l: any) => {
-        const s = typeof l.source === "string" ? l.source : l.source.id;
-        const t = typeof l.target === "string" ? l.target : l.target.id;
-        if (s === node.id || t === node.id) map[`${s}->${t}`] = 0;
-      });
-      setAnim(map);
+    (node: GraphNode) => {
+      // 이미 예약된 타이머: 더블클릭
+      if (clickTimerRef.current) {
+        clearTimeout(clickTimerRef.current);
+        clickTimerRef.current = null;
+
+        console.log("더블클릭!", node);
+
+        // 더블클릭 시 동작
+        return;
+      }
+
+      // 첫 번째 클릭: 단일클릭으로 가정하고 타이머 예약
+      clickTimerRef.current = setTimeout(() => {
+        // 단일클릭 로직
+        clickTimerRef.current = null; // 타이머 해제
+        if (node.id === 0) return;
+
+        // InfoPanel 선택
+        onSelect?.(node.id);
+
+        // 애니메이션 초기화
+        const map: Record<string, number> = {};
+        graph.links.forEach((l: any) => {
+          const s = typeof l.source === "string" ? l.source : l.source.id;
+          const t = typeof l.target === "string" ? l.target : l.target.id;
+          if (s === node.id || t === node.id) map[`${s}->${t}`] = 0;
+        });
+        setAnim(map);
+
+        console.log("단일클릭!", node);
+      }, DBL_GAP);
     },
     [graph.links, onSelect]
   );
 
-  const handleDragEnd = useCallback(
-    (n: any) => {
-      if (!onMerge || n.id === 0) return;
-      const r = getRadius(n);
-      const thresh = r * 2;
-
-      const fg = fgRef.current;
-      if (!fg) {
-        return;
-      }
-
-      fg.d3ReheatSimulation();
-      // Cast fg to any to bypass the type error on graphData.
-      // The result of a method call on 'any' is 'any'.
-      const { nodes } = (fg as any).graphData();
-      const cur = nodes.find((x: any) => x.id === n.id);
-      const near = nodes
-        .filter((x: any) => x.id !== n.id)
-        .find((x: any) => {
-          const dx = (x.x || 0) - (cur.x || 0);
-          const dy = (x.y || 0) - (cur.y || 0);
-          return Math.hypot(dx, dy) < thresh;
-        });
-      if (near) onMerge(n.id, near.id);
+  // 우클릭 시 동작
+  const handleRightClick = useCallback(
+    (node: any, e: MouseEvent) => {
+      e.preventDefault();
+      console.log("우클릭:", node);
     },
-    [getRadius, onMerge]
+    [onSelect]
   );
 
-  /* --------- 6. 커스텀 link 그리기 --------- */
+  // 드래그 종료 시 동작
+  const handleDragEnd = useCallback(
+    (d: GraphNode) => {
+      if (d.id === 0) return; // ‘Me’ 노드는 병합 금지
+
+      // 인스턴스가 가진 graphData()가 있으면 그걸, 없으면 props로 만든 graph.nodes를 반환
+      function getCurrentNodes() {
+        const inst = fgRef.current as any;
+        if (inst && typeof inst.graphData === "function") {
+          // react-force-graph 인스턴스가 제대로 들어온 경우
+          return (inst.graphData().nodes ?? []) as GraphNode[];
+        }
+        // fallback : ForceGraph가 원본 배열에 x, y를 직접 달기 때문에 그대로 써도 좌표가 최신입니다.
+        return graph.nodes as GraphNode[];
+      }
+
+      const rDragged = getRadius(d);
+      const tgt = getCurrentNodes().find((n) => {
+        // 나 자신과 ‘Me’는 제외
+        if (n.id === d.id || n.id === 0) return false;
+
+        // 두 원의 중심 좌표를 이용해 거리 계산
+        const dist = Math.hypot(
+          (n.x ?? 0) - (d.x ?? 0),
+          (n.y ?? 0) - (d.y ?? 0)
+        );
+        return dist < rDragged + getRadius(n); // 두 원이 겹치면 병합
+      });
+
+      console.log(1312, onMerge);
+
+      if (tgt) {
+        console.log("병합", d, tgt);
+        onMerge(d.id, tgt.id); // 병합
+      } else {
+        console.log("드래그 종료:", d);
+      }
+
+      fgRef.current?.d3ReheatSimulation?.(); // 레이아웃 재가열
+    },
+    [getRadius, onMerge, graph.nodes] // graph.nodes 의존성 추가!
+  );
+
+  // 커스텀 link 그리기
   const linkCanvasObject = useCallback(
     (l: any, ctx: CanvasRenderingContext2D, gs: number) => {
       const s: any = l.source;
@@ -138,7 +199,7 @@ const EmailGraph = memo(({ rawNodes, rawEmails, onSelect, onMerge }: Props) => {
     [animMap]
   );
 
-  /* --------- 7. 렌더 --------- */
+  // 렌더
   return (
     <div
       ref={wrapRef}
@@ -155,6 +216,7 @@ const EmailGraph = memo(({ rawNodes, rawEmails, onSelect, onMerge }: Props) => {
           nodeRelSize={6}
           onNodeClick={handleNodeClick}
           onNodeDragEnd={handleDragEnd}
+          onNodeRightClick={handleRightClick}
           linkCanvasObject={linkCanvasObject}
           nodeCanvasObject={(n: any, ctx, gs) => {
             const r = getRadius(n);
@@ -168,7 +230,7 @@ const EmailGraph = memo(({ rawNodes, rawEmails, onSelect, onMerge }: Props) => {
             ctx.fillStyle = "#fff";
             ctx.fillText(n.name, n.x!, n.y!);
           }}
-          /* 드래그·클릭 판정용 히트 영역 직접 그리기 ─ ① */
+          // 드래그·클릭 판정용 히트 영역 직접 그리기
           nodePointerAreaPaint={(n, color, ctx) => {
             ctx.fillStyle = color;
             const r = getRadius(n);
