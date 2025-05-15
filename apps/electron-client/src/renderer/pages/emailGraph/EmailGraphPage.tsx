@@ -24,6 +24,8 @@ const NetworkPage = () => {
     console.log("Merge", srcId, tgtId);
   };
 
+  console.log(selected, "selected");
+
   return (
     <div className="flex w-full h-full justify-center items-center overflow-hidden">
       <EmailGraph

@@ -34,11 +34,11 @@ export function parseEmailFromName(from: string) {
 export function searchEmails(filters: EmailSearchFilters): AllEmails[] {
   const {
     from,
-    to,
+    // to,
     subject,
     includeKeywords,
     excludeKeywords,
-    attachmentSize,
+    // attachmentSize,
     startDate,
     endDate,
   } = filters;

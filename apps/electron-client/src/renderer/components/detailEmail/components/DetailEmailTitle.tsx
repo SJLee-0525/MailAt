@@ -92,7 +92,7 @@ const DetailEmailTitle = ({
           title: "삭제 실패",
           content: "이메일 삭제에 실패했습니다.",
         });
-        console.error("Error deleting email:", response);
+        console.error("Error deleting email:", response, isFlagged);
       }
     }
   }

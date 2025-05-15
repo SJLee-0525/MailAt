@@ -1,11 +1,11 @@
-import { RawNode, RawEmail, GraphNode, GraphLink } from "@/types/graphType";
+import { RawNode, GraphNode, GraphLink } from "@/types/graphType";
 
 // C_type: 0=Root,1=Person,2=Category,3=Subcategory
 // IO_type: 1=in,2=out,3=both
 
 export function buildGraph(
-  nodes: RawNode[],
-  emails: RawEmail[]
+  nodes: RawNode[]
+  // emails: RawEmail[]
 ): { nodes: GraphNode[]; links: GraphLink[] } {
   // 노드 가공
   const gNodes: GraphNode[] = nodes.map((n) => ({
@@ -21,5 +21,6 @@ export function buildGraph(
     .map((n) => ({ source: 0, target: n.id }));
 
   // ⚡ 필요하다면 e-mail 도메인이나 시간순으로 링크를 더 만들 수도 있음
+
   return { nodes: gNodes, links: gLinks };
 }

@@ -1,12 +1,12 @@
 const CalendarHeader = ({
   currentDate: { year, month },
   dispatch: {
-    handlePrevYear,
-    handleNextYear,
+    // handlePrevYear,
+    // handleNextYear,
     handlePrevMonth,
     handleNextMonth,
   },
-  onClose,
+  // onClose,
 }: {
   currentDate: {
     year: string;

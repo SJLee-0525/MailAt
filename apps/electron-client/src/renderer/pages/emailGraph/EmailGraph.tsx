@@ -46,7 +46,7 @@ const EmailGraph = memo(({ rawNodes, rawEmails, onSelect, onMerge }: Props) => {
 
   // 그래프 데이터 가공
   const graph = useMemo(
-    () => buildGraph(rawNodes, rawEmails), // {nodes:{id,val,name,color}, links:…}
+    () => buildGraph(rawNodes), // {nodes:{id,val,name,color}, links:…}
     [rawNodes, rawEmails]
   );
 
