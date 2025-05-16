@@ -1,4 +1,4 @@
-// import instance from "./instance";
+import { aiInstance } from "@apis/instance";
 
 import {
   FolderResponse,
@@ -8,6 +8,7 @@ import {
   EmailSendRequestData,
   EmailSearchFilters,
   EmailDetailByThreadId,
+  GenerateEmailContentRequest,
 } from "@/types/emailTypes";
 
 import {
@@ -16,6 +17,11 @@ import {
 } from "@utils/getEmailData";
 
 // const { VITE_DEV_API_URL } = import.meta.env;
+
+// Gemini API 설정 상수
+const GEMINI_API_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+const GEMINI_API_KEY = "AIzaSyDwxwFfDd-Z4GQq5kfMDVa1GgUtDlUOOaA";
 
 // 폴더 목록 조회
 export const getFolders = async ({
@@ -216,6 +222,24 @@ export const sendEmail = async (
       response
     );
     return response;
+  } catch (error: unknown) {
+    throw new Error(error as string);
+  }
+};
+
+export const generateEmailContent = async (
+  requestBody: GenerateEmailContentRequest
+) => {
+  try {
+    const response = await aiInstance.post(
+      `${GEMINI_API_URL}?key=${GEMINI_API_KEY}`,
+      requestBody
+    );
+    // console.log(
+    //   `[POST] ${GEMINI_API_URL}?key=${GEMINI_API_KEY}`,
+    //   response.data
+    // );
+    return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
   }

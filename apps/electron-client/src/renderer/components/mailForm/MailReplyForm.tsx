@@ -9,7 +9,7 @@ import useModalStore from "@stores/modalStore";
 import { sendEmail } from "@apis/emailApi";
 
 import MailFormHeader from "@components/mailForm/components/MailFormHeader";
-import MailFormWithAI from "./MailFormWithAI";
+import MailFormWithAI from "@components/mailForm/MailFormWithAI";
 
 const MailReplyForm = ({
   replyData,
