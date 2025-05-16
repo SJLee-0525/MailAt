@@ -114,7 +114,7 @@ def summarize_email():
                 "content": (
                     "이메일 요약 전문가이자 일정/할일 추출자. "
                     "절대 배열이나 불필요한 문장 없이, 정확히 JSON을 반환하세요: "
-                    "schedule에는 괄호나 추가 설명 없이 YYYY-MM-DD(요일) 형태로만 작성하며 내일 회의일 경우 D+1 그리고 다음 주 라고 작성되어 있을 경우 요일을 계산하여 작성함, "
+                    "scheduled_at에는 괄호나 추가 설명 없이 YYYY-MM-DD(요일) 형태로만 작성하며 내일 회의일 경우 D+1 그리고 다음 주 라고 작성되어 있을 경우 요일을 계산하여 작성함, "
                     "task도 단일 문자열(최대 10글자)만 작성하세요. "
                     "Key값은 영어로 작성하고, 엔터나 백틱 등은 절대 포함하지 마세요."
                 )
@@ -125,7 +125,7 @@ def summarize_email():
                     "Few-shot 예시:\n"
                     "오늘 날짜 : 2025-05-15(목)\n"
                     "이메일: '안녕하세요. 내일 회의가 있습니다.'\n"
-                    '응답: {"summary":"내일 회의 안내","schedule":"2025-05-16(금)","task":"회의"}'
+                    '응답: {"summary":"내일 회의 안내","scheduled_at":"2025-05-16(금)","task":"회의"}'
                 )
             },
             {
@@ -134,7 +134,7 @@ def summarize_email():
                 f"\n\n아래 이메일을 최대 두 줄로 요약하고, 일정과 할 일을 JSON으로 반환하세요.\n\n{email_text}"
                     f'오늘 날짜 : {today_str}\n\n'
                     '{"summary":"<single-line string>",'
-                    '"schedule":"<YYYY-MM-DD(요일) 또는 null>",'
+                    '"scheduled_at":"<YYYY-MM-DD(요일) 또는 null>",'
                     '"task":"<10글자 이내 한 줄 문자열 또는 null>"}. '
                 )
             }
@@ -144,10 +144,10 @@ def summarize_email():
             "type": "object",
             "properties": {
                 "summary":  {"type": "string"},
-                "schedule": {"type": "string"},
+                "scheduled_at": {"type": "string"},
                 "task":     {"type": "string"}
             },
-            "required": ["summary", "schedule", "task"],
+            "required": ["summary", "scheduled_at", "task"],
             "additionalProperties": False
         }
 
@@ -171,7 +171,7 @@ def summarize_email():
 
         # 모델 응답을 JSON으로 파싱
         summary = parsed.get("summary", "")
-        schedule = parsed.get("schedule", None)
+        scheduled_at = parsed.get("scheduled_at", None)
         task = parsed.get("task", None)
 
         with MODEL_CACHE["lock"]:
@@ -184,7 +184,7 @@ def summarize_email():
     t_end = time.perf_counter()
     logger.info(f"요약 요청 처리 완료. 소요 시간: {t_end - t_start:.2f}초")
 
-    return jsonify({"summary": summary, "schedule": schedule, "task": task})
+    return jsonify({"summary": summary, "scheduled_at": scheduled_at, "task": task})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
