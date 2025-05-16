@@ -2,7 +2,7 @@ import { http, HttpResponse } from "msw";
 
 import {
   mockEmailConversations,
-  mockEmailThreadConservation,
+  // mockEmailThreadConservation,
 } from "@data/EMAIL_CONSERVATIONS";
 import { ACCOUNTS_DATA } from "@data/USER_DATA";
 
@@ -16,8 +16,8 @@ const handlers = [
   }),
 
   // 사용자 조회
-  http.get(VITE_DEV_API_URL + "/user/:userId", ({ params }) => {
-    const { userId } = params;
+  http.get(VITE_DEV_API_URL + "/user/:userId", () => {
+    // const { userId } = params;
     return HttpResponse.json();
     // return HttpResponse.json({ id: userId, username: "testUser" });
   }),
@@ -74,11 +74,21 @@ const handlers = [
   }),
 
   // 이메일 스레드로 전체 조회
-  http.get(VITE_DEV_API_URL + "/emails/thread/:threadId", ({ params }) => {
-    // const { threadId } = params;
+  http.get(
+    VITE_DEV_API_URL + "/emails/thread/:threadId",
+    (
+      {
+        // params
+      }
+    ) => {
+      // const { threadId } = params;
 
-    return HttpResponse.json(mockEmailThreadConservation);
-  }),
+      return HttpResponse
+        .json
+        // mockEmailThreadConservation
+        ();
+    }
+  ),
 
   // 이메일 삭제
   http.delete(VITE_DEV_API_URL + "/emails/:emailId", () => {

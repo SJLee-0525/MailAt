@@ -1,0 +1,10 @@
+@import url("../../styles/animations.css");
+
+.detail-email-is-open {
+  animation: slideUpOpenComponent 0.5s forwards;
+}
+
+.detail-email-is-closing {
+  animation: slideDownCloseComponent 0.3s forwards !important;
+  transition: all 0.3s ease;
+}

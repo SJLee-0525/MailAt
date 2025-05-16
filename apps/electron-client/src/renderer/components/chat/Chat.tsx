@@ -1,6 +1,9 @@
+import "@components/chat/Chat.css";
+
 import { useState, useEffect } from "react";
 
 import useAuthenticateStore from "@stores/authenticateStore";
+import useUserProgressStore from "@stores/userProgressStore";
 
 import { getEmailsByThreadId } from "@apis/emailApi";
 
@@ -17,6 +20,7 @@ const Chat = ({
   onClose: () => void;
 }) => {
   const { user } = useAuthenticateStore();
+  const { chattingIsClosing } = useUserProgressStore();
 
   const [chatData, setChatData] = useState<EmailDetailByThreadId | null>(null);
 
@@ -38,13 +42,15 @@ const Chat = ({
   }
 
   useEffect(() => {
-    if (selectedMail) {
+    if (!chattingIsClosing && selectedMail) {
       fetchChatData();
     }
   }, [selectedMail]);
 
   return (
-    <div className="absolute z-10 flex flex-col w-md min-w-md h-full max-h-full bg-light1 rounded-xl">
+    <div
+      className={`absolute z-10 flex flex-col w-md min-w-md h-full max-h-full bg-light1 rounded-xl ${chattingIsClosing ? "chat-is-closing" : "chat-is-open"}`}
+    >
       <ChatHeader
         contact={chatData ? chatData.contact : null}
         onClose={onClose}

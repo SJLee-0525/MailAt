@@ -61,6 +61,8 @@ const DetailEmailTitle = ({
   // const parsedFrom = parseEmailFromName(from);
 
   async function handleChangeIsRead() {
+    console.log("DetailEmailTitle", to);
+
     try {
       const response = await markEmailAsRead({
         messageId: id,
@@ -92,7 +94,7 @@ const DetailEmailTitle = ({
           title: "삭제 실패",
           content: "이메일 삭제에 실패했습니다.",
         });
-        console.error("Error deleting email:", response);
+        console.error("Error deleting email:", response, isFlagged);
       }
     }
   }
@@ -128,11 +130,11 @@ const DetailEmailTitle = ({
                 className="flex items-center justify-center px-3 py-1 rounded-full bg-disable font-pre-medium text-sm"
                 onClick={openChat}
               >
-                {fromName} {fromEmail}
+                {fromName}
               </span>
             </div>
           </div>
-          {isExpanded && <DetailEmailInfo isRead={isRead} to={to} />}
+          {isExpanded && <DetailEmailInfo isRead={isRead} to={fromEmail} />}
         </div>
 
         <div className="flex items-center gap-2">

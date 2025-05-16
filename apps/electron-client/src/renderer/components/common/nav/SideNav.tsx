@@ -13,13 +13,28 @@ import IconButton from "@components/common/button/IconButton";
 
 const SideNav = () => {
   const { openModal, closeModal } = useModalStore();
-  const { setCalendarIsOpen, setInboxIsOpen } = useUserProgressStore();
+  const {
+    setCalendarIsOpen,
+    setInboxIsOpen,
+    setSelectedMail,
+    setChattingIsOpen,
+  } = useUserProgressStore();
 
   function handleCloseAllModal() {
     setCalendarIsOpen(false);
     setInboxIsOpen(false);
+    setSelectedMail(null);
+    setChattingIsOpen(false);
 
     closeModal();
+  }
+
+  function handleOpenCalendar() {
+    setInboxIsOpen(false);
+    setSelectedMail(null);
+    setChattingIsOpen(false);
+
+    setCalendarIsOpen(true);
   }
 
   return (
@@ -35,10 +50,7 @@ const SideNav = () => {
           type="button"
           className="p-2 transition-all duration-200 hover:bg-light2"
           icon={<CalendarIcon />}
-          onClick={() => {
-            setInboxIsOpen(false);
-            setCalendarIsOpen(true);
-          }}
+          onClick={handleOpenCalendar}
         />
         <IconButton
           type="button"

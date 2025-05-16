@@ -34,6 +34,7 @@ const NewMailFormModal = () => {
     <dialog
       ref={dialog}
       onClick={handleBackdropClick}
+      onClose={() => setMailFormIsOpen(false)}
       className={`fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-1/2 min-w-[480px] h-full rounded-b-xl bg-transparent ${mailFormIsClosing ? "is-closing" : ""}`}
     >
       <MailCreateForm />

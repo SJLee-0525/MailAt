@@ -52,7 +52,7 @@ const InboxContent = ({
   // const idBase = useId();
 
   // 수신 시간으로 할 지, 발송 시간으로 할 지 고민 중
-  const formattedDate = formatDate(email.receivedAt, "date");
+  const formattedDate = formatDate(email.sentAt, "date");
 
   return (
     <div

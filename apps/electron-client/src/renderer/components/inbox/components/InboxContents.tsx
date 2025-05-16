@@ -43,7 +43,7 @@ const InboxFolders = ({ folders }: { folders: Record<string, string[]> }) => {
 };
 
 const InboxContents = () => {
-  const { folders, conversations, setConversations } = useConservationsStore();
+  const { folders, conversations } = useConservationsStore();
   const { selectedMail, setSelectedMail } = userProgressStore();
 
   const { fetchNextPage, hasNextPage, isFetchingNextPage } =
