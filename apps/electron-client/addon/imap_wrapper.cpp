@@ -145,9 +145,9 @@ Value ImapWrapper::FetchOne(const Napi::CallbackInfo& info) {
     try {
         mailbox_name_str = info[0].As<Napi::String>().Utf8Value();
         index_val = info[1].As<Napi::Number>().Uint32Value();
-        // std::cerr << "[FetchOne] Received request for mailbox: " << mailbox_name_str << ", index: " << index_val << std::endl; // 로그 필요시 주석 해제
+        // std::cerr << "[FetchOne] Received request for mailbox: " << mailbox_name_str << ", index: " << index_val << std::endl;
     } catch (const Napi::Error& e) {
-        // std::cerr << "[FetchOne] NAPI argument conversion error: " << e.Message() << std::endl; // 로그 필요시 주석 해제
+        // std::cerr << "[FetchOne] NAPI argument conversion error: " << e.Message() << std::endl;
         e.ThrowAsJavaScriptException();
         return env.Null();
     }
@@ -155,48 +155,72 @@ Value ImapWrapper::FetchOne(const Napi::CallbackInfo& info) {
     // !!! 인덱스 유효성 검사: 0번 인덱스 방어 !!!
     if (index_val == 0) {
         std::string error_msg = "FetchOne error: Index 0 is invalid for mailbox: " + mailbox_name_str;
-        // std::cerr << "[FetchOne] " << error_msg << std::endl; // 로그 필요시 주석 해제
+        // std::cerr << "[FetchOne] " << error_msg << std::endl;
         Napi::Error::New(env, error_msg).ThrowAsJavaScriptException();
         return env.Null();
     }
 
     try {
-        // std::cerr << "[FetchOne] Attempting to fetch from mailbox: " << mailbox_name_str << ", index: " << index_val << std::endl; // 로그 필요시 주석 해제
+        // std::cerr << "[FetchOne] Attempting to fetch from mailbox: " << mailbox_name_str << ", index: " << index_val << std::endl;
         mailio::message msg;
         imap_client_->fetch(mailbox_name_str, index_val, msg); // is_uid=false, header_only=false
-        // std::cerr << "[FetchOne] Successfully fetched message. Index: " << index_val << std::endl; // 로그 필요시 주석 해제
+        // std::cerr << "[FetchOne] Successfully fetched message. Index: " << index_val << std::endl;
 
         std::string content;
         msg.format(content);
-        // std::cerr << "[FetchOne] Message formatted. Size: " << content.length() << std::endl; // 로그 필요시 주석 해제
+        // std::cerr << "[FetchOne] Message formatted. Size: " << content.length() << std::endl;
 
         return Napi::String::New(env, content);
 
     } catch (const std::exception& e) { // mailio 예외도 std::exception을 상속하므로 여기서 잡힐 수 있음
         std::string error_details = "Exception during fetch: " + std::string(e.what()) +
-                                    " (mailbox: " + mailbox_name_str + ", index: " + std::to_string(index_val) + ")";
+                                   " (mailbox: " + mailbox_name_str + ", index: " + std::to_string(index_val) + ")";
         // std::cerr << "[FetchOne] " << error_details << std::endl; // 로그 필요시 주석 해제
         Napi::Error::New(env, error_details).ThrowAsJavaScriptException();
         return env.Null();
     } catch (...) { // 그 외 모든 알 수 없는 C++ 예외
         std::string error_details = "Unknown C++ exception during IMAP fetch (mailbox: " + mailbox_name_str + ", index: " + std::to_string(index_val) + ")";
-        // std::cerr << "[FetchOne] " << error_details << std::endl; // 로그 필요시 주석 해제
+        // std::cerr << "[FetchOne] " << error_details << std::endl;
         Napi::Error::New(env, error_details).ThrowAsJavaScriptException();
         return env.Null();
     }
 }
 
-Value ImapWrapper::FetchByUid(const CallbackInfo& info) {
+Value ImapWrapper::FetchByUid(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (info.Length() < 2 || !info[0].IsString() || !info[1].IsNumber()) {
+        Napi::TypeError::New(env, "Expected (mailbox: string, uid: number)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    std::string mailbox_name_str;
+    uint32_t uid_val;
+
     try {
-        std::string mailbox = info[0].As<String>();
-        uint32_t uid = info[1].As<Number>().Uint32Value();
+        mailbox_name_str = info[0].As<Napi::String>().Utf8Value();
+        uid_val = info[1].As<Napi::Number>().Uint32Value();
+    } catch (const Napi::Error& e) {
+        e.ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    try {
         mailio::message msg;
-        imap_client_->fetch(mailbox, uid, true, msg);
+        imap_client_->fetch(mailbox_name_str, uid_val, true, msg);
         std::string content;
         msg.format(content);
         return String::New(info.Env(), content);
-    } catch (std::exception& e) {
-        throw Error::New(info.Env(), e.what());
+    } catch (const std::exception& e) {
+        std::string error_details = "Exception during fetch by UID: " + std::string(e.what()) +
+                                   " (mailbox: " + mailbox_name_str + ", uid: " + std::to_string(uid_val) + ")";
+        Napi::Error::New(env, error_details).ThrowAsJavaScriptException();
+        return env.Null();
+    } catch (...) {
+        std::string error_details = "Unknown C++ exception during IMAP fetch by UID (mailbox: " + 
+                                    mailbox_name_str + ", uid: " + std::to_string(uid_val) + ")";
+        Napi::Error::New(env, error_details).ThrowAsJavaScriptException();
+        return env.Null();
     }
 }
 
