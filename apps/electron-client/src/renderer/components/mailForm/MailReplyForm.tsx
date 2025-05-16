@@ -9,7 +9,7 @@ import useModalStore from "@stores/modalStore";
 import { sendEmail } from "@apis/emailApi";
 
 import MailFormHeader from "@components/mailForm/components/MailFormHeader";
-import MailForm from "@components/mailForm/components/MailForm";
+import MailFormWithAI from "./MailFormWithAI";
 
 const MailReplyForm = ({
   replyData,
@@ -206,7 +206,7 @@ const MailReplyForm = ({
     <div className="flex flex-col w-full h-full bg-light1 rounded-xl">
       <MailFormHeader closeForm={setIsReplying} handleSubmit={handleSubmit} />
       <div className="w-full h-full px-1 pb-1 bg-light1 rounded-b-xl overflow-y-auto">
-        <MailForm
+        <MailFormWithAI
           ref={titleRef}
           sender={sender}
           addSender={handleAddSender}
