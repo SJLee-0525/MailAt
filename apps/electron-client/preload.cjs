@@ -92,6 +92,61 @@ try {
       },
     },
 
+    // 그래프 관련 API 추가
+    graph: {
+      readData: () => {
+        console.log("[PRELOAD] graph.readData 호출됨");
+        return ipcRenderer.invoke("graph:readData");
+      },
+      createNode: (nodeData) => {
+        console.log("[PRELOAD] graph.createNode 호출됨", nodeData);
+        return ipcRenderer.invoke("graph:createNode", nodeData);
+      },
+      updateNode: (nodeId, updateData) => {
+        console.log("[PRELOAD] graph.updateNode 호출됨", {
+          nodeId,
+          updateData,
+        });
+        return ipcRenderer.invoke("graph:updateNode", { nodeId, updateData });
+      },
+      deleteNode: (nodeId) => {
+        console.log("[PRELOAD] graph.deleteNode 호출됨", nodeId);
+        return ipcRenderer.invoke("graph:deleteNode", nodeId);
+      },
+      readNode: (params) => {
+        console.log("[PRELOAD] graph.readNode 호출됨", params);
+        return ipcRenderer.invoke("graph:readNode", params);
+      },
+      readMessage: (params) => {
+        console.log("[PRELOAD] graph.readMessage 호출됨", params);
+        return ipcRenderer.invoke("graph:readMessage", params);
+      },
+      deleteMessage: (params) => {
+        console.log("[PRELOAD] graph.deleteMessage 호출됨", params);
+        return ipcRenderer.invoke("graph:deleteMessage", params);
+      },
+      updateLabel: (params) => {
+        console.log("[PRELOAD] graph.updateLabel 호출됨", params);
+        return ipcRenderer.invoke("graph:updateLabel", params);
+      },
+      searchByKeyword: (params) => {
+        console.log("[PRELOAD] graph.searchByKeyword 호출됨", params);
+        return ipcRenderer.invoke("graph:searchByKeyword", params);
+      },
+      mergeNode: (params) => {
+        console.log("[PRELOAD] graph.mergeNode 호출됨", params);
+        return ipcRenderer.invoke("graph:mergeNode", params);
+      },
+      llmTagNode: (params) => {
+        console.log("[PRELOAD] graph.llmTagNode 호출됨", params);
+        return ipcRenderer.invoke("graph:llmTagNode", params);
+      },
+      testGraph: (params) => {
+        console.log("[PRELOAD] graph.llmTagNode 호출됨", params);
+        return ipcRenderer.invoke("graph:testGraph", params);
+      },
+    },
+
     // 디버깅 도구
     debug: {
       ping: () => "pong", // 연결 테스트용
