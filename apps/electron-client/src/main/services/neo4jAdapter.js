@@ -125,6 +125,7 @@ export async function llmTagNode(C_ID, llm_tags) {
 }
 
 export default {
+  testGraph,
   readGraphData,
   createNode,
   updateNode,
