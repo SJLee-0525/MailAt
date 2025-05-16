@@ -61,6 +61,8 @@ const DetailEmailTitle = ({
   // const parsedFrom = parseEmailFromName(from);
 
   async function handleChangeIsRead() {
+    console.log("DetailEmailTitle", to);
+
     try {
       const response = await markEmailAsRead({
         messageId: id,

@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import TutorialSettingName from "@pages/tutorial/TutorialSettingName";
 import TutorialPageOne from "@pages/tutorial/TutorialPageOne";
+import TutorialPageTwo from "@pages/tutorial/TutorialPageTwo";
 
 const TutorialLayout = () => {
   const [pageNumber, setPageNumber] = useState(0);
@@ -21,11 +22,7 @@ const TutorialLayout = () => {
           setNextPage={() => setPageNumber(2)}
         />
       )}
-      {pageNumber === 2 && (
-        <div className="flex items-center justify-center w-full h-full">
-          <h1 className="text-2xl font-bold">Welcome to the App!</h1>
-        </div>
-      )}
+      {pageNumber === 2 && <TutorialPageTwo settingName={settingName} />}
     </div>
   );
 };

@@ -1,7 +1,6 @@
 import "@pages/tutorial/Tutorial.css";
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
 import useAuthenticateStore from "@stores/authenticateStore";
 import useModalStore from "@stores/modalStore";
@@ -22,8 +21,6 @@ const TutorialPageOne = ({
   const [isFadingOut, setIsFadingOut] = useState(false);
 
   const [isLoading, setIsLoading] = useState(true);
-
-  const navigate = useNavigate();
 
   const script = [
     `${settingName}님`,
@@ -55,7 +52,7 @@ const TutorialPageOne = ({
       }, 1000);
     }
 
-    const cycleIntervalId = setInterval(changeWelcomeMessage, 4000);
+    const cycleIntervalId = setInterval(changeWelcomeMessage, 2500);
 
     return () => {
       clearInterval(cycleIntervalId);

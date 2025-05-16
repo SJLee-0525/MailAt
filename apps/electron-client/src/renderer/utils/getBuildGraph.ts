@@ -24,3 +24,21 @@ export function buildGraph(
 
   return { nodes: gNodes, links: gLinks };
 }
+
+export function buildTutorialGraph(nodes: RawNode[]): {
+  nodes: GraphNode[];
+  links: GraphLink[];
+} {
+  const gNodes: GraphNode[] = nodes.map((n) => ({
+    ...n,
+    name: String(n.id),
+    val: n.id === 0 ? 4 : 2, // ‘Me’를 조금 크게
+    color: ["#022d48", "#0a5685", "#e76f51", "#ffb45c"][n.C_type], // 타입별 색
+  }));
+
+  const gLinks: GraphLink[] = gNodes
+    .filter((n) => n.id !== 0)
+    .map((n) => ({ source: 0, target: n.id }));
+
+  return { nodes: gNodes, links: gLinks };
+}

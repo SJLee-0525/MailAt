@@ -1,6 +1,6 @@
 import "./index.css";
 
-import { StrictMode } from "react";
+// import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
@@ -17,10 +17,8 @@ async function deferRender() {
 
 deferRender().then(() => {
   createRoot(document.getElementById("root")!).render(
-    <StrictMode>
-      <BrowserRouter basename={basename}>
-        <App />
-      </BrowserRouter>
-    </StrictMode>
+    <BrowserRouter basename={basename}>
+      <App />
+    </BrowserRouter>
   );
 });
