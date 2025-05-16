@@ -165,7 +165,7 @@ const SenderList = ({
           </span>
         ))}
       </span>
-      {sender.length > 0 && (
+      {(sender.length > 0 || cc.length > 0 || bcc.length > 0) && (
         <span
           className="flex justify-center items-center h-full aspect-[1/1] rounded-full bg-blue-500 font-pre-bold text-white text-xs"
           onClick={toggleSenderList}
@@ -173,31 +173,7 @@ const SenderList = ({
           {isOpen ? (
             <ArrowUpIcon width={18} height={18} strokeColor="white" />
           ) : (
-            sender.length
-          )}
-        </span>
-      )}
-      {cc.length > 0 && (
-        <span
-          className="flex justify-center items-center h-full aspect-[1/1] rounded-full bg-warning font-pre-bold text-white text-xs"
-          onClick={toggleSenderList}
-        >
-          {isOpen ? (
-            <ArrowUpIcon width={18} height={18} strokeColor="white" />
-          ) : (
-            cc.length
-          )}
-        </span>
-      )}
-      {bcc.length > 0 && (
-        <span
-          className="flex justify-center items-center h-full aspect-[1/1] rounded-full bg-error font-pre-bold text-white text-xs"
-          onClick={toggleSenderList}
-        >
-          {isOpen ? (
-            <ArrowUpIcon width={18} height={18} strokeColor="white" />
-          ) : (
-            bcc.length
+            sender.length + cc.length + bcc.length
           )}
         </span>
       )}

@@ -9,7 +9,7 @@ import useUserProgressStore from "@stores/userProgressStore";
 import useAuthenticateStore from "@stores/authenticateStore";
 
 import MailFormHeader from "@components/mailForm/components/MailFormHeader";
-import MailForm from "@components/mailForm/components/MailForm";
+import MailFormWithAI from "./MailFormWithAI";
 
 const MailCreateForm = () => {
   const { setMailFormIsOpen } = useUserProgressStore();
@@ -183,13 +183,13 @@ const MailCreateForm = () => {
   }
 
   return (
-    <div className="flex flex-col w-full h-full bg-light1 rounded-xl">
+    <div className="flex flex-col w-full h-full bg-white rounded-xl shadow-xl overflow-hidden">
       <MailFormHeader
         closeForm={setMailFormIsOpen}
         handleSubmit={handleSubmit}
       />
-      <div className="w-full h-full px-1 pb-1 bg-light1 rounded-b-xl">
-        <MailForm
+      <div className="w-full h-full px-3 pb-3 bg-white overflow-y-auto">
+        <MailFormWithAI
           ref={titleRef}
           sender={sender}
           addSender={handleAddSender}
