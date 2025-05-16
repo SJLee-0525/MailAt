@@ -128,11 +128,11 @@ const DetailEmailTitle = ({
                 className="flex items-center justify-center px-3 py-1 rounded-full bg-disable font-pre-medium text-sm"
                 onClick={openChat}
               >
-                {fromName} {fromEmail}
+                {fromName}
               </span>
             </div>
           </div>
-          {isExpanded && <DetailEmailInfo isRead={isRead} to={to} />}
+          {isExpanded && <DetailEmailInfo isRead={isRead} to={fromEmail} />}
         </div>
 
         <div className="flex items-center gap-2">

@@ -23,11 +23,13 @@ export const createUser = async (username: string): Promise<User> => {
 };
 
 // 사용자 조회
-export const getUser = async (userId: number): Promise<User> => {
+export const getUser = async (
+  userId: number
+): Promise<{ success: boolean; data: User }> => {
   try {
     const response = await window.electronAPI.user.get(userId);
     console.log(`[GET] window.electronAPI.user.get(${userId})`, response);
-    return response.data;
+    return response;
   } catch (error: unknown) {
     throw new Error(error as string);
   }
