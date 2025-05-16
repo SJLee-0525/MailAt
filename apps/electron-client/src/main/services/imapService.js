@@ -385,7 +385,7 @@ export const syncFolder = async (
               accountId: accountId,
               emailBody: emailBodyForCalendar,
             }).catch(calendarError => {
-              console.error(`[ImapService] MessageID: ${savedMessageResult.messageId}, UID: ${currentParsedEmail.uid} - 캘린더 처리 중 오류 (동기화는 계속):`, calendarError.message);
+              console.error(`[ImapService] MessageID: ${savedMessageResult.messageId}, UID: ${parsedEmail.uid} - 캘린더 처리 중 오류 (동기화는 계속):`, calendarError.message);
 
               errors.push({ 
                 seq, 
@@ -396,7 +396,7 @@ export const syncFolder = async (
               });
             });
           } else {
-            console.log(`[ImapService] MessageID: ${savedMessageResult.messageId}, UID: ${currentParsedEmail.uid} - 캘린더 처리를 위한 이메일 본문이 없습니다.`);
+            console.log(`[ImapService] MessageID: ${savedMessageResult.messageId}, UID: ${parsedEmail.uid} - 캘린더 처리를 위한 이메일 본문이 없습니다.`);
           } 
         } else {
           console.log(`[ImapService] MessageID: ${savedMessageResult.messageId} - 메시지 저장 실패`);

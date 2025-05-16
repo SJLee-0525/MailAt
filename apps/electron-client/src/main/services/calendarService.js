@@ -23,17 +23,17 @@ class CalendarService {
         email_body: emailBody,
       });
 
-      if (response.data && (response.data.schedule || response.data.task)) {
+      if (response.data && (response.data.scheduled_at || response.data.task)) {
         const calendarData = {
           message_id: messageId,
           account_id: accountId,
-          schedule: response.data.schedule || null, // API 응답에 따라 null 처리
+          scheduled_at: response.data.scheduled_at || null, // API 응답에 따라 null 처리
           task: response.data.task || null,       // API 응답에 따라 null 처리
         };
         await calendarRepository.saveCalendarEntry(calendarData);
         console.log(`[CalendarService] messageId: ${messageId} - 캘린더 정보 저장 완료`);
       } else {
-        console.log(`[CalendarService] messageId: ${messageId} - Flask API로부터 유효한 schedule/task를 받지 못했습니다.`);
+        console.log(`[CalendarService] messageId: ${messageId} - Flask API로부터 유효한 scheduled_at/task를 받지 못했습니다.`);
       }
     } catch (error) {
       console.error(`[CalendarService] messageId: ${messageId} - 처리 중 오류 발생:`, error.message);
