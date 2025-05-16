@@ -1,44 +1,19 @@
 import React, { forwardRef, useState, useEffect, useRef } from "react";
 
+import { MailFormWithAIProps } from "@/types/emailTypes";
+
+import {
+  AUTO_COMPLETE_PROMPT_TEXT,
+  AUTO_COMPLETE_ALL_PROMPT_TEXT,
+} from "@data/AI_AUTOFILL";
+
+import { generateEmailContent } from "@apis/emailApi";
+
+import { useDebounce } from "@hooks/useDebounceHook";
+
 import SenderList from "@components/mailForm/components/SenderList";
 import MailTextEditor from "@components/mailForm/components/MailTextEditor";
-import useModalStore from "@stores/modalStore";
-
-// Gemini API 설정 상수
-const GEMINI_API_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
-const GEMINI_API_KEY = "AIzaSyDwxwFfDd-Z4GQq5kfMDVa1GgUtDlUOOaA";
-
-// 디바운스 훅
-const useDebounce = <T,>(value: T, delay: number): T => {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-};
-
-interface MailFormWithAIProps {
-  sender: string[];
-  addSender: (e: React.FormEvent) => void;
-  deleteSender: (email: string) => void;
-  cc: string[];
-  addCc: (e: React.FormEvent) => void;
-  deleteCc: (email: string) => void;
-  bcc: string[];
-  addBcc: (e: React.FormEvent) => void;
-  deleteBcc: (email: string) => void;
-  initialHtml: string;
-  setHtml: (html: string) => void;
-}
+// import useModalStore from "@stores/modalStore";
 
 // 부모로부터 title input ref를 받아서 연동하기 위해 forwardRef 사용
 const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
@@ -58,7 +33,8 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
     },
     titleRef
   ) => {
-    const { openAlertModal } = useModalStore();
+    // const { openAlertModal } = useModalStore();
+
     const [isCcOpen, setIsCcOpen] = useState(false);
     const [isBccOpen, setIsBccOpen] = useState(false);
     const [aiEnabled, setAiEnabled] = useState(true);
@@ -73,7 +49,7 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
     const [correctionSuggestion, setCorrectionSuggestion] = useState("");
     const [fullEmailSuggestion, setFullEmailSuggestion] = useState("");
     const [plainText, setPlainText] = useState("");
-    const [cursorPosition, setCursorPosition] = useState(0);
+    // const [cursorPosition, setCursorPosition] = useState(0);
 
     // 이메일 생성 관련 추가 상태
     const [emailGenerated, setEmailGenerated] = useState(false);
@@ -137,7 +113,7 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
     }, [suggestion, correctionMode, fullEmailSuggestion, emailGenerated]);
 
     // 재생성 활성화 함수
-    const enableRegeneration = () => {
+    function enableRegeneration() {
       setRegenerateEnabled(true);
       setSuggestionPaused(false);
 
@@ -150,10 +126,10 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
       regenerateCooldownRef.current = setTimeout(() => {
         setRegenerateEnabled(false);
       }, 300000); // 5분 후 다시 비활성화
-    };
+    }
 
     // AI 자동완성 제안 가져오기
-    const getSuggestion = async (text: string) => {
+    async function getSuggestion(text: string) {
       // 이미 생성되었고 재생성이 활성화되지 않았으면 전체 이메일 생성 방지
       if (mode === "full-email" && emailGenerated && !regenerateEnabled) {
         return;
@@ -176,45 +152,10 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
 
         if (mode === "autocomplete") {
           // 자동완성 모드 프롬프트
-          promptText = `당신은 비즈니스 이메일 자동완성 AI입니다. 입력 내용에 따라 아래 두 가지 모드 중 하나로만 응답하세요:
-
-[맞춤법 수정 모드]
-입력 내용에 맞춤법 오류나 비즈니스 톤에 맞지 않는 표현이 있으면, 응답 시작에 "[CORRECTION]"을 붙이고 수정된 전체 문장을 제공하세요.
-
-[자동완성 모드]
-맞춤법이나 표현에 문제가 없다면, 응답 시작에 "[COMPLETION]"을 붙이고 커서 위치에서 이어질 자연스러운 문장만 제공하세요.
-입력값은 포함하지 마시고 그 뒤에 이어질 자연스러운 문장만 제공하세요.
-
-비즈니스 이메일 톤:
-- 공식적이고 예의 바른 표현을 사용하세요.
-- 존칭과 높임말을 적절히 사용하세요.
-- "~드립니다", "~하겠습니다", "감사합니다" 등의 정중한 표현을 사용하세요.
-
-특별 규칙:
-- "안녕하세요" 뒤에는 반드시 "[소속]팀 소속 [이름]입니다."와 같은 형식으로 소속과 이름을 제안하세요.
-- 소속과 이름은 구체적 값이 아닌 형식으로만 제공하세요.
-- 입력값이 위 형식으로 잘 나타나있으면 수정하지 않습니다.`;
+          promptText = AUTO_COMPLETE_PROMPT_TEXT;
         } else {
           // 전체 이메일 생성 모드 프롬프트
-          promptText = `당신은 비즈니스 이메일 생성 AI입니다. 사용자의 간단한 내용을 바탕으로 완전한 비즈니스 이메일 형식으로 변환하세요.
-
-사용자의 초안 내용을 바탕으로, 다음 요소를 포함한 완전한 비즈니스 이메일을 작성하세요:
-1. 자기 소개 (필요 시)
-2. 주요 내용 (사용자 입력 기반)
-3. 추가 필요한 정보 요청 또는 다음 단계 제안
-4. 정중한 마무리 인사
-
-응답 시작에 "[FULL-EMAIL]"을 붙이고 전체 이메일 내용을 제공하세요.
-제목은 다시 제공할 필요가 없습니다.
-가독성이 좋을 수 있도록 적절하게 띄어쓰기를 적용하여 답변하세요.
-사용자가 직접 입력할 부분은 [대괄호]로 표시하고, 해당 내용이 무엇인지 간단히 설명해주세요. 
-예: [회사명], [이름], [직책], [날짜] 등
-
-비즈니스 이메일 톤:
-- 공식적이고 예의 바른 표현을 사용하세요.
-- 존칭과 높임말을 적절히 사용하세요.
-- "~드립니다", "~하겠습니다", "감사합니다" 등의 정중한 표현을 사용하세요.
-- 간결하고 명확하게 작성하세요. 작성 목적 및 핵심을 잘 표현하는게 중요합니다.`;
+          promptText = AUTO_COMPLETE_ALL_PROMPT_TEXT;
         }
 
         const requestBody = {
@@ -223,10 +164,9 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
               parts: [
                 {
                   text: `${promptText}
-
-수신자: ${recipientsText}
-제목: ${titleValue}
-내용: ${text}`,
+                  수신자: ${recipientsText}
+                  제목: ${titleValue}
+                  내용: ${text}`,
                 },
               ],
             },
@@ -239,18 +179,8 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
           },
         };
 
-        const response = await fetch(
-          `${GEMINI_API_URL}?key=${GEMINI_API_KEY}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(requestBody),
-          }
-        );
-
-        const data = await response.json();
+        const data = await generateEmailContent(requestBody);
+        console.log("AI 응답:", data);
 
         if (data.candidates && data.candidates[0].content.parts[0].text) {
           const responseText = data.candidates[0].content.parts[0].text.trim();
@@ -300,7 +230,7 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
       } finally {
         setLoading(false);
       }
-    };
+    }
 
     // 텍스트 변경될 때마다 추천 업데이트
     useEffect(() => {
@@ -325,7 +255,7 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
     ]);
 
     // 제안 일시 중단 함수
-    const pauseSuggestion = (durationMs = 2000) => {
+    function pauseSuggestion(durationMs = 2000) {
       setSuggestionPaused(true);
 
       // 이전 타이머가 있으면 제거
@@ -337,10 +267,10 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
       suggestionPauseTimeoutRef.current = setTimeout(() => {
         setSuggestionPaused(false);
       }, durationMs);
-    };
+    }
 
     // 자동완성 제안 수락 처리
-    const acceptSuggestion = () => {
+    function acceptSuggestion() {
       if (suggestion) {
         // 현재 HTML에 제안 추가 (줄바꿈 보존)
         const formattedSuggestion = suggestion
@@ -355,10 +285,10 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
         // 제안 일시 중단 (1.5초)
         pauseSuggestion(1500);
       }
-    };
+    }
 
     // 맞춤법 수정 제안 수락 처리
-    const acceptCorrection = () => {
+    function acceptCorrection() {
       if (correctionSuggestion) {
         // 텍스트를 HTML로 변환 (줄바꿈 보존)
         const formattedCorrection = correctionSuggestion
@@ -373,10 +303,10 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
         // 제안 일시 중단 (1.5초)
         pauseSuggestion(1500);
       }
-    };
+    }
 
     // 전체 이메일 제안 수락
-    const acceptFullEmail = () => {
+    function acceptFullEmail() {
       if (fullEmailSuggestion) {
         // HTML 형식으로 변환 (줄바꿈 보존)
         const formattedHtml = fullEmailSuggestion
@@ -408,10 +338,10 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
           setShowToast(false);
         }, 15000); // 15초 동안 토스트 표시
       }
-    };
+    }
 
     // AI 활성화/비활성화 토글
-    const toggleAI = () => {
+    function toggleAI() {
       setAiEnabled(!aiEnabled);
       // AI 비활성화 시 모든 제안 초기화
       if (aiEnabled) {
@@ -420,7 +350,7 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
         setFullEmailSuggestion("");
         setShowToast(false);
       }
-    };
+    }
 
     // 컴포넌트 언마운트 시 타이머 정리
     useEffect(() => {
@@ -438,7 +368,7 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
     }, []);
 
     // Tab 키로 제안 수락 처리
-    const handleKeyDown = (e: React.KeyboardEvent) => {
+    function handleKeyDown(e: React.KeyboardEvent) {
       if (e.key === "Tab" && showToast) {
         if (suggestion) {
           e.preventDefault();
@@ -457,7 +387,7 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
         setFullEmailSuggestion("");
         setShowToast(false);
       }
-    };
+    }
 
     return (
       <div
@@ -541,7 +471,12 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
                     ? "bg-theme text-white font-pre-semibold"
                     : "bg-white text-content hover:bg-light1/50"
                 }`}
-                onClick={() => setMode("full-email")}
+                onClick={() => {
+                  setMode("full-email");
+                  if (emailGenerated) {
+                    enableRegeneration();
+                  }
+                }}
               >
                 전체 이메일 생성
               </button>

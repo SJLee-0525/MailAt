@@ -142,3 +142,31 @@ export interface EmailSendRequestData {
   inReplyTo: string | null; // 답장 시 원본 이메일의 id (Message-ID 헤더)  새 메일 작성 시에는 null
   references: string[]; // References 헤더에 포함할 Message-ID 목록  (이전 대화 스레드 추적용)
 }
+
+export interface GenerateEmailContentRequest {
+  contents: {
+    parts: {
+      text: string;
+    }[];
+  }[];
+  generationConfig: {
+    temperature: number;
+    maxOutputTokens: number;
+    topK: number;
+    topP: number;
+  };
+}
+
+export interface MailFormWithAIProps {
+  sender: string[];
+  addSender: (e: React.FormEvent) => void;
+  deleteSender: (email: string) => void;
+  cc: string[];
+  addCc: (e: React.FormEvent) => void;
+  deleteCc: (email: string) => void;
+  bcc: string[];
+  addBcc: (e: React.FormEvent) => void;
+  deleteBcc: (email: string) => void;
+  initialHtml: string;
+  setHtml: (html: string) => void;
+}

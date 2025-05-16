@@ -4,7 +4,7 @@ import { useRef, useEffect } from "react";
 
 import useUserProgressStore from "@stores/userProgressStore";
 
-import MailCreateForm from "@/components/mailForm/MailCreateForm";
+import MailCreateForm from "@components/mailForm/MailCreateForm";
 
 const NewMailFormModal = () => {
   const { mailFormIsOpen, mailFormIsClosing, setMailFormIsOpen } =

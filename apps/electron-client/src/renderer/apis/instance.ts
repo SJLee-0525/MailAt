@@ -3,11 +3,17 @@ import axios from "axios";
 const { VITE_DEV_API_URL } = import.meta.env;
 console.log("VITE_DEV_API_U111RL", VITE_DEV_API_URL);
 
-const instance = axios.create({
+export const instance = axios.create({
   baseURL: VITE_DEV_API_URL,
   headers: {
     "Content-Type": "application/json; charset=UTF-8",
     "Access-Control-Allow-Origin": "*",
+  },
+});
+
+export const aiInstance = axios.create({
+  headers: {
+    "Content-Type": "application/json",
   },
 });
 
@@ -39,5 +45,3 @@ const instance = axios.create({
 //     return Promise.reject(error);
 //   }
 // );
-
-export default instance;

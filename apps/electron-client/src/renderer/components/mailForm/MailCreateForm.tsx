@@ -9,7 +9,7 @@ import useUserProgressStore from "@stores/userProgressStore";
 import useAuthenticateStore from "@stores/authenticateStore";
 
 import MailFormHeader from "@components/mailForm/components/MailFormHeader";
-import MailFormWithAI from "./MailFormWithAI";
+import MailFormWithAI from "@components/mailForm/MailFormWithAI";
 
 const MailCreateForm = () => {
   const { setMailFormIsOpen } = useUserProgressStore();
