@@ -9,120 +9,200 @@ class MessageRepository {
    * @param {Object} messageData - 메시지 데이터
    * @returns {Promise<Object>} 저장된 메시지 정보
    */
+  /**
+   * 메시지 저장
+   * @param {Object} messageData - 메시지 데이터
+   * @returns {Promise<Object>} 저장된 메시지 정보
+   */
   async saveMessage(messageData) {
     try {
       const db = getConnection();
       const currentDate = new Date().toISOString();
 
+      // 먼저 UID가 이미 존재하는지 확인
+      const existingMessage = await this.findMessageByUid(
+        messageData.accountId,
+        messageData.folderId,
+        messageData.uid
+      );
+
+      if (existingMessage) {
+        console.log(
+          `UID ${messageData.uid}를 가진 메시지가 이미 존재합니다. 업데이트를 건너뜁니다.`
+        );
+        return existingMessage; // 기존 메시지 반환하고 종료
+      }
+
+      // 트랜잭션 시작
       return new Promise((resolve, reject) => {
-        db.serialize(() => {
-          db.run("BEGIN TRANSACTION");
+        db.run("BEGIN TRANSACTION", (transactionErr) => {
+          if (transactionErr) {
+            console.error("트랜잭션 시작 실패:", transactionErr.message);
+            return reject(
+              new Error(`트랜잭션 시작 실패: ${transactionErr.message}`)
+            );
+          }
 
-          try {
-            // 1. 메시지 저장
-            const messageQuery = `
-              INSERT OR REPLACE INTO Message (
-                account_id, folder_id, external_message_id, thread_id,
-                from_email, from_name, subject, snippet, body_text, body_html,
-                reply_to, in_reply_to, reference_ids, sent_at, received_at,
-                is_read, is_flagged, has_attachments, uid, created_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `;
+          // 1. 메시지 저장
+          const messageQuery = `
+          INSERT INTO Message (
+            account_id, folder_id, external_message_id, thread_id,
+            from_email, from_name, subject, snippet, body_text, body_html,
+            reply_to, in_reply_to, reference_ids, sent_at, received_at,
+            is_read, is_flagged, has_attachments, uid, created_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
 
-            db.run(
-              messageQuery,
-              [
-                messageData.accountId,
-                messageData.folderId,
-                messageData.externalMessageId,
-                messageData.threadId,
-                messageData.fromEmail,
-                messageData.fromName,
-                messageData.subject,
-                messageData.snippet,
-                messageData.bodyText,
-                messageData.bodyHtml,
-                messageData.replyTo,
-                messageData.inReplyTo,
-                messageData.referenceIds,
-                messageData.sentAt,
-                messageData.receivedAt,
-                messageData.isRead ? 1 : 0,
-                messageData.isFlagged ? 1 : 0,
-                messageData.hasAttachments ? 1 : 0,
-                messageData.uid,
-                currentDate,
-              ],
-              async function (err) {
-                if (err) {
-                  db.run("ROLLBACK");
-                  reject(new Error(`메시지 저장 오류: ${err.message}`));
-                  return;
-                }
+          db.run(
+            messageQuery,
+            [
+              messageData.accountId,
+              messageData.folderId,
+              messageData.externalMessageId,
+              messageData.threadId,
+              messageData.fromEmail,
+              messageData.fromName,
+              messageData.subject,
+              messageData.snippet,
+              messageData.bodyText,
+              messageData.bodyHtml,
+              messageData.replyTo,
+              messageData.inReplyTo,
+              messageData.referenceIds,
+              messageData.sentAt,
+              messageData.receivedAt,
+              messageData.isRead ? 1 : 0,
+              messageData.isFlagged ? 1 : 0,
+              messageData.hasAttachments ? 1 : 0,
+              messageData.uid,
+              currentDate,
+            ],
+            function (insertErr) {
+              if (insertErr) {
+                console.error("메시지 삽입 실패:", insertErr.message);
+                return db.run("ROLLBACK", () => {
+                  reject(new Error(`메시지 저장 오류: ${insertErr.message}`));
+                });
+              }
 
-                const messageId = this.lastID;
+              const messageId = this.lastID;
+              console.log(
+                `메시지 ID ${messageId} 생성 성공 (UID: ${messageData.uid})`
+              );
 
-                try {
-                  // 2. 모든 이메일 연락처 저장 (FROM, TO, CC, BCC 모두 포함)
-                  if (messageData.contacts && messageData.contacts.length > 0) {
-                    for (const contact of messageData.contacts) {
-                      if (contact.email) {
-                        // EmailContact 테이블에 이메일 주소 저장/조회
-                        const contactId =
-                          await emailContactRepository.getOrCreateContact(
-                            contact.email,
-                            contact.name
-                          );
+              // 연락처, 헤더, 첨부파일 저장을 위한 Promise 배열
+              const promises = [];
 
-                        // MessageContact 테이블에 참조 저장
-                        const messageContactQuery = `
+              // 2. 연락처 저장 (비동기 작업을 Promise로 래핑)
+              if (messageData.contacts && messageData.contacts.length > 0) {
+                // 연락처 처리를 위한 함수
+                const processContacts = () => {
+                  return new Promise((contactsResolve, contactsReject) => {
+                    // 연락처 처리를 위한 순차적 실행 함수
+                    const processContactSequentially = (index) => {
+                      if (index >= messageData.contacts.length) {
+                        return contactsResolve(); // 모든 연락처 처리 완료
+                      }
+
+                      const contact = messageData.contacts[index];
+                      if (!contact.email) {
+                        return processContactSequentially(index + 1); // 다음 연락처로
+                      }
+
+                      // 연락처 저장/조회를 Promise로 변환
+                      emailContactRepository
+                        .getOrCreateContact(contact.email, contact.name)
+                        .then((contactId) => {
+                          // MessageContact 테이블에 참조 저장
+                          const messageContactQuery = `
                           INSERT OR IGNORE INTO MessageContact (message_id, contact_id, type)
                           VALUES (?, ?, ?)
-                          `;
+                        `;
 
-                        db.run(
-                          messageContactQuery,
-                          [messageId, contactId, contact.type],
-                          (err) => {
-                            if (err) {
-                              console.error(`연락처 저장 오류: ${err.message}`);
+                          db.run(
+                            messageContactQuery,
+                            [messageId, contactId, contact.type],
+                            (contactInsertErr) => {
+                              if (contactInsertErr) {
+                                console.error(
+                                  `연락처 참조 저장 오류: ${contactInsertErr.message}`
+                                );
+                              }
+                              // 오류가 있어도 계속 진행
+                              processContactSequentially(index + 1);
                             }
-                          }
-                        );
-                      }
-                    }
-                  }
+                          );
+                        })
+                        .catch((contactErr) => {
+                          console.error(
+                            `연락처 조회/생성 오류: ${contactErr.message}`
+                          );
+                          processContactSequentially(index + 1);
+                        });
+                    };
 
-                  // 3. 헤더 저장
-                  if (messageData.headers && messageData.headers.length > 0) {
+                    // 연락처 처리 시작
+                    processContactSequentially(0);
+                  });
+                };
+
+                promises.push(processContacts());
+              }
+
+              // 3. 헤더 저장 (비동기 작업을 Promise로 래핑)
+              if (messageData.headers && messageData.headers.length > 0) {
+                const processHeaders = () => {
+                  return new Promise((headersResolve) => {
                     const headerQuery = `
-                      INSERT INTO Header (message_id, name, value)
-                      VALUES (?, ?, ?)
-                    `;
+                    INSERT INTO Header (message_id, name, value)
+                    VALUES (?, ?, ?)
+                  `;
+
+                    let headersProcessed = 0;
 
                     messageData.headers.forEach((header) => {
                       db.run(
                         headerQuery,
                         [messageId, header.name, header.value],
-                        (err) => {
-                          if (err) {
-                            console.error(`헤더 저장 오류: ${err.message}`);
+                        (headerErr) => {
+                          if (headerErr) {
+                            console.error(
+                              `헤더 저장 오류: ${headerErr.message}`
+                            );
+                          }
+
+                          headersProcessed++;
+                          if (headersProcessed === messageData.headers.length) {
+                            headersResolve();
                           }
                         }
                       );
                     });
-                  }
 
-                  // 4. 첨부파일 저장
-                  if (
-                    messageData.attachments &&
-                    messageData.attachments.length > 0
-                  ) {
+                    // 헤더가 없는 경우를 대비
+                    if (messageData.headers.length === 0) {
+                      headersResolve();
+                    }
+                  });
+                };
+
+                promises.push(processHeaders());
+              }
+
+              // 4. 첨부파일 저장 (비동기 작업을 Promise로 래핑)
+              if (
+                messageData.attachments &&
+                messageData.attachments.length > 0
+              ) {
+                const processAttachments = () => {
+                  return new Promise((attachmentsResolve) => {
                     const attachmentQuery = `
-                      INSERT INTO Attachment (
-                        message_id, filename, mime_type, path, size, created_at
-                      ) VALUES (?, ?, ?, ?, ?, ?)
-                    `;
+                    INSERT INTO Attachment (
+                      message_id, filename, mime_type, path, size, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?)
+                  `;
+
+                    let attachmentsProcessed = 0;
 
                     messageData.attachments.forEach((attachment) => {
                       db.run(
@@ -135,38 +215,93 @@ class MessageRepository {
                           attachment.size,
                           currentDate,
                         ],
-                        (err) => {
-                          if (err) {
-                            console.error(`첨부파일 저장 오류: ${err.message}`);
+                        (attachmentErr) => {
+                          if (attachmentErr) {
+                            console.error(
+                              `첨부파일 저장 오류: ${attachmentErr.message}`
+                            );
+                          }
+
+                          attachmentsProcessed++;
+                          if (
+                            attachmentsProcessed ===
+                            messageData.attachments.length
+                          ) {
+                            attachmentsResolve();
                           }
                         }
                       );
                     });
-                  }
 
-                  // 트랜잭션 커밋
-                  db.run("COMMIT", (err) => {
-                    if (err) {
-                      reject(new Error(`트랜잭션 커밋 오류: ${err.message}`));
-                      return;
+                    // 첨부파일이 없는 경우를 대비
+                    if (messageData.attachments.length === 0) {
+                      attachmentsResolve();
                     }
+                  });
+                };
+
+                promises.push(processAttachments());
+              }
+
+              // 모든 관련 데이터 저장이 완료되면 트랜잭션 커밋
+              Promise.all(promises)
+                .then(() => {
+                  db.run("COMMIT", (commitErr) => {
+                    if (commitErr) {
+                      console.error("트랜잭션 커밋 실패:", commitErr.message);
+                      return db.run("ROLLBACK", () => {
+                        reject(
+                          new Error(`트랜잭션 커밋 오류: ${commitErr.message}`)
+                        );
+                      });
+                    }
+
+                    console.log(
+                      `메시지 ID ${messageId} 저장 완료 (UID: ${messageData.uid})`
+                    );
                     resolve({ messageId, ...messageData });
                   });
-                } catch (error) {
-                  db.run("ROLLBACK");
-                  reject(new Error(`메시지 처리 오류: ${error.message}`));
-                }
-              }
-            );
-          } catch (error) {
-            db.run("ROLLBACK");
-            reject(error);
-          }
+                })
+                .catch((promiseErr) => {
+                  console.error("관련 데이터 저장 실패:", promiseErr.message);
+                  db.run("ROLLBACK", () => {
+                    reject(
+                      new Error(`관련 데이터 저장 오류: ${promiseErr.message}`)
+                    );
+                  });
+                });
+            }
+          );
         });
       });
     } catch (error) {
       console.error("메시지 저장 오류:", error);
       throw new Error(`메시지 저장 실패: ${error.message}`);
+    }
+  }
+
+  // UID로 메시지 찾기 (새로 추가)
+  async findMessageByUid(accountId, folderId, uid) {
+    try {
+      const db = getConnection();
+
+      return new Promise((resolve, reject) => {
+        db.get(
+          `SELECT message_id FROM Message 
+         WHERE account_id = ? AND folder_id = ? AND uid = ?`,
+          [accountId, folderId, uid],
+          (err, row) => {
+            if (err) {
+              reject(new Error(`UID로 메시지 검색 오류: ${err.message}`));
+              return;
+            }
+            resolve(row);
+          }
+        );
+      });
+    } catch (error) {
+      console.error("UID로 메시지 검색 오류:", error);
+      throw new Error(`UID로 메시지 검색 실패: ${error.message}`);
     }
   }
 
@@ -189,6 +324,7 @@ class MessageRepository {
               reject(new Error(`UID 조회 오류: ${err.message}`));
               return;
             }
+            // uid 컬럼의 값만 배열로 반환
             resolve(rows.map((row) => row.uid));
           }
         );

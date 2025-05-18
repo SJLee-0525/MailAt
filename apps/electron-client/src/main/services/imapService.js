@@ -5,6 +5,7 @@ import messageRepository from "../repositories/messageRepository.js";
 import folderRepository from "../repositories/folderRepository.js";
 import { parseRawEmail } from "../utils/emailParser.js";
 import calendarService from "./calendarService.js";
+import syncManager from "../utils/syncManager.js";
 
 /**
  * IMAP 서버 인증 테스트
@@ -88,146 +89,195 @@ export const syncFolder = async (
   let imap = null;
 
   try {
+    // 폴더 동기화 잠금 획득
+    await syncManager.acquireLock(accountId, folderName);
+    console.log(`[SYNC] ${folderName} 폴더 동기화 시작 (잠금 획득)`);
+
     // 계정 정보 조회
     const accountInfo = await accountRepository.getAccountById(accountId);
     if (!accountInfo) {
       throw new Error(`계정 ID(${accountId})를 찾을 수 없습니다.`);
     }
 
-    // IMAP 연결 및 인증
-    imap = new ImapWrapper(accountInfo.imapHost, accountInfo.imapPort);
-    imap.authenticate(accountInfo.email, accountInfo.password);
-
-    // 폴더 선택 및 정보 가져오기
-    const selectResult = imap.select(folderName);
-    console.log(`Selected folder ${folderName}:`, selectResult);
-
-    // 폴더 정보 DB에 저장/업데이트
+    // 폴더 ID 조회 또는 생성
     const folderId = await folderRepository.getOrCreateFolder(
       accountId,
       folderName
     );
 
-    // 폴더 메타데이터 업데이트
-    await folderRepository.updateFolderMetadata({
-      folderId,
-      uidNext: selectResult.uid_next,
-      uidValidity: selectResult.uid_validity,
-      messagesTotal: selectResult.messages_no,
-      messagesRecent: selectResult.messages_recent,
-      messagesUnseen: selectResult.messages_unseen,
-    });
-
-    // 동기화할 메시지 범위 계산
-    const totalMessages = selectResult.messages_no;
-    if (!totalMessages || totalMessages === 0) {
-      return {
-        success: true,
-        syncedCount: 0,
-        folderName,
-        message: "폴더가 비어있습니다.",
-      };
-    }
+    // 기존 UID 목록 조회 - 메모리에 저장하여 비교 속도 개선
+    const existingUidsResult = await messageRepository.getExistingUids(
+      accountId,
+      folderId
+    );
+    const existingUidsSet = new Set(existingUidsResult);
 
     console.log(
-      `폴더 ${folderName} 동기화 시작 (전체 메시지: ${totalMessages})`
+      `[SYNC] 폴더 ${folderName}의 기존 UID 개수: ${existingUidsSet.size}`
     );
 
-    let syncedCount = 0;
-    const errors = [];
-    const skippedMessages = [];
+    // IMAP 연결 및 인증
+    imap = new ImapWrapper(accountInfo.imapHost, accountInfo.imapPort);
+    imap.authenticate(accountInfo.email, accountInfo.password);
 
-    // UID 기반 동기화
-    console.log("UID 기반 동기화 (searchAll)");
+    // 폴더 선택 및 정보 가져오기
+    try {
+      const selectResult = imap.select(folderName);
+      console.log(`[SYNC] 폴더 ${folderName} 선택:`, selectResult);
 
-    // UID 목록 가져오기
-    const uids = imap.searchAll(folderName);
-    console.log(`searchAll 결과 UID 수: ${uids.length}`);
+      // 폴더 메타데이터 업데이트
+      await folderRepository.updateFolderMetadata({
+        folderId,
+        uidNext: selectResult.uid_next,
+        uidValidity: selectResult.uid_validity,
+        messagesTotal: selectResult.messages_no,
+        messagesRecent: selectResult.messages_recent,
+        messagesUnseen: selectResult.messages_unseen,
+      });
 
-    if (!uids || uids.length === 0) {
+      // 동기화할 메시지 범위 계산
+      const totalMessages = selectResult.messages_no;
+      if (!totalMessages || totalMessages === 0) {
+        return {
+          success: true,
+          syncedCount: 0,
+          folderName,
+          message: "폴더가 비어있습니다.",
+        };
+      }
+
+      // UID 목록 가져오기
+      const uids = imap.searchAll(folderName);
+      console.log(`[SYNC] searchAll 결과 UID 수: ${uids.length}`);
+
+      if (!uids || uids.length === 0) {
+        return {
+          success: true,
+          syncedCount: 0,
+          folderName,
+          message: "가져올 UID가 없습니다.",
+        };
+      }
+
+      // UID 오름차순 정렬 (오래된 순)
+      const sortedUids = [...uids].sort((a, b) => b - a);
+
+      // 최신 limit개만 선택
+      const latestUids = sortedUids.slice(0, limit);
+
+      // 이미 존재하는 UID 필터링
+      const newUids = latestUids.filter(
+        (uid) => !existingUidsSet.has(uid.toString())
+      );
+      console.log(
+        `[SYNC] 처리할 새로운 UID ${newUids.length}개, 최신 UID ${latestUids.length}개`
+      );
+
+      // 중요: 가져온 UID를 오래된 순서로 다시 정렬하여 처리
+      // 이렇게 하면 오래된 메시지가 작은 message_id를 갖게 됨
+      const orderedNewUids = [...newUids].sort((a, b) => a - b);
+
+      let syncedCount = 0;
+      const errors = [];
+      const skippedMessages = [];
+
+      // 오래된 순서대로 처리
+      for (const uid of orderedNewUids) {
+        try {
+          console.log(`[SYNC] UID ${uid} 처리 중...`);
+          const rawMessage = imap.fetchByUid(folderName, uid);
+
+          if (!rawMessage || rawMessage.length === 0) {
+            console.log(`[SYNC] UID ${uid} 메시지 빈 내용`);
+            skippedMessages.push({ uid, reason: "empty_content" });
+            continue;
+          }
+
+          const parsedEmail = await parseRawEmail(rawMessage);
+          parsedEmail.uid = uid.toString();
+
+          // 메시지 저장
+          const messageData = {
+            ...parsedEmail,
+            accountId,
+            folderId,
+            isRead: false,
+            isFlagged: false,
+          };
+
+          // 다시 한번 UID 중복 체크
+          const existingMessage = await messageRepository.findMessageByUid(
+            accountId,
+            folderId,
+            uid.toString()
+          );
+
+          if (existingMessage) {
+            console.log(`[SYNC] UID ${uid} 이미 존재하므로 건너뜁니다.`);
+            continue;
+          }
+
+          try {
+            const savedMessageResult =
+              await messageRepository.saveMessage(messageData);
+            syncedCount++;
+            console.log(
+              `[SYNC] UID ${uid} 저장 성공 (ID: ${savedMessageResult.messageId})`
+            );
+
+            // 캘린더 연동
+            if (savedMessageResult && savedMessageResult.messageId) {
+              await handleCalendarIntegrationAfterSave(
+                savedMessageResult,
+                accountId,
+                parsedEmail,
+                errors
+              );
+            }
+          } catch (saveError) {
+            console.error(`[SYNC] UID ${uid} 저장 실패:`, saveError.message);
+            errors.push({
+              uid,
+              error: saveError.message,
+              action: "message_save_error",
+            });
+          }
+        } catch (fetchError) {
+          console.error(`[SYNC] UID ${uid} 가져오기 실패:`, fetchError.message);
+          errors.push({
+            uid,
+            error: fetchError.message,
+            action: "fetch_by_uid_failed",
+          });
+        }
+      }
+
       return {
         success: true,
-        syncedCount: 0,
+        syncedCount,
+        totalAvailable: totalMessages,
+        processedCount: newUids.length,
+        skippedCount: latestUids.length - newUids.length,
         folderName,
-        message: "가져올 UID가 없습니다.",
+        folderId,
+        errors: errors.length > 0 ? errors : undefined,
+        skippedMessages:
+          skippedMessages.length > 0 ? skippedMessages : undefined,
       };
+    } catch (selectError) {
+      console.error(`[SYNC] 폴더 '${folderName}' 선택 오류:`, selectError);
+      throw new Error(`폴더 선택 실패: ${selectError.message}`);
     }
-
-    // UID 내림차순 정렬 (최신 순)
-    const sortedUids = [...uids].sort((a, b) => b - a);
-
-    // 최신 limit개만 처리
-    const latestUids = sortedUids.slice(0, limit);
-    console.log(`처리할 최신 UID ${latestUids.length}개:`, latestUids);
-
-    // 각 UID로 메시지 가져오기
-    for (const uid of latestUids) {
-      try {
-        const rawMessage = imap.fetchByUid(folderName, uid);
-
-        if (!rawMessage || rawMessage.length === 0) {
-          console.log(`UID ${uid} 메시지 빈 내용`);
-          skippedMessages.push({ uid, reason: "empty_content" });
-          continue;
-        }
-
-        const parsedEmail = await parseRawEmail(rawMessage);
-        parsedEmail.uid = uid.toString();
-
-        console.log(
-          `UID ${uid} 메시지 가져오기 성공 (${rawMessage.length} 바이트)`
-        );
-
-        // 메시지 저장
-        const messageData = {
-          ...parsedEmail,
-          accountId,
-          folderId,
-          isRead: false,
-          isFlagged: false,
-        };
-
-        let savedMessageResult = null;
-        try {
-          savedMessageResult = await messageRepository.saveMessage(messageData);
-          syncedCount++;
-        } catch (saveError) {
-          console.error("메시지 저장 상세 오류:", saveError);
-          console.error("메시지 데이터:", JSON.stringify(messageData, null, 2));
-        }
-
-        // 캘린더 연동
-        await handleCalendarIntegrationAfterSave(
-          savedMessageResult,
-          accountId,
-          parsedEmail,
-          errors
-        );
-      } catch (fetchError) {
-        console.error(`UID ${uid} 가져오기 실패:`, fetchError.message);
-        errors.push({
-          uid,
-          error: fetchError.message,
-          action: "fetch_by_uid_failed",
-        });
-      }
-    }
-
-    return {
-      success: true,
-      syncedCount,
-      totalMessages,
-      folderName,
-      folderId,
-      errors,
-      skippedMessages,
-      method: "uid_based",
-    };
   } catch (error) {
-    console.error("폴더 동기화 오류:", error);
+    console.error("[SYNC] 폴더 동기화 오류:", error);
     throw new Error(`폴더 동기화 실패: ${error.message}`);
   } finally {
+    // 자원 정리
     imap = null;
+
+    // 폴더 동기화 잠금 해제
+    syncManager.releaseLock(accountId, folderName);
+    console.log(`[SYNC] ${folderName} 폴더 동기화 완료 (잠금 해제)`);
   }
 };
 

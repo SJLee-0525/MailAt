@@ -189,6 +189,31 @@ class FolderRepository {
       throw new Error(`폴더 ID 조회 실패: ${error.message}`);
     }
   }
+
+  async getFolderMetadata(folderId) {
+    try {
+      const db = getConnection();
+
+      return new Promise((resolve, reject) => {
+        db.get(
+          `SELECT uid_next, uid_validity, messages_total, messages_recent, messages_unseen, last_sync_at
+         FROM Folder 
+         WHERE folder_id = ?`,
+          [folderId],
+          (err, row) => {
+            if (err) {
+              reject(new Error(`폴더 메타데이터 조회 오류: ${err.message}`));
+              return;
+            }
+            resolve(row);
+          }
+        );
+      });
+    } catch (error) {
+      console.error("폴더 메타데이터 조회 오류:", error);
+      throw new Error(`폴더 메타데이터 조회 실패: ${error.message}`);
+    }
+  }
 }
 
 export default new FolderRepository();
