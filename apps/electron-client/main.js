@@ -78,9 +78,10 @@ async function initializeControllers() {
       "email:getDetail",
       "email:delete",
       "email:markAsRead",
-      // 여기에 graphController에서 등록하는 핸들러들도 명시적으로 추가하거나,
-      // dev 핸들러 등록 전에 graphController 초기화가 완료되도록 순서를 보장합니다.
-      // 예: "graph:testGraph", "graph:readData", ... (graphController.js 참고)
+      "attachment:getInfo",
+      "attachment:getContent",
+      "attachment:getByMessage",
+      "attachment:download",
     ].forEach((channel) => {
       try {
         ipcMain.removeHandler(channel);
@@ -110,6 +111,10 @@ async function initializeControllers() {
     );
     const calendarControllerModule = await import(
       "./src/main/controllers/calendarController.js"
+    )
+    
+    const attachmentControllerModule = await import(
+      "./src/main/controllers/attachmentController.js"
     );
 
     // 컨트롤러 초기화 함수 실행
@@ -134,6 +139,9 @@ async function initializeControllers() {
     calendarControllerModule.initCalendarController();
     console.log("[MAIN] Calendar 컨트롤러 초기화 완료");
 
+    attachmentControllerModule.initAttachmentController();
+    console.log("[MAIN] 첨부파일 컨트롤러 초기화 완료");
+    
     // --- dev:callBackendMethod 핸들러 등록 ---
     console.log("[MAIN] Registering dev:callBackendMethod handler...");
     const servicesForDevTool = {
@@ -168,6 +176,7 @@ async function initializeControllers() {
 
     controllersInitialized = true;
     console.log("[MAIN] 등록된 IPC 핸들러 (dev 포함 예상):", ipcMain.eventNames());
+    
     
 
     return true;

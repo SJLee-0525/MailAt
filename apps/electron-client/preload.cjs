@@ -198,6 +198,40 @@ try {
       }
     },
 
+    // 첨부파일 관련 API
+    attachment: {
+      // 첨부파일 정보 조회
+      getInfo: (attachmentId) => {
+        console.log("[PRELOAD] attachment.getInfo 호출됨", attachmentId);
+        return ipcRenderer.invoke("attachment:getInfo", attachmentId);
+      },
+
+      // 첨부파일 내용 조회
+      getContent: (attachmentId) => {
+        console.log("[PRELOAD] attachment.getContent 호출됨", attachmentId);
+        return ipcRenderer.invoke("attachment:getContent", attachmentId);
+      },
+
+      // 메시지의 모든 첨부파일 목록 조회
+      getByMessage: (messageId) => {
+        console.log("[PRELOAD] attachment.getByMessage 호출됨", messageId);
+        return ipcRenderer.invoke("attachment:getByMessage", messageId);
+      },
+
+      // 첨부파일 다운로드
+      download: (attachmentId, savePath) => {
+        console.log("[PRELOAD] attachment.download 호출됨", {
+          attachmentId,
+          savePath,
+        });
+        return ipcRenderer.invoke(
+          "attachment:download",
+          attachmentId,
+          savePath
+        );
+      },
+    },
+
     // 디버깅 도구
     debug: {
       ping: () => "pong", // 연결 테스트용
