@@ -41,7 +41,15 @@ export const deleteNode = ({ nodeId }) => {
 };
 
 // 노드 조회 요청
-export const readNode = ({ C_ID, C_type, IO_type }) => {
+export const readNode = ({
+  C_ID,
+  C_type,
+  IO_type,
+}: {
+  C_ID: number;
+  C_type: number;
+  IO_type: number;
+}) => {
   try {
     const response = window.electronAPI.graph.readNode({
       C_ID,

@@ -130,6 +130,24 @@ Tailwind 자체 플러그인 설정은 여전히 JS config에서 해 주셔야 �
   }
 }
 
+@keyframes spaceBackground {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* #root {
+  background: linear-gradient(270deg, #022a44, #011725, #000);
+  background-size: 600% 600%;
+  animation: spaceBackground 16s ease infinite;
+} */
+
 .animate-fade-out {
   animation: fadeOut 0.3s ease-in-out;
 }
