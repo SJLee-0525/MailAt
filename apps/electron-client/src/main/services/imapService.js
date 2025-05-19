@@ -196,142 +196,148 @@ export const syncFolder = async (
           const parsedEmail = await parseRawEmail(rawMessage);
           parsedEmail.uid = uid.toString();
 
-        const messageData = {
-          ...parsedEmail,
-          accountId,
-          folderId,
-          isRead: false,
-          isFlagged: false,
-        };
+          // 메시지 저장
+          const messageData = {
+            ...parsedEmail,
+            accountId,
+            folderId,
+            isRead: false,
+            isFlagged: false,
+          };
 
-        try {
-          const savedMessageResult =
-            await messageRepository.saveMessage(messageData);
+          // 다시 한번 UID 중복 체크
+          const existingMessage = await messageRepository.findMessageByUid(
+            accountId,
+            folderId,
+            uid.toString()
+          );
 
-          syncedCount++;
+          if (existingMessage) {
+            console.log(`[SYNC] UID ${uid} 이미 존재하므로 건너뜁니다.`);
+            continue;
+          }
 
-          // 메시지 저장 완료되었다면 캘린더 서비스 호출
-          if (savedMessageResult && savedMessageResult.messageId) {
+          try {
+            const savedMessageResult =
+              await messageRepository.saveMessage(messageData);
+            syncedCount++;
             console.log(
-              `[ImapService] Message saved: ID ${savedMessageResult.messageId}, UID ${parsedEmail.uid}`
+              `[SYNC] UID ${uid} 저장 성공 (ID: ${savedMessageResult.messageId})`
             );
 
-            const emailBodyForCalendar = savedMessageResult.bodyHtml;
-            if (emailBodyForCalendar && emailBodyForCalendar.trim() !== "") {
-              calendarService
-                .processNewEmailForCalendar({
-                  messageId: savedMessageResult.messageId,
-                  accountId: accountId,
-                  emailBody: emailBodyForCalendar,
-                })
-                .catch((calendarError) => {
-                  console.error(
-                    `[ImapService] MessageID: ${savedMessageResult.messageId}, UID: ${parsedEmail.uid} - 캘린더 처리 중 오류 (동기화는 계속):`,
-                    calendarError.message
-                  );
-
-                  errors.push({
-                    seq,
-                    uid: parsedEmail.uid,
-                    messageId: savedMessageResult.messageId,
-                    error: `CalendarService Error: ${calendarError.message}`,
-                    action: "calendar_process_error",
-                  });
-                });
-            } else {
-              console.log(
-                `[ImapService] MessageID: ${savedMessageResult.messageId}, UID: ${parsedEmail.uid} - 캘린더 처리를 위한 이메일 본문이 없습니다.`
+            // 캘린더 연동
+            if (savedMessageResult && savedMessageResult.messageId) {
+              await handleCalendarIntegrationAfterSave(
+                savedMessageResult,
+                accountId,
+                parsedEmail,
+                errors
               );
             }
-          } else {
-            console.log(
-              `[ImapService] MessageID: ${savedMessageResult.messageId} - 메시지 저장 실패`
-            );
+          } catch (saveError) {
+            console.error(`[SYNC] UID ${uid} 저장 실패:`, saveError.message);
             errors.push({
-              seq,
-              uid: parsedEmail.uid,
-              error: "Message save failed",
+              uid,
+              error: saveError.message,
               action: "message_save_error",
             });
           }
-        } catch (saveError) {
-          console.error("메시지 저장 상세 오류:", saveError);
-          console.error("메시지 데이터:", JSON.stringify(messageData, null, 2));
+        } catch (fetchError) {
+          console.error(`[SYNC] UID ${uid} 가져오기 실패:`, fetchError.message);
+          errors.push({
+            uid,
+            error: fetchError.message,
+            action: "fetch_by_uid_failed",
+          });
         }
-
-      } catch (error) {
-        errors.push({
-          seq,
-          error: error.message,
-          action: "process_error",
-        });
       }
-    }
 
-    return {
-      success: true,
-      syncedCount,
-      totalProcessed: endSeq - startSeq + 1,
-      totalMessages,
-      folderName,
-      folderId,
-      errors,
-      skippedMessages,
-    };
+      return {
+        success: true,
+        syncedCount,
+        totalAvailable: totalMessages,
+        processedCount: newUids.length,
+        skippedCount: latestUids.length - newUids.length,
+        folderName,
+        folderId,
+        errors: errors.length > 0 ? errors : undefined,
+        skippedMessages:
+          skippedMessages.length > 0 ? skippedMessages : undefined,
+      };
+    } catch (selectError) {
+      console.error(`[SYNC] 폴더 '${folderName}' 선택 오류:`, selectError);
+      throw new Error(`폴더 선택 실패: ${selectError.message}`);
+    }
   } catch (error) {
-    console.error("폴더 동기화 오류:", error);
+    console.error("[SYNC] 폴더 동기화 오류:", error);
     throw new Error(`폴더 동기화 실패: ${error.message}`);
   } finally {
+    // 자원 정리
     imap = null;
+
+    // 폴더 동기화 잠금 해제
+    syncManager.releaseLock(accountId, folderName);
+    console.log(`[SYNC] ${folderName} 폴더 동기화 완료 (잠금 해제)`);
   }
 };
 
 /**
- * IMAP 메시지 범위 확인 (디버깅용)
- * @param {ImapWrapper} imap - IMAP 인스턴스
- * @param {String} mailbox - 메일박스 이름
- * @returns {Promise<Object>} 메시지 범위 정보
+ * 메시지 저장 후 캘린더 통합 처리 (기존 로직과 거의 동일한 형태 유지)
+ * @param {Object} savedMessageResult - 저장된 메시지 결과
+ * @param {Number} accountId - 계정 ID
+ * @param {Object} parsedEmail - 파싱된 이메일 객체 (UID 포함)
+ * @param {Array} errors - 에러 수집 배열 (mutate)
+ * @param {Number} seq - 시퀀스 번호 (에러 로깅용)
  */
-const checkMessageRange = async (imap, mailbox) => {
-  try {
-    const selectResult = imap.select(mailbox);
-    const total = selectResult.messages_no;
+const handleCalendarIntegrationAfterSave = (
+  savedMessageResult,
+  accountId,
+  parsedEmail,
+  errors,
+  seq
+) => {
+  if (savedMessageResult && savedMessageResult.messageId) {
+    console.log(
+      `[ImapService] Message saved: ID ${savedMessageResult.messageId}, UID ${parsedEmail.uid}`
+    );
 
-    // 실제 접근 가능한 메시지 범위 확인
-    let firstValid = null;
-    let lastValid = null;
+    const emailBodyForCalendar = savedMessageResult.bodyText;
+    if (emailBodyForCalendar && emailBodyForCalendar.trim() !== "") {
+      calendarService
+        .processNewEmailForCalendar({
+          messageId: savedMessageResult.messageId,
+          accountId: accountId,
+          emailBody: emailBodyForCalendar,
+        })
+        .catch((calendarError) => {
+          console.error(
+            `[ImapService] MessageID: ${savedMessageResult.messageId}, UID: ${parsedEmail.uid} - 캘린더 처리 중 오류 (동기화는 계속):`,
+            calendarError.message
+          );
 
-    // 앞에서부터 확인
-    for (let i = 0; i < Math.min(10, total); i++) {
-      try {
-        imap.fetchOne(mailbox, i);
-        firstValid = i;
-        break;
-      } catch (e) {
-        continue;
-      }
+          errors.push({
+            seq,
+            uid: parsedEmail.uid,
+            messageId: savedMessageResult.messageId,
+            error: `CalendarService Error: ${calendarError.message}`,
+            action: "calendar_process_error",
+          });
+        });
+    } else {
+      console.log(
+        `[ImapService] MessageID: ${savedMessageResult.messageId}, UID: ${parsedEmail.uid} - 캘린더 처리를 위한 이메일 본문이 없습니다.`
+      );
     }
-
-    // 뒤에서부터 확인
-    for (let i = total - 1; i >= Math.max(0, total - 10); i--) {
-      try {
-        imap.fetchOne(mailbox, i);
-        lastValid = i;
-        break;
-      } catch (e) {
-        continue;
-      }
-    }
-
-    return {
-      total,
-      firstValid,
-      lastValid,
-      indexingType: firstValid === 0 ? "0-based" : "1-based",
-    };
-  } catch (error) {
-    console.error("메시지 범위 확인 실패:", error);
-    return null;
+  } else {
+    console.log(
+      `[ImapService] MessageID: ${savedMessageResult.messageId} - 메시지 저장 실패`
+    );
+    errors.push({
+      seq,
+      uid: parsedEmail.uid,
+      error: "Message save failed",
+      action: "message_save_error",
+    });
   }
 };
 
