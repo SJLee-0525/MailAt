@@ -1,5 +1,7 @@
 // src/controllers/attachmentController.js
-import { ipcMain } from "electron";
+import { ipcMain, app, dialog } from "electron";
+import { writeFile } from "fs/promises";
+import path from "path";
 import attachmentService from "../services/attachmentService.js";
 import messageRepository from "../repositories/messageRepository.js";
 
@@ -53,37 +55,47 @@ export const initAttachmentController = () => {
     }
   });
 
-  // 첨부파일 다운로드 요청 처리
-  ipcMain.handle(
-    "attachment:download",
-    async (event, attachmentId, savePath) => {
-      try {
-        // 첨부파일 내용 가져오기
-        const attachment =
-          await attachmentService.getAttachmentContent(attachmentId);
+  // 첨부파일 다운로드 요청 처리 - 사용자가 저장 위치 선택
+  ipcMain.handle("attachment:download", async (event, attachmentId) => {
+    try {
+      // 첨부파일 내용 가져오기
+      const attachment =
+        await attachmentService.getAttachmentContent(attachmentId);
 
-        // Node.js의 fs 모듈을 사용하여 파일 저장
-        const fs = require("fs");
-        fs.writeFileSync(savePath, attachment.content);
+      // 저장 대화상자 표시
+      const { canceled, filePath } = await dialog.showSaveDialog({
+        title: "첨부파일 저장",
+        defaultPath: path.join(app.getPath("downloads"), attachment.filename),
+        filters: [{ name: "모든 파일", extensions: ["*"] }],
+      });
 
-        console.log(`첨부파일 ID ${attachmentId} 다운로드 성공: ${savePath}`);
-        return {
-          success: true,
-          data: {
-            filename: attachment.filename,
-            size: attachment.size,
-            path: savePath,
-          },
-        };
-      } catch (error) {
-        console.error("첨부파일 다운로드 컨트롤러 오류:", error);
+      if (canceled || !filePath) {
         return {
           success: false,
-          message: `첨부파일을 다운로드할 수 없습니다: ${error.message}`,
+          message: "다운로드가 취소되었습니다.",
         };
       }
+
+      // 선택한 경로에 파일 저장
+      await writeFile(filePath, attachment.content);
+
+      console.log(`첨부파일 ID ${attachmentId} 다운로드 성공: ${filePath}`);
+      return {
+        success: true,
+        data: {
+          filename: attachment.filename,
+          size: attachment.size,
+          path: filePath,
+        },
+      };
+    } catch (error) {
+      console.error("첨부파일 다운로드 컨트롤러 오류:", error);
+      return {
+        success: false,
+        message: `첨부파일을 다운로드할 수 없습니다: ${error.message}`,
+      };
     }
-  );
+  });
 };
 
 export default { initAttachmentController };
