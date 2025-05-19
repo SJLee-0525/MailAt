@@ -1,10 +1,11 @@
 import { spawn } from "child_process";
 import path from "path";
+import { fileURLToPath } from 'url';
 
 // Python 스크립트가 있는 디렉토리 경로
-// __dirname은 ES 모듈에서 직접 사용할 수 없으므로, 상대 경로를 사용하거나 path.dirname(import.meta.url) 등을 활용해야 합니다.
-// 여기서는 main 프로세스 실행 위치를 기준으로 상대 경로를 설정합니다.
-const pythonScriptsDir = path.join(process.cwd(), "src", "main", "services", "neo4jPythonModule");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const pythonScriptsDir = path.join(__dirname, "neo4jPythonModule");
 const pythonExecutable = "python"; // 또는 "python3" 등 Python 실행 파일 경로
 
 /**
@@ -124,6 +125,34 @@ export async function llmTagNode(C_ID, llm_tags) {
   return runPythonScript("graph_operations.py", "llmTagNode", { C_ID, llm_tags });
 }
 
+export async function initializeGraphFromSQLite() {
+  return runPythonScript("graph_operations.py", "initializeGraphFromSQLite");
+}
+
+export async function getIncomingNodes(node_name) {
+  return runPythonScript("graph_operations.py", "getIncomingNodes", { node_name });
+}
+
+export async function getOutgoingNodes(node_name) {
+  return runPythonScript("graph_operations.py", "getOutgoingNodes", { node_name });
+}
+
+export async function deleteAllNodes() {
+  return runPythonScript("graph_operations.py", "deleteAllNodes");
+}
+
+export async function moveComplexNode(a_id, b_id, c_id) {
+  return runPythonScript("graph_operations.py", "moveComplexNode", { a_id, b_id, c_id });
+}
+
+export async function moveEmail(from_id, to_id, email_uid) {
+  return runPythonScript("graph_operations.py", "moveEmail", { from_id, to_id, email_uid });
+}
+
+export async function getNodeEmails(node_name) {
+  return runPythonScript("graph_operations.py", "getNodeEmails", { node_name });
+}
+
 export default {
   testGraph,
   readGraphData,
@@ -139,4 +168,11 @@ export default {
   searchByKeyword,
   mergeNode,
   llmTagNode,
+  initializeGraphFromSQLite,
+  getIncomingNodes,
+  getOutgoingNodes,
+  deleteAllNodes,
+  moveComplexNode,
+  moveEmail,
+  getNodeEmails,
 };

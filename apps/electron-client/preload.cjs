@@ -142,9 +142,45 @@ try {
         return ipcRenderer.invoke("graph:llmTagNode", params);
       },
       testGraph: (params) => {
-        console.log("[PRELOAD] graph.llmTagNode 호출됨", params);
+        console.log("[PRELOAD] graph.testGraph 호출됨", params); // Corrected console log
         return ipcRenderer.invoke("graph:testGraph", params);
       },
+      initializeGraphFromSQLite: () => { // Added
+        console.log("[PRELOAD] graph.initializeGraphFromSQLite 호출됨");
+        return ipcRenderer.invoke("graph:initializeGraphFromSQLite");
+      },
+      getIncomingNodes: (params) => { // Added
+        console.log("[PRELOAD] graph.getIncomingNodes 호출됨", params);
+        return ipcRenderer.invoke("graph:getIncomingNodes", params);
+      },
+      getOutgoingNodes: (params) => { // Added
+        console.log("[PRELOAD] graph.getOutgoingNodes 호출됨", params);
+        return ipcRenderer.invoke("graph:getOutgoingNodes", params);
+      },
+      deleteAllNodes: () => { // Added
+        console.log("[PRELOAD] graph.deleteAllNodes 호출됨");
+        return ipcRenderer.invoke("graph:deleteAllNodes");
+      },
+      moveComplexNode: (params) => { // Added
+        console.log("[PRELOAD] graph.moveComplexNode 호출됨", params);
+        return ipcRenderer.invoke("graph:moveComplexNode", params);
+      },
+      moveEmail: (params) => { // Added
+        console.log("[PRELOAD] graph.moveEmail 호출됨", params);
+        return ipcRenderer.invoke("graph:moveEmail", params);
+      },
+      getNodeEmails: (params) => { // Added
+        console.log("[PRELOAD] graph.getNodeEmails 호출됨", params);
+        return ipcRenderer.invoke("graph:getNodeEmails", params);
+      },
+      createRelationship: (params) => { // Added
+        console.log("[PRELOAD] graph.createRelationship 호출됨", params);
+        return ipcRenderer.invoke("graph:createRelationship", params);
+      },
+      deleteRelationship: (params) => { // Added
+        console.log("[PRELOAD] graph.deleteRelationship 호출됨", params);
+        return ipcRenderer.invoke("graph:deleteRelationship", params);
+      }
     },
 
     // 디버깅 도구
