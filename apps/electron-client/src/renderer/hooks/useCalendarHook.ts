@@ -10,145 +10,174 @@ import {
   startOfWeek,
   subMonths,
   subYears,
+  parseISO, // ISO 문자열 파싱을 위해 추가
 } from "date-fns";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import useAuthenticateStore from "@stores/authenticateStore";
+
+interface CalendarEventFromAPI {
+  message_id?: number; // DB 스키마 및 실제 응답에 따라 옵셔널 또는 필수
+  account_id?: number; // DB 스키마 및 실제 응답에 따라 옵셔널 또는 필수
+  summary: string | null;
+  scheduled_at: string | null; // ISO 8601 형식 (예: "2025-05-19T05:44:02.172Z")
+  task: string | null;
+}
 
 interface Schedule {
   id: string;
-  title: string;
+  task: string;
+  // 필요하다면 여기에 원래의 scheduled_at (Date 객체 또는 ISO 문자열)을 저장할 수 있습니다.
+  // originalScheduledAt?: Date;
 }
 
 interface Schedules {
-  [date: string]: Schedule[];
+  [date: string]: Schedule[]; // 키는 "yyyy-MM-dd" 형식
 }
 
 export const useCalendar = () => {
-  // 현재 날짜 상태를 저장
+  const { user } = useAuthenticateStore();
+  const accountId = user?.userId;
+  const queryClient = useQueryClient();
   const [currentDate, setCurrentDate] = useState(new Date());
-
-  // 현재 날짜를 연도, 월, 일로 분할하여 저장
-  const [currentYear, currentMonth, currentDay] = format(
-    currentDate,
-    "yyyy-MM-dd"
-  ).split("-");
-
-  // 선택된 날짜 상태를 저장 (기본값: 오늘 날짜)
   const [selectedDate, setSelectedDate] = useState(
     format(new Date(), "yyyy-MM-dd")
   );
-
-  // 일정 저장을 위한 상태
   const [schedules, setSchedules] = useState<Schedules>({});
 
-  // 현재 월의 시작과 끝을 계산
+  const {
+    data: apiCalendarEvents,
+    isLoading: isLoadingEvents,
+    error: calendarEventsError,
+  } = useQuery<CalendarEventFromAPI[], Error>({
+    queryKey: [
+      "calendarEvents",
+      accountId,
+      currentDate.getFullYear(),
+      currentDate.getMonth() + 1,
+    ],
+    queryFn: async () => {
+      if (!accountId) {
+        return [];
+      }
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
+      // calendarService가 ISO 8601 형식으로 날짜를 처리하도록 수정되었다고 가정
+      const response = await window.electronAPI.calendar.getEvents({
+        accountId,
+        year,
+        month,
+      });
+      if (response.success && response.data) {
+        return response.data as CalendarEventFromAPI[];
+      }
+      throw new Error(
+        response.message || "캘린더 이벤트를 불러오는데 실패했습니다."
+      );
+    },
+    enabled: !!accountId,
+  });
+
+  useEffect(() => {
+    if (apiCalendarEvents) {
+      const newSchedules: Schedules = {};
+      apiCalendarEvents.forEach((event, index) => {
+        if (event.scheduled_at && event.task) {
+          try {
+            // ISO 8601 형식의 문자열을 Date 객체로 파싱
+            const dateObj = parseISO(event.scheduled_at);
+            // Date 객체를 "yyyy-MM-dd" 형식의 문자열로 변환하여 키로 사용
+            const eventDate = format(dateObj, "yyyy-MM-dd");
+
+            if (!newSchedules[eventDate]) {
+              newSchedules[eventDate] = [];
+            }
+            // message_id가 API 응답에 실제로 오는지 확인 필요. 없다면 index 등을 활용.
+            const scheduleId = event.message_id ? String(event.message_id) : `event-${index}-${Date.now()}`;
+            newSchedules[eventDate].push({
+              id: scheduleId,
+              task: event.task,
+              // originalScheduledAt: dateObj, // 필요시 원래 Date 객체도 저장
+            });
+          } catch (e) {
+            console.warn(
+              `[useCalendarHook] scheduled_at 파싱 오류 (ISO 형식 예상): ${event.scheduled_at}`,
+              e
+            );
+          }
+        }
+      });
+      setSchedules(newSchedules);
+    } else if (calendarEventsError) {
+      setSchedules({});
+      console.error(
+        "[useCalendarHook] 캘린더 이벤트 로딩 오류:",
+        calendarEventsError.message
+      );
+    }
+  }, [apiCalendarEvents, calendarEventsError]);
+
   const startCurrentMonth = startOfMonth(currentDate);
   const endCurrentMonth = endOfMonth(currentDate);
-
-  // 현재 월이 포함된 첫째 주의 시작과 마지막 주의 끝을 계산 (일요일 시작 기준)
   const startOfFirstWeek = startOfWeek(startCurrentMonth, { weekStartsOn: 0 });
   const endOfLastWeek = endOfWeek(endCurrentMonth, { weekStartsOn: 0 });
-
-  // 달력에서 표시할 날짜 리스트 생성 (이전 달, 다음 달 포함)
   const days = eachDayOfInterval({
     start: startOfFirstWeek,
     end: endOfLastWeek,
   });
 
-  // 이전 연도로 이동하는 함수
   function handlePrevYear() {
-    setCurrentDate((prevDate) => {
-      return subYears(prevDate, 1);
-    });
+    setCurrentDate((prevDate) => subYears(prevDate, 1));
   }
 
-  // 다음 연도로 이동하는 함수
   function handleNextYear() {
-    setCurrentDate((prevDate) => {
-      return addYears(prevDate, 1);
-    });
+    setCurrentDate((prevDate) => addYears(prevDate, 1));
   }
 
-  // 이전 달로 이동하는 함수
   function handlePrevMonth() {
-    setCurrentDate((prevDate) => {
-      return subMonths(prevDate, 1);
-    });
+    setCurrentDate((prevDate) => subMonths(prevDate, 1));
   }
 
-  // 다음 달로 이동하는 함수
   function handleNextMonth() {
-    setCurrentDate((prevDate) => {
-      return addMonths(prevDate, 1);
-    });
+    setCurrentDate((prevDate) => addMonths(prevDate, 1));
   }
 
-  // 날짜를 선택하는 함수
   function handleSelectDate(date: string) {
-    setSelectedDate(() => {
-      // prevDate is not used, so it can be removed or typed if used later
-      handleAutoMoveMonth(date); // 최신 날짜 값을 전달하여 동작
-      return date; // 새로운 날짜로 상태 업데이트
-    });
-  }
-
-  // 선택한 날짜가 현재 달력의 월과 다를 경우, 자동으로 월을 이동하는 함수
-  function handleAutoMoveMonth(newSelectedDate: string) {
-    // 선택한 날짜에서 연도와 월을 추출
-    const [selectedYear, selectedMonth] = newSelectedDate
-      .split("-")
-      .map(Number);
-
-    // 현재 표시 중인 날짜에서 연도와 월을 추출
-    const [currentYear, currentMonth] = [
-      currentDate.getFullYear(),
-      currentDate.getMonth() + 1, // getMonth()는 0부터 시작하므로 +1 필요
-    ];
-
-    // 선택한 날짜가 현재 달력의 월과 다르면 월 변경 처리
-    if (currentYear !== selectedYear || currentMonth !== selectedMonth) {
-      if (
-        selectedYear > currentYear || // 선택한 연도가 더 크거나
-        (selectedYear === currentYear && selectedMonth > currentMonth) // 같은 연도에서 선택한 월이 더 큰 경우
-      ) {
-        handleNextMonth(); // 다음 달로 이동
-      } else {
-        handlePrevMonth(); // 이전 달로 이동
-      }
+    setSelectedDate(date);
+    const [selectedYear, selectedMonth] = date.split("-").map(Number);
+    if (
+      currentDate.getFullYear() !== selectedYear ||
+      currentDate.getMonth() + 1 !== selectedMonth
+    ) {
+      setCurrentDate(new Date(selectedYear, selectedMonth - 1, 1));
     }
   }
 
-  // 달력에 표시할 날짜 정보를 객체 배열로 변환
   const daysInMonth = days.map((day: Date) => ({
     date: format(day, "yyyy-MM-dd"),
     year: format(day, "yyyy"),
     month: format(day, "MM"),
     day: format(day, "dd"),
-    dayIndexOfWeek: getDay(day), // 요일 인덱스 (0: 일요일 ~ 6: 토요일)
+    dayIndexOfWeek: getDay(day),
   }));
 
-  // 일정 추가 함수
   function handleAddSchedule(date: string, schedule: Schedule) {
+    // TODO: API 연동 (useMutation 사용)
     setSchedules((prevSchedules) => {
-      let newScheduleArray: Schedule[];
-
-      // 해당 날짜에 기존 일정이 있는 경우, 기존 일정에 새 일정 추가
-      if (prevSchedules[date]) {
-        newScheduleArray = [...prevSchedules[date], schedule];
-      } else {
-        // 해당 날짜에 일정이 없으면 새로운 배열 생성
-        newScheduleArray = [schedule];
-      }
-
+      const newScheduleArray = prevSchedules[date]
+        ? [...prevSchedules[date], schedule]
+        : [schedule];
       return { ...prevSchedules, [date]: newScheduleArray };
     });
   }
 
   return {
-    currentDate: {
-      year: currentYear,
-      month: currentMonth,
-      day: currentDay,
+    currentDateInfo: {
+      year: format(currentDate, "yyyy"),
+      month: format(currentDate, "MM"),
+      day: format(currentDate, "dd"),
+      currentFullDate: currentDate,
     },
     daysInMonth,
     dispatch: {
@@ -157,13 +186,15 @@ export const useCalendar = () => {
       handlePrevMonth,
       handleNextMonth,
     },
-    selectedDate: {
+    selectedDateInfo: {
       date: selectedDate,
       selectDate: handleSelectDate,
     },
-    schedules: {
+    schedulesData: {
       schedules: schedules,
       addSchedule: handleAddSchedule,
+      isLoading: isLoadingEvents,
+      error: calendarEventsError,
     },
   };
 };
