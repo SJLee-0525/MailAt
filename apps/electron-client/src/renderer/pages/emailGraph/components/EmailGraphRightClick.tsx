@@ -9,13 +9,17 @@ interface CtxMenuState {
   node: GraphNode | null;
 }
 
+interface EmailGraphRightClickProps {
+  ctxMenu: CtxMenuState;
+  setCtxMenu: React.Dispatch<React.SetStateAction<CtxMenuState>>;
+  onGoBack?: () => void; // New prop for "Go Back" action
+}
+
 const EmailGraphRightClick = ({
   ctxMenu,
   setCtxMenu,
-}: {
-  ctxMenu: CtxMenuState;
-  setCtxMenu: React.Dispatch<React.SetStateAction<CtxMenuState>>;
-}) => {
+  onGoBack,
+}: EmailGraphRightClickProps) => {
   const htmlRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -48,11 +52,25 @@ const EmailGraphRightClick = ({
           className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
           onClick={() => {
             console.log("전체 조회 :", ctxMenu.node);
+            // This might be a different action, like fetching all details for the current node's context
+            // For now, it just closes the menu.
             setCtxMenu((m) => ({ ...m, visible: false }));
           }}
         >
           전체 조회
         </li>
+        {onGoBack && ( // Only show "뒤로가기" if onGoBack is provided
+          <li
+            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+            onClick={() => {
+              onGoBack();
+              setCtxMenu((m) => ({ ...m, visible: false }));
+            }}
+          >
+            뒤로가기
+          </li>
+        )}
+
         <li
           className="px-4 py-2 text-red-600 hover:bg-gray-100 cursor-pointer"
           onClick={() => {
