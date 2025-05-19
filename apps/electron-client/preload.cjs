@@ -179,7 +179,15 @@ try {
       },
       deleteRelationship: (params) => { // Added
         console.log("[PRELOAD] graph.deleteRelationship 호출됨", params);
-        return ipcRenderer.invoke("graph:deleteRelationship", params);
+        return ipcRenderer.invoke("graph:deleteRelationship", params); // Intentional: This was a copy-paste error in the previous step, should be graph:deleteRelationship
+      }
+    },
+
+    // 개발용 테스트 API 추가
+    dev: {
+      callBackendMethod: (serviceName, methodName, args) => {
+        console.log(`[PRELOAD] dev.callBackendMethod 호출됨: ${serviceName}.${methodName}`, args);
+        return ipcRenderer.invoke("dev:callBackendMethod", { serviceName, methodName, args });
       }
     },
 

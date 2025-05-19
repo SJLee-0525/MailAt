@@ -5,6 +5,11 @@ import { fileURLToPath } from "url";
 import { dirname } from "path";
 import fs from "fs";
 
+// 필요한 서비스 모듈들을 여기에 import 합니다.
+import * as graphServiceForDev from "./src/main/services/neo4jAdapter.js";
+// 예시: 다른 서비스를 사용하려면 추가 import
+// import * as emailServiceForDev from "./src/main/services/emailService.js";
+
 // ESM에서 __dirname 사용하기 위한 설정
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -73,6 +78,9 @@ async function initializeControllers() {
       "email:getDetail",
       "email:delete",
       "email:markAsRead",
+      // 여기에 graphController에서 등록하는 핸들러들도 명시적으로 추가하거나,
+      // dev 핸들러 등록 전에 graphController 초기화가 완료되도록 순서를 보장합니다.
+      // 예: "graph:testGraph", "graph:readData", ... (graphController.js 참고)
     ].forEach((channel) => {
       try {
         ipcMain.removeHandler(channel);
@@ -114,14 +122,46 @@ async function initializeControllers() {
     imapControllerModule.initImapController();
     console.log("[MAIN] IMAP 컨트롤러 초기화 완료");
 
-    controllersInitialized = true;
-    console.log("[MAIN] 등록된 IPC 핸들러:", ipcMain.eventNames());
-
     emailControllerModule.initEmailController();
     console.log("[MAIN] Email 컨트롤러 초기화 완료");
 
     graphControllerModule.initGraphController();
     console.log("[MAIN] Graph 컨트롤러 초기화 완료");
+
+    // --- dev:callBackendMethod 핸들러 등록 ---
+    console.log("[MAIN] Registering dev:callBackendMethod handler...");
+    const servicesForDevTool = {
+      graph: graphServiceForDev,
+      // email: emailServiceForDev, // 다른 서비스 추가 시
+      // 필요한 만큼 여기에 서비스 객체를 추가합니다.
+    };
+
+    ipcMain.handle("dev:callBackendMethod", async (event, { serviceName, methodName, args }) => {
+      console.log(`[MAIN_DEV_TOOL] dev:callBackendMethod received: ${serviceName}.${methodName}`, args);
+      try {
+        if (servicesForDevTool[serviceName] && typeof servicesForDevTool[serviceName][methodName] === 'function') {
+          const service = servicesForDevTool[serviceName];
+          const method = service[methodName];
+          // 인자가 undefined이면 빈 배열, 아니면 배열인지 확인 후 그대로 사용하거나 배열로 감쌈
+          const argsArray = args === undefined ? [] : (Array.isArray(args) ? args : [args]);
+          const result = await method.apply(service, argsArray);
+          console.log(`[MAIN_DEV_TOOL] ${serviceName}.${methodName} result:`, result);
+          return { success: true, data: result };
+        } else {
+          console.error(`[MAIN_DEV_TOOL] Method ${methodName} not found in service ${serviceName} or not a function.`);
+          return { success: false, message: `Method ${methodName} not found in service ${serviceName} or not a function.` };
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`[MAIN_DEV_TOOL] Error calling ${serviceName}.${methodName}:`, errorMessage, error);
+        return { success: false, message: errorMessage, error: error instanceof Error ? error.toString() : String(error) };
+      }
+    });
+    console.log("[MAIN] dev:callBackendMethod handler successfully registered.");
+    // --- 핸들러 등록 완료 ---
+
+    controllersInitialized = true;
+    console.log("[MAIN] 등록된 IPC 핸들러 (dev 포함 예상):", ipcMain.eventNames());
 
     return true;
   } catch (error) {

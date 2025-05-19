@@ -58,6 +58,24 @@ const App = () => {
     }
   }, []);
 
+  const handleTestGraphConnection = async () => {
+    try {
+      console.log("[FRONTEND] Calling graph.testGraph...");
+      // electronAPI가 window 객체에 제대로 노출되었는지 확인합니다.
+      if (window.electronAPI && window.electronAPI.graph && window.electronAPI.graph.testGraph) {
+        const result = await window.electronAPI.graph.testGraph();
+        console.log("[FRONTEND] graph.testGraph result:", result);
+        alert("Graph Test Result: \nStatus: " + result.success + "\nMessage: " + (result.success ? JSON.stringify(result.data) : result.message));
+      } else {
+        console.error("[FRONTEND] electronAPI.graph.testGraph is not available.");
+        alert("Error: electronAPI.graph.testGraph is not available. Check preload script.");
+      }
+    } catch (error: any) { // Explicitly type error as any or a more specific error type
+      console.error("[FRONTEND] Error calling graph.testGraph:", error);
+      alert("Error calling graph.testGraph: " + error.message);
+    }
+  };
+
   // 로그인 상태에 따라 다른 페이지 렌더링
   if (!isLoggedIn) {
     return (
@@ -86,6 +104,7 @@ const App = () => {
       <Alert />
       <NewMailFormModal />
       <Modal />
+      <button onClick={handleTestGraphConnection}>Test Graph Connection</button>
     </QueryClientProvider>
   );
 };

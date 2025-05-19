@@ -13,6 +13,8 @@ NEO4J_PASS = "message-gustav-rufus-alex-roman-2104" # From other scripts
 script_dir = os.path.dirname(os.path.abspath(__file__))
 # Construct the absolute path to editemaildb.sqlite
 SQLITE_DB_PATH = os.path.abspath(os.path.join(script_dir, "..", "..", "..", "..", "emaildb.sqlite"))
+print(f"[Python] SQLITE_DB_PATH: {SQLITE_DB_PATH}")
+
 
 # From search_node.py (for read_node_py)
 LABEL_MAP_SN = {0: 'Root', 1: 'Person', 2: 'Category', 3: 'Subcategory'}
@@ -25,15 +27,17 @@ def get_driver():
     if driver is None:
         try:
             driver = neo4j.GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASS))
-            # Test connection to ensure driver is valid
-            with driver.session() as session:
-                session.run("RETURN 1")
+            driver.verify_connectivity() # 연결 확인
+            print("[Python] Neo4j driver initialized and connected.")
         except neo4j.exceptions.AuthError as e:
-            raise Exception(f"Neo4j authentication failed for user '{NEO4J_USER}': {e}")
+            print(f"[Python] Neo4j authentication failed: {e}")
+            raise
         except neo4j.exceptions.ServiceUnavailable as e:
-            raise Exception(f"Neo4j service unavailable at {NEO4J_URI}: {e}")
+            print(f"[Python] Neo4j service unavailable: {e}")
+            raise
         except Exception as e:
-            raise Exception(f"Failed to create Neo4j driver: {e}")
+            print(f"[Python] Error initializing Neo4j driver: {e}")
+            raise
     return driver
 
 def close_driver():
@@ -41,97 +45,175 @@ def close_driver():
     if driver is not None:
         driver.close()
         driver = None
+        print("[Python] Neo4j driver closed.")
 
 def _execute_query(query, params=None):
     """Helper to run queries and handle sessions."""
     loc_driver = get_driver()
-    with loc_driver.session() as session:
-        return session.run(query, params)
+    with loc_driver.session(database="neo4j") as session: # 명시적으로 데이터베이스 지정
+        try:
+            result = session.run(query, params)
+            return result
+        except Exception as e:
+            print(f"[Python] Error executing query: {query} with params {params}. Error: {e}")
+            raise
 
 # --- Function from make_node.py ---
 def initialize_graph_from_sqlite_py():
+    print("[Python] Attempting to initialize graph from SQLite...")
+    if not os.path.exists(SQLITE_DB_PATH):
+        print(f"[Python] SQLite database file not found at {SQLITE_DB_PATH}")
+        return {"status": "error", "message": f"Python: SQLite database file not found at {SQLITE_DB_PATH}"}
+
     try:
         # 1) SQLite에서 데이터 로드
         conn = sqlite3.connect(SQLITE_DB_PATH)
         cur = conn.cursor()
+        print("[Python] Connected to SQLite.")
 
         cur.execute("SELECT email FROM Account;")
         account_emails = [row[0].lower() for row in cur.fetchall()]
+        print(f"[Python] Loaded {len(account_emails)} account emails from SQLite.")
 
-        cur.execute("SELECT message_id, category_id, sub_category_id FROM Message;")
-        messages = cur.fetchall()
+        cur.execute("SELECT message_id, category_id, sub_category_id, from_email, subject, sent_at FROM Message;") # Message 테이블에서 필요한 컬럼 추가
+        messages_data = cur.fetchall()
+        print(f"[Python] Loaded {len(messages_data)} messages from SQLite.")
 
-        msg_contacts = {}
+        msg_contacts = {} # {message_id: {'from': [contact_id], 'to': [contact_id], 'cc': [contact_id], 'bcc': [contact_id]}}
         cur.execute("SELECT message_id, contact_id, type FROM MessageContact;")
         for mid, cid, typ in cur.fetchall():
-            msg_contacts.setdefault(mid, {}).setdefault(typ, []).append(cid)
+            if mid not in msg_contacts:
+                msg_contacts[mid] = {'from': [], 'to': [], 'cc': [], 'bcc': []}
+            # type이 실제 MessageContact 테이블의 'type' 컬럼 값에 따라 다를 수 있음 (예: 'FROM', 'TO', 'CC')
+            if typ.upper() == 'FROM': # type 값을 대문자로 비교하여 일관성 유지
+                 msg_contacts[mid]['from'].append(cid)
+            elif typ.upper() == 'TO':
+                 msg_contacts[mid]['to'].append(cid)
+            elif typ.upper() == 'CC':
+                 msg_contacts[mid]['cc'].append(cid)
+            elif typ.upper() == 'BCC':
+                msg_contacts[mid]['bcc'].append(cid)
+
+        print(f"[Python] Loaded {len(msg_contacts)} message contact relations from SQLite.")
 
         cur.execute("SELECT contact_id, name, email FROM EmailContact;")
-        email_contacts = {cid: (name, email.lower()) for cid, name, email in cur.fetchall()}
+        email_contacts_map = {cid: (name, email.lower() if email else None) for cid, name, email in cur.fetchall()}
+        print(f"[Python] Loaded {len(email_contacts_map)} email contacts from SQLite.")
 
         cur.execute("SELECT category_id, category_name FROM Category;")
         category_map = {cid: name for cid, name in cur.fetchall()}
+        print(f"[Python] Loaded {len(category_map)} categories from SQLite.")
         conn.close()
+        print("[Python] SQLite connection closed.")
 
         # 2) Neo4j 연결 및 그래프 생성
         loc_driver = get_driver()
-        with loc_driver.session() as sess:
-            sess.run("MATCH (n) DETACH DELETE n")
-            sess.run(
-                """
-                MERGE (root:Root {name: '나'})
-                ON CREATE SET root.emails = $emails,
-                                root.contact_id = 0
-                """, emails=account_emails)
+        with loc_driver.session(database="neo4j") as sess: # 명시적으로 데이터베이스 지정
+            print("[Python] Neo4j session started.")
+            # 기존 그래프 데이터 삭제 (초기화 시 필요할 수 있음, 주의해서 사용)
+            # print("[Python] Clearing existing graph data...")
+            # sess.run("MATCH (n) DETACH DELETE n")
+            # print("[Python] Existing graph data cleared.")
 
-            for msg_id, cat_id, subcat_id in messages:
-                category_name = category_map.get(cat_id)
-                if not category_name:
-                    continue
-                subcategory_name = category_map.get(subcat_id) if subcat_id is not None else None
+            # Account 노드 생성
+            for acc_email in account_emails:
+                sess.run("MERGE (a:Account {email: $email})", email=acc_email)
+            print(f"[Python] Created/Merged {len(account_emails)} Account nodes.")
 
-                contacts_for_msg = msg_contacts.get(msg_id, {})
-                recips = [
-                    contact_id for contact_id in contacts_for_msg.get('TO', [])
-                    if email_contacts.get(contact_id, ('', ''))[1] not in account_emails
-                ]
-                if not recips:
-                    recips = contacts_for_msg.get('FROM', [])
+            # Person 노드 생성 (EmailContact 기반)
+            for contact_id, (name, email) in email_contacts_map.items():
+                if email: # 이메일이 있는 경우에만 Person 노드 생성 시도
+                    sess.run("MERGE (p:Person {email: $email}) ON CREATE SET p.contact_id = $contact_id, p.name = $name ON MATCH SET p.contact_id = coalesce(p.contact_id, $contact_id), p.name = coalesce(p.name, $name)",
+                             contact_id=contact_id, name=name, email=email)
+                elif name: # 이메일은 없지만 이름은 있는 경우 (예: 로컬 주소록의 이름만 있는 연락처)
+                     sess.run("MERGE (p:Person {name: $name, contact_id: $contact_id})", # 이메일 없이 이름과 ID로 MERGE
+                             contact_id=contact_id, name=name)
 
-                for contact_id_val in recips:
-                    name, _ = email_contacts.get(contact_id_val, (None, None))
-                    if not name:
-                        continue
-                    sess.run(
-                        """
-                        MATCH (root:Root {name: '나'})
-                        MERGE (p:Person {name: $name})
-                          SET p.contact_id = $cid
-                        MERGE (root)-[r1:INTERACTS_WITH]->(p)
-                        SET r1.msg_ids = coalesce(r1.msg_ids, []) + [$msg_id]
+            print(f"[Python] Created/Merged {len(email_contacts_map)} Person nodes (based on email_contacts_map).")
 
-                        MERGE (c:Category {name: $category_name})
-                        MERGE (p)-[r2:HAS_CATEGORY]->(c)
-                        SET
-                          r2.msg_ids    = coalesce(r2.msg_ids, []) + [$msg_id],
-                          c.category_id = $category_id
+            # Category 노드 생성
+            for cat_id, cat_name in category_map.items():
+                sess.run("MERGE (c:Category {category_id: $cat_id}) SET c.name = $cat_name",
+                         cat_id=cat_id, cat_name=cat_name)
+            print(f"[Python] Created/Merged {len(category_map)} Category nodes.")
 
-                        WITH c, $subcategory_name AS subcat, $cid AS person_cid_for_rel, $msg_id AS mid_for_rel, $subcategory_id AS scid_for_rel
-                        WHERE subcat IS NOT NULL
-                        MERGE (s:Subcategory {name: subcat})
-                        MERGE (c)-[sr:HAS_SUBCATEGORY]->(s)
-                        SET
-                          sr.cids         = coalesce(sr.cids, []) + [person_cid_for_rel],
-                          sr.msg_ids      = coalesce(sr.msg_ids, []) + [mid_for_rel],
-                          s.subcategory_id = scid_for_rel
-                        """, {
-                            'name': name, 'cid': contact_id_val, 'msg_id': msg_id,
-                            'category_name': category_name, 'category_id': cat_id,
-                            'subcategory_name': subcategory_name, 'subcategory_id': subcat_id or 0
-                        })
+            # Message 노드 및 관계 생성
+            for msg_id, cat_id, sub_cat_id, from_email_sqlite, subject, sent_at in messages_data:
+                # Message 노드 생성 (message_id를 고유 식별자로 사용)
+                sess.run("MERGE (m:Message {message_id: $msg_id}) SET m.subject = $subject, m.sent_at = $sent_at, m.from_address_raw = $from_email",
+                         msg_id=msg_id, subject=subject, sent_at=sent_at, from_email=from_email_sqlite)
+
+                # Message와 Category 연결
+                if cat_id and cat_id in category_map:
+                    sess.run("""
+                        MATCH (m:Message {message_id: $msg_id})
+                        MATCH (c:Category {category_id: $cat_id})
+                        MERGE (m)-[:BELONGS_TO]->(c)
+                    """, msg_id=msg_id, cat_id=cat_id)
+
+                # Message와 Person (보낸 사람) 연결
+                # msg_contacts에 해당 message_id의 'from' 정보가 있는지 확인
+                if msg_id in msg_contacts and msg_contacts[msg_id]['from']:
+                    sender_contact_id = msg_contacts[msg_id]['from'][0] # 첫 번째 보낸 사람 ID 사용
+                    if sender_contact_id in email_contacts_map and email_contacts_map[sender_contact_id][1]: # 이메일 주소가 있는지 확인
+                        sender_email = email_contacts_map[sender_contact_id][1]
+                        sess.run("""
+                            MATCH (m:Message {message_id: $msg_id})
+                            MATCH (p:Person {email: $sender_email})
+                            MERGE (p)-[:SENT]->(m)
+                        """, msg_id=msg_id, sender_email=sender_email)
+                elif from_email_sqlite: # MessageContact에 정보가 없고 Message 테이블에 from_email이 있다면
+                    sess.run("""
+                        MATCH (m:Message {message_id: $msg_id})
+                        MERGE (p:Person {email: $from_email_sqlite}) // 보낸 사람 Person 노드 (없으면 생성)
+                        MERGE (p)-[:SENT]->(m)
+                    """, msg_id=msg_id, from_email_sqlite=from_email_sqlite.lower())
+
+
+                # Message와 Person (받는 사람 - TO, CC, BCC) 연결
+                if msg_id in msg_contacts:
+                    for rel_type, contact_ids in msg_contacts[msg_id].items():
+                        if rel_type == 'from': continue # 보낸 사람은 위에서 처리
+                        neo_rel_type = ""
+                        if rel_type == 'to': neo_rel_type = "ADDRESSED_TO"
+                        elif rel_type == 'cc': neo_rel_type = "CC_TO"
+                        elif rel_type == 'bcc': neo_rel_type = "BCC_TO"
+
+                        if neo_rel_type:
+                            for recipient_contact_id in contact_ids:
+                                if recipient_contact_id in email_contacts_map and email_contacts_map[recipient_contact_id][1]: # 이메일 주소가 있는지 확인
+                                    recipient_email = email_contacts_map[recipient_contact_id][1]
+                                    sess.run(f"""
+                                        MATCH (m:Message {{message_id: $msg_id}})
+                                        MATCH (p:Person {{email: $recipient_email}})
+                                        MERGE (m)-[:{neo_rel_type}]->(p)
+                                    """, msg_id=msg_id, recipient_email=recipient_email)
+            print(f"[Python] Created/Merged Message nodes and their relationships.")
+
+            # Account와 Person (사용자 자신) 연결
+            # Account의 이메일과 일치하는 Person 노드가 있다면 :IS_USER 관계 추가
+            for acc_email_val in account_emails:
+                 sess.run("""
+                    MATCH (acc:Account {email: $acc_email})
+                    MATCH (p:Person {email: $acc_email}) // 계정 이메일과 동일한 이메일을 가진 Person
+                    MERGE (acc)-[:IS_PERSON]->(p)
+                    MERGE (p)-[:IS_ACCOUNT_HOLDER_OF]->(acc) // 양방향 또는 단방향 선택
+                 """, acc_email=acc_email_val)
+            print(f"[Python] Linked Account nodes to their corresponding Person nodes.")
+
+            print("[Python] Neo4j session finished.")
         return {"status": "success", "message": "Python: Graph initialized successfully from SQLite."}
+    except sqlite3.Error as e:
+        print(f"[Python] SQLite error: {e}")
+        return {"status": "error", "message": f"Python: SQLite error - {str(e)}"}
+    except neo4j.exceptions.Neo4jError as e:
+        print(f"[Python] Neo4jError: {e}")
+        return {"status": "error", "message": f"Python: Neo4jError - {str(e)}"}
     except Exception as e:
-        return {"status": "error", "message": f"Python: Error initializing graph: {str(e)}"}
+        import traceback
+        print(f"[Python] Error initializing graph: {str(e)}")
+        print(traceback.format_exc())
+        return {"status": "error", "message": f"Python: Error initializing graph - {str(e)}"}
 
 # --- Function from search_node.py (for read_node_py) ---
 def read_node_py(c_id, c_type, io_type):
@@ -207,7 +289,7 @@ def read_message_py(basic_c_id, c_type, filter_data):
             # This logic is complex and adapted from EmailGenerator.fetch_msg_ids
             if c_type == 0: # Root - all messages (potentially very large)
                 # Simplified: Get some messages, or define specific logic for Root
-                # For now, let's assume it means messages related to '나' (Root)
+                # For now, let's assume it means it means messages related to '나' (Root)
                 for rec in session.run("MATCH (r:Root {name:'나'})-[rel:INTERACTS_WITH]-() RETURN rel.msg_ids AS msg_ids"):
                     msg_ids.extend(rec.get('msg_ids') or [])
             elif c_type == 1: # Person
@@ -490,10 +572,13 @@ def move_complex_node_py(a_id, b_id, c_id): # From modify_node.py's move_node
 # --- Placeholder functions from original graph_operations.py or un-implemented from modify_node.py ---
 def test_connection():
     try:
-        get_driver() # This will test connection
-        return {"status": "success", "message": "Python: Connection test successful"}
+        # 여기에 실제 Neo4j 드라이버 연결 테스트 로직을 추가할 수 있습니다.
+        # 예시로 간단히 성공 응답을 반환합니다.
+        get_driver() # 드라이버 초기화 시도
+        close_driver() # 테스트 후 드라이버 닫기 (선택 사항)
+        return {"status": "success", "message": "Python: Neo4j connection test successful."}
     except Exception as e:
-        return {"status": "error", "message": f"Python: Connection test failed: {str(e)}"}
+        return {"status": "error", "message": f"Python: Neo4j connection test failed: {str(e)}"}
 
 def read_graph_data_py():
     return {"status": "success", "message": "Python: read_graph_data_py (placeholder) called", "result": {"nodes": [], "edges": []}}
