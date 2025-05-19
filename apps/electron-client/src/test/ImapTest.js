@@ -254,6 +254,8 @@ export const runImapTests = async () => {
     //   console.error("Error during cleanup:", cleanupError);
     // }
 
+    console.log("Waiting for background calendar tasks to complete...");
+    await new Promise(resolve => setTimeout(resolve, 300*1000)); // 예: 15초 대기 (시간은 예상 작업 시간에 따라 조절)
     await closeConnection();
     process.exit(0);
   }

@@ -20,25 +20,26 @@ class CalendarService {
     try {
       console.log(`[CalendarService] messageId: ${messageId} - Flask API 호출 시작`);
       const response = await axios.post(FLASK_API_URL, {
-        email_body: emailBody,
+        email_text: emailBody,
       });
 
-      if (response.data && (response.data.scheduled_at || response.data.task)) {
+      // 서버 응답에 summary가 있고, scheduled_at 또는 task가 있을 때 처리
+      if (response.data && (response.data.scheduled_at || response.data.task || response.data.summary)) {
         const calendarData = {
           message_id: messageId,
           account_id: accountId,
-          scheduled_at: response.data.scheduled_at || null, // API 응답에 따라 null 처리
-          task: response.data.task || null,       // API 응답에 따라 null 처리
+          summary: response.data.summary || null, // summary 추가
+          scheduled_at: response.data.scheduled_at || null,
+          task: response.data.task || null,
         };
         await calendarRepository.saveCalendarEntry(calendarData);
-        console.log(`[CalendarService] messageId: ${messageId} - 캘린더 정보 저장 완료`);
+        console.log(`[CalendarService] messageId: ${messageId} - 캘린더 정보 저장 완료 (summary 포함)`);
       } else {
-        console.log(`[CalendarService] messageId: ${messageId} - Flask API로부터 유효한 scheduled_at/task를 받지 못했습니다.`);
+        console.log(`[CalendarService] messageId: ${messageId} - Flask API로부터 유효한 scheduled_at/task/summary를 받지 못했습니다.`);
       }
     } catch (error) {
       console.error(`[CalendarService] messageId: ${messageId} - 처리 중 오류 발생:`, error.message);
-      // 필요에 따라 오류를 다시 throw 하거나, 특정 오류는 무시할 수 있습니다.
-      // throw new Error(`캘린더 정보 처리 실패 (messageId: ${messageId}): ${error.message}`);
+      throw new Error(`캘린더 정보 처리 실패 (messageId: ${messageId}): ${error.message}`);
     }
   }
 }
