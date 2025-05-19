@@ -1,3 +1,17 @@
+// 그래프 초기화 요청
+export const resetGraph = () => {
+  try {
+    const response = window.electronAPI.graph.testGraph();
+    console.log(`[DELETE] window.electronAPI.graph.resetGraph()`, response);
+
+    const response2 = window.electronAPI.graph.readData();
+    console.log(`[GET] window.electronAPI.graph.readData()`, response2);
+    return response.data;
+  } catch (error: unknown) {
+    throw new Error(error as string);
+  }
+};
+
 // 노드 생성 요청
 export const createNode = (nodeData) => {
   try {

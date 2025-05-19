@@ -3,6 +3,8 @@ import { useId, useEffect } from "react";
 
 import { AllEmails } from "@/types/emailTypes";
 
+import { decodeImapModifiedUtf7Segment } from "@utils/getEmailData";
+
 import {
   useInfiniteEmails,
   useMarkEmailAsRead,
@@ -22,6 +24,9 @@ const InboxFolders = ({ folders }: { folders: Record<string, string[]> }) => {
     <div className="flex w-full h-fit p-1 gap-1 bg-white rounded-lg font-pre-bold overflow-x-auto hide-scrollbar">
       {folders &&
         Object.keys(folders).map((folder) => {
+          // 폴더 이름을 UTF-7로 디코딩
+          const decodedFolder = decodeImapModifiedUtf7Segment(folder);
+
           return (
             <span
               key={`${id}-${folder}`}
@@ -33,7 +38,7 @@ const InboxFolders = ({ folders }: { folders: Record<string, string[]> }) => {
               }
             >
               <p className="text-sm font-pre-regular whitespace-nowrap">
-                {folder}
+                {decodedFolder}
               </p>
             </span>
           );
