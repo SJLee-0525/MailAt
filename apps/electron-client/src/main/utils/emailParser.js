@@ -45,7 +45,7 @@ export const parseRawEmail = async (rawMessage, options = {}) => {
       hasAttachments: attachments.length > 0,
       contacts: contacts, // recipients 대신 contacts 사용
       headers: parseHeaders(parsed.headers),
-      attachments: parseAttachments(parsed.attachments),
+      attachments: attachments,
     };
 
     return emailData;
