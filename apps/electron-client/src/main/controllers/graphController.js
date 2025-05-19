@@ -13,7 +13,11 @@ export const initGraphController = () => {
       if (result.status === "success") {
         return { success: true, data: result.result };
       } else {
-        return { success: false, message: result.message, error: result.message };
+        return {
+          success: false,
+          message: result.message,
+          error: result.message,
+        };
       }
     } catch (error) {
       console.error("그래프 IPC 컨트롤러 오류:", error);
@@ -32,7 +36,11 @@ export const initGraphController = () => {
       if (result.status === "success") {
         return { success: true, data: result.result };
       } else {
-        return { success: false, message: result.message, error: result.message };
+        return {
+          success: false,
+          message: result.message,
+          error: result.message,
+        };
       }
     } catch (error) {
       console.error("그래프 데이터 읽기 컨트롤러 오류:", error);
@@ -52,7 +60,11 @@ export const initGraphController = () => {
       if (result.status === "success") {
         return { success: true, data: result.result };
       } else {
-        return { success: false, message: result.message, error: result.message };
+        return {
+          success: false,
+          message: result.message,
+          error: result.message,
+        };
       }
     } catch (error) {
       console.error("노드 생성 컨트롤러 오류:", error);
@@ -72,7 +84,11 @@ export const initGraphController = () => {
       if (result.status === "success") {
         return { success: true, data: result.result };
       } else {
-        return { success: false, message: result.message, error: result.message };
+        return {
+          success: false,
+          message: result.message,
+          error: result.message,
+        };
       }
     } catch (error) {
       console.error("노드 업데이트 컨트롤러 오류:", error);
@@ -92,7 +108,11 @@ export const initGraphController = () => {
       if (result.status === "success") {
         return { success: true, data: result.result };
       } else {
-        return { success: false, message: result.message, error: result.message };
+        return {
+          success: false,
+          message: result.message,
+          error: result.message,
+        };
       }
     } catch (error) {
       console.error("노드 삭제 컨트롤러 오류:", error);
@@ -112,7 +132,11 @@ export const initGraphController = () => {
       if (result.status === "success") {
         return { success: true, data: result.result };
       } else {
-        return { success: false, message: result.message, error: result.message };
+        return {
+          success: false,
+          message: result.message,
+          error: result.message,
+        };
       }
     } catch (error) {
       console.error("노드 읽기 컨트롤러 오류:", error);
@@ -125,44 +149,65 @@ export const initGraphController = () => {
   });
 
   // 메시지 읽기 요청 처리
-  ipcMain.handle("graph:readMessage", async (event, { basic_C_ID, C_type, filter }) => {
-    try {
-      const result = await graphService.readMessage(basic_C_ID, C_type, filter);
-      console.log("메시지 읽기 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return { success: false, message: result.message, error: result.message };
+  ipcMain.handle(
+    "graph:readMessage",
+    async (event, { basic_C_ID, C_type, filter }) => {
+      try {
+        const result = await graphService.readMessage(
+          basic_C_ID,
+          C_type,
+          filter
+        );
+        console.log("메시지 읽기 결과:", result);
+        if (result.status === "success") {
+          return { success: true, data: result.result };
+        } else {
+          return {
+            success: false,
+            message: result.message,
+            error: result.message,
+          };
+        }
+      } catch (error) {
+        console.error("메시지 읽기 컨트롤러 오류:", error);
+        return {
+          success: false,
+          message: error.message,
+          error: error.message,
+        };
       }
-    } catch (error) {
-      console.error("메시지 읽기 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
     }
-  });
+  );
 
   // 메시지 삭제 요청 처리
-  ipcMain.handle("graph:deleteMessage", async (event, { message_C_ID, except_C_ID }) => {
-    try {
-      const result = await graphService.deleteMessage(message_C_ID, except_C_ID);
-      console.log("메시지 삭제 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return { success: false, message: result.message, error: result.message };
+  ipcMain.handle(
+    "graph:deleteMessage",
+    async (event, { message_C_ID, except_C_ID }) => {
+      try {
+        const result = await graphService.deleteMessage(
+          message_C_ID,
+          except_C_ID
+        );
+        console.log("메시지 삭제 결과:", result);
+        if (result.status === "success") {
+          return { success: true, data: result.result };
+        } else {
+          return {
+            success: false,
+            message: result.message,
+            error: result.message,
+          };
+        }
+      } catch (error) {
+        console.error("메시지 삭제 컨트롤러 오류:", error);
+        return {
+          success: false,
+          message: error.message,
+          error: error.message,
+        };
       }
-    } catch (error) {
-      console.error("메시지 삭제 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
     }
-  });
+  );
 
   // 노드 라벨 수정 요청 처리
   ipcMain.handle("graph:updateLabel", async (event, { C_ID, newLabel }) => {
@@ -172,7 +217,11 @@ export const initGraphController = () => {
       if (result.status === "success") {
         return { success: true, data: result.result };
       } else {
-        return { success: false, message: result.message, error: result.message };
+        return {
+          success: false,
+          message: result.message,
+          error: result.message,
+        };
       }
     } catch (error) {
       console.error("노드 라벨 수정 컨트롤러 오류:", error);
@@ -192,7 +241,11 @@ export const initGraphController = () => {
       if (result.status === "success") {
         return { success: true, data: result.result };
       } else {
-        return { success: false, message: result.message, error: result.message };
+        return {
+          success: false,
+          message: result.message,
+          error: result.message,
+        };
       }
     } catch (error) {
       console.error("키워드 검색 컨트롤러 오류:", error);
@@ -212,7 +265,11 @@ export const initGraphController = () => {
       if (result.status === "success") {
         return { success: true, data: result.result };
       } else {
-        return { success: false, message: result.message, error: result.message };
+        return {
+          success: false,
+          message: result.message,
+          error: result.message,
+        };
       }
     } catch (error) {
       console.error("노드 병합 컨트롤러 오류:", error);
@@ -232,7 +289,11 @@ export const initGraphController = () => {
       if (result.status === "success") {
         return { success: true, data: result.result };
       } else {
-        return { success: false, message: result.message, error: result.message };
+        return {
+          success: false,
+          message: result.message,
+          error: result.message,
+        };
       }
     } catch (error) {
       console.error("LLM 태깅 컨트롤러 오류:", error);
@@ -251,7 +312,11 @@ export const initGraphController = () => {
       if (result.status === "success") {
         return { success: true, message: result.message };
       } else {
-        return { success: false, message: result.message, error: result.message };
+        return {
+          success: false,
+          message: result.message,
+          error: result.message,
+        };
       }
     } catch (error) {
       console.error("SQLite에서 그래프 초기화 컨트롤러 오류:", error);
@@ -270,7 +335,11 @@ export const initGraphController = () => {
       if (result.status === "success") {
         return { success: true, data: result.result };
       } else {
-        return { success: false, message: result.message, error: result.message };
+        return {
+          success: false,
+          message: result.message,
+          error: result.message,
+        };
       }
     } catch (error) {
       console.error("수신 노드 가져오기 컨트롤러 오류:", error);
@@ -289,7 +358,11 @@ export const initGraphController = () => {
       if (result.status === "success") {
         return { success: true, data: result.result };
       } else {
-        return { success: false, message: result.message, error: result.message };
+        return {
+          success: false,
+          message: result.message,
+          error: result.message,
+        };
       }
     } catch (error) {
       console.error("발신 노드 가져오기 컨트롤러 오류:", error);
@@ -308,7 +381,11 @@ export const initGraphController = () => {
       if (result.status === "success") {
         return { success: true, message: result.message };
       } else {
-        return { success: false, message: result.message, error: result.message };
+        return {
+          success: false,
+          message: result.message,
+          error: result.message,
+        };
       }
     } catch (error) {
       console.error("모든 노드 삭제 컨트롤러 오류:", error);
@@ -320,43 +397,57 @@ export const initGraphController = () => {
     }
   });
 
-  ipcMain.handle("graph:moveComplexNode", async (event, { a_id, b_id, c_id }) => {
-    try {
-      const result = await graphService.moveComplexNode(a_id, b_id, c_id);
-      console.log("복잡한 노드 이동 결과:", result);
-      if (result.status === "success") {
-        return { success: true, message: result.message }; // Assuming message contains relevant info
-      } else {
-        return { success: false, message: result.message, error: result.message };
+  ipcMain.handle(
+    "graph:moveComplexNode",
+    async (event, { a_id, b_id, c_id }) => {
+      try {
+        const result = await graphService.moveComplexNode(a_id, b_id, c_id);
+        console.log("복잡한 노드 이동 결과:", result);
+        if (result.status === "success") {
+          return { success: true, message: result.message }; // Assuming message contains relevant info
+        } else {
+          return {
+            success: false,
+            message: result.message,
+            error: result.message,
+          };
+        }
+      } catch (error) {
+        console.error("복잡한 노드 이동 컨트롤러 오류:", error);
+        return {
+          success: false,
+          message: error.message,
+          error: error.message,
+        };
       }
-    } catch (error) {
-      console.error("복잡한 노드 이동 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
     }
-  });
+  );
 
-  ipcMain.handle("graph:moveEmail", async (event, { from_id, to_id, email_uid }) => {
-    try {
-      const result = await graphService.moveEmail(from_id, to_id, email_uid);
-      console.log("이메일 이동 결과:", result);
-      if (result.status === "success") {
-        return { success: true, message: result.message };
-      } else {
-        return { success: false, message: result.message, error: result.message };
+  ipcMain.handle(
+    "graph:moveEmail",
+    async (event, { from_id, to_id, email_uid }) => {
+      try {
+        const result = await graphService.moveEmail(from_id, to_id, email_uid);
+        console.log("이메일 이동 결과:", result);
+        if (result.status === "success") {
+          return { success: true, message: result.message };
+        } else {
+          return {
+            success: false,
+            message: result.message,
+            error: result.message,
+          };
+        }
+      } catch (error) {
+        console.error("이메일 이동 컨트롤러 오류:", error);
+        return {
+          success: false,
+          message: error.message,
+          error: error.message,
+        };
       }
-    } catch (error) {
-      console.error("이메일 이동 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
     }
-  });
+  );
 
   ipcMain.handle("graph:getNodeEmails", async (event, { node_name }) => {
     try {
@@ -365,7 +456,11 @@ export const initGraphController = () => {
       if (result.status === "success") {
         return { success: true, data: result.result };
       } else {
-        return { success: false, message: result.message, error: result.message };
+        return {
+          success: false,
+          message: result.message,
+          error: result.message,
+        };
       }
     } catch (error) {
       console.error("노드 이메일 가져오기 컨트롤러 오류:", error);
