@@ -7,6 +7,7 @@ import logging
 import threading
 import psutil
 import json
+from bs4 import BeautifulSoup # BeautifulSoup 임포트
 
 # --- 로거 설정 ---
 logging.basicConfig(level=logging.INFO,
@@ -23,6 +24,8 @@ def resource_path(relative_path):
     except Exception:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
+
+UNWANTED_TASKS = {"알림", "테스트", "Imap 테스트", "알 수 없음", "공지", "Notifications", "Test", "test", "테스트", "TEST"}
 
 app = Flask(__name__)
 
@@ -96,20 +99,37 @@ model_release_thread.start()
 @app.route("/summarize", methods=["POST"])
 def summarize_email():
     data = request.json
-    email_text = data.get("email_text", "")
+    email_html_content = data.get("email_text", "") # 변수명을 email_html_content로 변경하여 HTML임을 명시
     t_start = time.perf_counter()
-    logger.info(f"요약 요청 수신 - 이메일 앞부분: {email_text[:50]}...")
+    logger.info(f"요약 요청 수신 - 이메일 앞부분 (HTML): {email_html_content[:100]}...")
+
+    # --- HTML 파싱하여 텍스트 추출 ---
+    try:
+        soup = BeautifulSoup(email_html_content, "html.parser")
+        email_text = soup.get_text(separator=" ", strip=True) # 텍스트 추출, 공백으로 단어 구분, 양쪽 공백 제거
+        logger.info(f"HTML 파싱 후 텍스트 앞부분: {email_text[:100]}...")
+    except Exception as e:
+        logger.error(f"HTML 파싱 중 오류 발생: {e}", exc_info=True)
+        email_text = email_html_content 
+
+
+    # --- 이메일 텍스트 길이 제한 ---
+    MAX_EMAIL_CHARS = 2500
+    if len(email_text) > MAX_EMAIL_CHARS:
+        logger.warning(f"추출된 텍스트가 너무 길어 {MAX_EMAIL_CHARS}자로 자릅니다. 원본 길이: {len(email_text)}")
+        email_text = email_text[:MAX_EMAIL_CHARS]
+    # --- 이메일 텍스트 길이 제한 끝 ---
+
 
     try:
         with MODEL_CACHE["lock"]: # 모델 가져오기 및 사용 전체를 락으로 보호
             llm = get_model()
-            if llm is None: # get_model 내부에서 모델 로드 실패 또는 자동 해제된 직후일 경우
+            if llm is None: 
                 logger.error("모델을 현재 사용할 수 없습니다. 잠시 후 다시 시도해주세요.")
-                # 503 Service Unavailable 응답을 보내 클라이언트가 재시도하도록 유도
                 return jsonify({"error": "모델을 현재 사용할 수 없습니다. 잠시 후 다시 시도해주세요."}), 503
 
             weekday_map = ["월", "화", "수", "목", "금", "토", "일"]
-            current_weekday = time.localtime().tm_wday  # 0=월, 6=일
+            current_weekday = time.localtime().tm_wday
             weekday_kr = weekday_map[current_weekday]
 
             today_str = f"{time.localtime().tm_year}-{time.localtime().tm_mon:02d}-{time.localtime().tm_mday:02d}({weekday_kr})"
@@ -178,6 +198,11 @@ def summarize_email():
             summary = parsed.get("summary", "")
             scheduled_at = parsed.get("scheduled_at", None)
             task = parsed.get("task", None)
+
+            if task is not None and task.strip() in UNWANTED_TASKS:
+                logger.info(f"요청된 작업이 원하지 않는 작업 목록에 포함되어 있습니다: {task}")
+                scheduled_at = None
+                task = None
 
 
     except Exception as e:
