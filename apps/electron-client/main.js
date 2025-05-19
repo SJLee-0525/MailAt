@@ -58,7 +58,7 @@ async function initializeControllers() {
 
   try {
     // 모든 기존 핸들러 제거
-    [
+    const channelsToRemove = [
       "user:create",
       "user:get",
       "user:update",
@@ -78,15 +78,37 @@ async function initializeControllers() {
       "email:getDetail",
       "email:delete",
       "email:markAsRead",
-      // 여기에 graphController에서 등록하는 핸들러들도 명시적으로 추가하거나,
-      // dev 핸들러 등록 전에 graphController 초기화가 완료되도록 순서를 보장합니다.
-      // 예: "graph:testGraph", "graph:readData", ... (graphController.js 참고)
-    ].forEach((channel) => {
-      try {
-        ipcMain.removeHandler(channel);
-      } catch (err) {
-        // 등록되지 않은 핸들러는 무시
-      }
+    ];
+    
+    const graphChannels = [
+      "graph:testConnection",
+      "graph:readData",
+      "graph:createNode",
+      "graph:updateNode",
+      "graph:deleteNode",
+      "graph:createRelationship",
+      "graph:deleteRelationship",
+      "graph:deleteMessage",
+      "graph:updateLabel",
+      "graph:searchByKeyword",
+      "graph:mergeNode",
+      "graph:llmTagNode",
+      "graph:initializeGraphFromSQLite",
+      "graph:getIncomingNodes",
+      "graph:getOutgoingNodes",
+      "graph:deleteAllNodes",
+      "graph:moveComplexNode",
+      "graph:moveEmail",
+      "graph:getNodeEmails",
+      "graph:processAndEmbedMessages",
+      "graph:buildGraph",
+      "graph:fetchNodes",
+      "graph:fetchEmails"
+    ];
+
+    [...channelsToRemove, ...graphChannels].forEach((channel) => {
+      console.log(`[MAIN] Removing handler for ${channel}`);
+      ipcMain.removeHandler(channel);
     });
 
     // 컨트롤러 모듈 가져오기

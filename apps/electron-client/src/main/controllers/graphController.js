@@ -6,9 +6,9 @@ import * as graphService from "../services/neo4jAdapter.js"; // neo4jAdapter.js�
  */
 export const initGraphController = () => {
   // 그래프 데이터 읽기 요청 처리
-  ipcMain.handle("graph:testGraph", async (event) => {
+  ipcMain.handle("graph:testConnection", async (event) => {
     try {
-      const result = await graphService.testGraph();
+      const result = await graphService.testConnection();
       console.log("그래프 IPC 통신 테스트 결과:", result);
       if (result.status === "success") {
         return { success: true, data: result.result };
@@ -17,65 +17,6 @@ export const initGraphController = () => {
       }
     } catch (error) {
       console.error("그래프 IPC 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
-    }
-  });
-
-  ipcMain.handle("graph:readData", async (event) => {
-    try {
-      const result = await graphService.readGraphData();
-      console.log("그래프 데이터 읽기 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return { success: false, message: result.message, error: result.message };
-      }
-    } catch (error) {
-      console.error("그래프 데이터 읽기 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
-    }
-  });
-
-  // 노드 생성 요청 처리
-  ipcMain.handle("graph:createNode", async (event, nodeData) => {
-    try {
-      const result = await graphService.createNode(nodeData);
-      console.log("노드 생성 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return { success: false, message: result.message, error: result.message };
-      }
-    } catch (error) {
-      console.error("노드 생성 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
-    }
-  });
-
-  // 노드 업데이트 요청 처리
-  ipcMain.handle("graph:updateNode", async (event, { nodeId, updateData }) => {
-    try {
-      const result = await graphService.updateNode(nodeId, updateData);
-      console.log("노드 업데이트 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return { success: false, message: result.message, error: result.message };
-      }
-    } catch (error) {
-      console.error("노드 업데이트 컨트롤러 오류:", error);
       return {
         success: false,
         message: error.message,
@@ -104,66 +45,6 @@ export const initGraphController = () => {
     }
   });
 
-  // 노드 읽기 요청 처리
-  ipcMain.handle("graph:readNode", async (event, { C_ID, C_type, IO_type }) => {
-    try {
-      const result = await graphService.readNode(C_ID, C_type, IO_type);
-      console.log("노드 읽기 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return { success: false, message: result.message, error: result.message };
-      }
-    } catch (error) {
-      console.error("노드 읽기 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
-    }
-  });
-
-  // 메시지 읽기 요청 처리
-  ipcMain.handle("graph:readMessage", async (event, { basic_C_ID, C_type, filter }) => {
-    try {
-      const result = await graphService.readMessage(basic_C_ID, C_type, filter);
-      console.log("메시지 읽기 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return { success: false, message: result.message, error: result.message };
-      }
-    } catch (error) {
-      console.error("메시지 읽기 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
-    }
-  });
-
-  // 메시지 삭제 요청 처리
-  ipcMain.handle("graph:deleteMessage", async (event, { message_C_ID, except_C_ID }) => {
-    try {
-      const result = await graphService.deleteMessage(message_C_ID, except_C_ID);
-      console.log("메시지 삭제 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return { success: false, message: result.message, error: result.message };
-      }
-    } catch (error) {
-      console.error("메시지 삭제 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
-    }
-  });
-
   // 노드 라벨 수정 요청 처리
   ipcMain.handle("graph:updateLabel", async (event, { C_ID, newLabel }) => {
     try {
@@ -176,26 +57,6 @@ export const initGraphController = () => {
       }
     } catch (error) {
       console.error("노드 라벨 수정 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
-    }
-  });
-
-  // 키워드 검색 요청 처리
-  ipcMain.handle("graph:searchByKeyword", async (event, { keyword }) => {
-    try {
-      const result = await graphService.searchByKeyword(keyword);
-      console.log("키워드 검색 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return { success: false, message: result.message, error: result.message };
-      }
-    } catch (error) {
-      console.error("키워드 검색 컨트롤러 오류:", error);
       return {
         success: false,
         message: error.message,
@@ -224,37 +85,17 @@ export const initGraphController = () => {
     }
   });
 
-  // LLM 태깅 요청 처리
-  ipcMain.handle("graph:llmTagNode", async (event, { C_ID, llm_tags }) => {
-    try {
-      const result = await graphService.llmTagNode(C_ID, llm_tags);
-      console.log("LLM 태깅 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return { success: false, message: result.message, error: result.message };
-      }
-    } catch (error) {
-      console.error("LLM 태깅 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
-    }
-  });
-
   ipcMain.handle("graph:initializeGraphFromSQLite", async () => {
     try {
       const result = await graphService.initializeGraphFromSQLite();
-      console.log("SQLite에서 그래프 초기화 결과:", result);
+      console.log("SQLite로부터 그래프 초기화 결과:", result);
       if (result.status === "success") {
         return { success: true, message: result.message };
       } else {
         return { success: false, message: result.message, error: result.message };
       }
     } catch (error) {
-      console.error("SQLite에서 그래프 초기화 컨트롤러 오류:", error);
+      console.error("SQLite로부터 그래프 초기화 컨트롤러 오류:", error);
       return {
         success: false,
         message: error.message,
@@ -274,25 +115,6 @@ export const initGraphController = () => {
       }
     } catch (error) {
       console.error("수신 노드 가져오기 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
-    }
-  });
-
-  ipcMain.handle("graph:getOutgoingNodes", async (event, { node_name }) => {
-    try {
-      const result = await graphService.getOutgoingNodes(node_name);
-      console.log("발신 노드 가져오기 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return { success: false, message: result.message, error: result.message };
-      }
-    } catch (error) {
-      console.error("발신 노드 가져오기 컨트롤러 오류:", error);
       return {
         success: false,
         message: error.message,
@@ -325,7 +147,7 @@ export const initGraphController = () => {
       const result = await graphService.moveComplexNode(a_id, b_id, c_id);
       console.log("복잡한 노드 이동 결과:", result);
       if (result.status === "success") {
-        return { success: true, message: result.message }; // Assuming message contains relevant info
+        return { success: true, message: result.message };
       } else {
         return { success: false, message: result.message, error: result.message };
       }
@@ -339,17 +161,20 @@ export const initGraphController = () => {
     }
   });
 
-  ipcMain.handle("graph:moveEmail", async (event, { from_id, to_id, email_uid }) => {
+  // --- 새로 추가된 IPC 핸들러 ---
+
+  // 메시지 처리 및 임베딩 요청
+  ipcMain.handle("graph:processAndEmbedMessages", async () => {
     try {
-      const result = await graphService.moveEmail(from_id, to_id, email_uid);
-      console.log("이메일 이동 결과:", result);
+      const result = await graphService.processAndEmbedMessages();
+      console.log("메시지 처리 및 임베딩 결과:", result);
       if (result.status === "success") {
         return { success: true, message: result.message };
       } else {
         return { success: false, message: result.message, error: result.message };
       }
     } catch (error) {
-      console.error("이메일 이동 컨트롤러 오류:", error);
+      console.error("메시지 처리 및 임베딩 컨트롤러 오류:", error);
       return {
         success: false,
         message: error.message,
@@ -358,17 +183,58 @@ export const initGraphController = () => {
     }
   });
 
-  ipcMain.handle("graph:getNodeEmails", async (event, { node_name }) => {
+  // 그래프 빌드 요청
+  ipcMain.handle("graph:buildGraph", async () => {
     try {
-      const result = await graphService.getNodeEmails(node_name);
-      console.log("노드 이메일 가져오기 결과:", result);
+      const result = await graphService.buildGraph();
+      console.log("그래프 빌드 결과:", result);
+      if (result.status === "success") {
+        return { success: true, message: result.message };
+      } else {
+        return { success: false, message: result.message, error: result.message };
+      }
+    } catch (error) {
+      console.error("그래프 빌드 컨트롤러 오류:", error);
+      return {
+        success: false,
+        message: error.message,
+        error: error.message,
+      };
+    }
+  });
+
+  // 노드 가져오기 요청
+  ipcMain.handle("graph:fetchNodes", async (event, { C_ID, C_type, IO_type }) => {
+    try {
+      const result = await graphService.fetchNodes(C_ID, C_type, IO_type);
+      console.log("노드 가져오기 결과:", result);
       if (result.status === "success") {
         return { success: true, data: result.result };
       } else {
         return { success: false, message: result.message, error: result.message };
       }
     } catch (error) {
-      console.error("노드 이메일 가져오기 컨트롤러 오류:", error);
+      console.error("노드 가져오기 컨트롤러 오류:", error);
+      return {
+        success: false,
+        message: error.message,
+        error: error.message,
+      };
+    }
+  });
+
+  // 이메일 가져오기 요청
+  ipcMain.handle("graph:fetchEmails", async (event, { basic_C_ID, C_type, IO_type, in_data }) => {
+    try {
+      const result = await graphService.fetchEmails(basic_C_ID, C_type, IO_type, in_data);
+      console.log("이메일 가져오기 결과:", result);
+      if (result.status === "success") {
+        return { success: true, data: result.data };
+      } else {
+        return { success: false, message: result.message, error: result.error };
+      }
+    } catch (error) {
+      console.error("이메일 가져오기 컨트롤러 오류:", error);
       return {
         success: false,
         message: error.message,

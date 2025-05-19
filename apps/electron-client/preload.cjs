@@ -94,93 +94,54 @@ try {
 
     // 그래프 관련 API 추가
     graph: {
-      readData: () => {
-        console.log("[PRELOAD] graph.readData 호출됨");
-        return ipcRenderer.invoke("graph:readData");
-      },
-      createNode: (nodeData) => {
-        console.log("[PRELOAD] graph.createNode 호출됨", nodeData);
-        return ipcRenderer.invoke("graph:createNode", nodeData);
-      },
-      updateNode: (nodeId, updateData) => {
-        console.log("[PRELOAD] graph.updateNode 호출됨", {
-          nodeId,
-          updateData,
-        });
-        return ipcRenderer.invoke("graph:updateNode", { nodeId, updateData });
-      },
       deleteNode: (nodeId) => {
         console.log("[PRELOAD] graph.deleteNode 호출됨", nodeId);
         return ipcRenderer.invoke("graph:deleteNode", nodeId);
       },
-      readNode: (params) => {
-        console.log("[PRELOAD] graph.readNode 호출됨", params);
-        return ipcRenderer.invoke("graph:readNode", params);
+      updateLabel: (C_ID, newLabel) => {
+        console.log("[PRELOAD] graph.updateLabel 호출됨", { C_ID, newLabel });
+        return ipcRenderer.invoke("graph:updateLabel", { C_ID, newLabel });
       },
-      readMessage: (params) => {
-        console.log("[PRELOAD] graph.readMessage 호출됨", params);
-        return ipcRenderer.invoke("graph:readMessage", params);
+      mergeNode: (from_C_ID, to_C_ID) => {
+        console.log("[PRELOAD] graph.mergeNode 호출됨", { from_C_ID, to_C_ID });
+        return ipcRenderer.invoke("graph:mergeNode", { from_C_ID, to_C_ID });
       },
-      deleteMessage: (params) => {
-        console.log("[PRELOAD] graph.deleteMessage 호출됨", params);
-        return ipcRenderer.invoke("graph:deleteMessage", params);
+      testConnection: () => {
+        console.log("[PRELOAD] graph.testConnection 호출됨");
+        return ipcRenderer.invoke("graph:testConnection");
       },
-      updateLabel: (params) => {
-        console.log("[PRELOAD] graph.updateLabel 호출됨", params);
-        return ipcRenderer.invoke("graph:updateLabel", params);
-      },
-      searchByKeyword: (params) => {
-        console.log("[PRELOAD] graph.searchByKeyword 호출됨", params);
-        return ipcRenderer.invoke("graph:searchByKeyword", params);
-      },
-      mergeNode: (params) => {
-        console.log("[PRELOAD] graph.mergeNode 호출됨", params);
-        return ipcRenderer.invoke("graph:mergeNode", params);
-      },
-      llmTagNode: (params) => {
-        console.log("[PRELOAD] graph.llmTagNode 호출됨", params);
-        return ipcRenderer.invoke("graph:llmTagNode", params);
-      },
-      testGraph: (params) => {
-        console.log("[PRELOAD] graph.testGraph 호출됨", params); // Corrected console log
-        return ipcRenderer.invoke("graph:testGraph", params);
-      },
-      initializeGraphFromSQLite: () => { // Added
+      initializeGraphFromSQLite: () => {
         console.log("[PRELOAD] graph.initializeGraphFromSQLite 호출됨");
         return ipcRenderer.invoke("graph:initializeGraphFromSQLite");
       },
-      getIncomingNodes: (params) => { // Added
-        console.log("[PRELOAD] graph.getIncomingNodes 호출됨", params);
-        return ipcRenderer.invoke("graph:getIncomingNodes", params);
+      getIncomingNodes: (node_name) => {
+        console.log("[PRELOAD] graph.getIncomingNodes 호출됨", { node_name });
+        return ipcRenderer.invoke("graph:getIncomingNodes", { node_name });
       },
-      getOutgoingNodes: (params) => { // Added
-        console.log("[PRELOAD] graph.getOutgoingNodes 호출됨", params);
-        return ipcRenderer.invoke("graph:getOutgoingNodes", params);
-      },
-      deleteAllNodes: () => { // Added
+      deleteAllNodes: () => {
         console.log("[PRELOAD] graph.deleteAllNodes 호출됨");
         return ipcRenderer.invoke("graph:deleteAllNodes");
       },
-      moveComplexNode: (params) => { // Added
-        console.log("[PRELOAD] graph.moveComplexNode 호출됨", params);
-        return ipcRenderer.invoke("graph:moveComplexNode", params);
+      moveComplexNode: (a_id, b_id, c_id) => {
+        console.log("[PRELOAD] graph.moveComplexNode 호출됨", { a_id, b_id, c_id });
+        return ipcRenderer.invoke("graph:moveComplexNode", { a_id, b_id, c_id });
       },
-      moveEmail: (params) => { // Added
-        console.log("[PRELOAD] graph.moveEmail 호출됨", params);
-        return ipcRenderer.invoke("graph:moveEmail", params);
+      processAndEmbedMessages: () => {
+        console.log("[PRELOAD] graph.processAndEmbedMessages 호출됨");
+        return ipcRenderer.invoke("graph:processAndEmbedMessages");
       },
-      getNodeEmails: (params) => { // Added
-        console.log("[PRELOAD] graph.getNodeEmails 호출됨", params);
-        return ipcRenderer.invoke("graph:getNodeEmails", params);
+      buildGraph: () => {
+        console.log("[PRELOAD] graph.buildGraph 호출됨");
+        return ipcRenderer.invoke("graph:buildGraph");
       },
-      createRelationship: (params) => { // Added
-        console.log("[PRELOAD] graph.createRelationship 호출됨", params);
-        return ipcRenderer.invoke("graph:createRelationship", params);
+      fetchNodes: (C_ID, C_type, IO_type) => {
+        console.log("[PRELOAD] graph.fetchNodes 호출됨", { C_ID, C_type, IO_type });
+        return ipcRenderer.invoke("graph:fetchNodes", { C_ID, C_type, IO_type });
       },
-      deleteRelationship: (params) => { // Added
-        console.log("[PRELOAD] graph.deleteRelationship 호출됨", params);
-        return ipcRenderer.invoke("graph:deleteRelationship", params); // Intentional: This was a copy-paste error in the previous step, should be graph:deleteRelationship
-      }
+      fetchEmails: (basic_C_ID, C_type, IO_type, in_data) => {
+        console.log("[PRELOAD] graph.fetchEmails 호출됨", { basic_C_ID, C_type, IO_type, in_data });
+        return ipcRenderer.invoke("graph:fetchEmails", { basic_C_ID, C_type, IO_type, in_data });
+      },
     },
 
     // 개발용 테스트 API 추가
