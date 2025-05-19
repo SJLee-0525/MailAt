@@ -227,11 +227,12 @@ export const syncFolder = async (
 
             // 캘린더 연동
             if (savedMessageResult && savedMessageResult.messageId) {
-              await handleCalendarIntegrationAfterSave(
+              handleCalendarIntegrationAfterSave(
                 savedMessageResult,
                 accountId,
                 parsedEmail,
-                errors
+                errors,
+                uid
               );
             }
           } catch (saveError) {
@@ -282,12 +283,12 @@ export const syncFolder = async (
 };
 
 /**
- * 메시지 저장 후 캘린더 통합 처리 (기존 로직과 거의 동일한 형태 유지)
+ * 메시지 저장 후 캘린더 통합 처리 (백그라운드 실행)
  * @param {Object} savedMessageResult - 저장된 메시지 결과
  * @param {Number} accountId - 계정 ID
  * @param {Object} parsedEmail - 파싱된 이메일 객체 (UID 포함)
- * @param {Array} errors - 에러 수집 배열 (mutate)
- * @param {Number} seq - 시퀀스 번호 (에러 로깅용)
+ * @param {Array} errors - 에러 수집 배열 (이 함수에서 직접 사용하지 않거나, 다른 방식으로 오류를 보고할 수 있음)
+ * @param {Number|String} seq - 시퀀스 번호 또는 고유 식별자 (에러 로깅용)
  */
 const handleCalendarIntegrationAfterSave = (
   savedMessageResult,
@@ -298,11 +299,13 @@ const handleCalendarIntegrationAfterSave = (
 ) => {
   if (savedMessageResult && savedMessageResult.messageId) {
     console.log(
-      `[ImapService] Message saved: ID ${savedMessageResult.messageId}, UID ${parsedEmail.uid}`
+      `[ImapService] Message saved: ID ${savedMessageResult.messageId}, UID ${parsedEmail.uid}. Initiating calendar processing in background.`
     );
 
-    const emailBodyForCalendar = savedMessageResult.bodyText;
+    const emailBodyForCalendar = savedMessageResult.bodyHtml;
     if (emailBodyForCalendar && emailBodyForCalendar.trim() !== "") {
+      // await를 사용하지 않고 호출하여 백그라운드에서 실행되도록 함
+      // 반환된 프로미스에 .catch()를 연결하여 오류만 로깅
       calendarService
         .processNewEmailForCalendar({
           messageId: savedMessageResult.messageId,
@@ -310,18 +313,12 @@ const handleCalendarIntegrationAfterSave = (
           emailBody: emailBodyForCalendar,
         })
         .catch((calendarError) => {
+          // 백그라운드 작업의 오류는 여기서 별도로 로깅합니다.
           console.error(
-            `[ImapService] MessageID: ${savedMessageResult.messageId}, UID: ${parsedEmail.uid} - 캘린더 처리 중 오류 (동기화는 계속):`,
+            `[ImapService] Background Calendar Processing Error for MessageID: ${savedMessageResult.messageId}, UID: ${parsedEmail.uid} (Seq: ${seq}):`,
             calendarError.message
           );
-
-          errors.push({
-            seq,
-            uid: parsedEmail.uid,
-            messageId: savedMessageResult.messageId,
-            error: `CalendarService Error: ${calendarError.message}`,
-            action: "calendar_process_error",
-          });
+          // 필요하다면, 이 오류 정보를 별도의 로그 파일이나 모니터링 시스템으로 보낼 수 있습니다.
         });
     } else {
       console.log(
@@ -329,15 +326,11 @@ const handleCalendarIntegrationAfterSave = (
       );
     }
   } else {
+    const logUID = parsedEmail ? parsedEmail.uid : "N/A";
+    const logMessageId = savedMessageResult ? savedMessageResult.messageId : "N/A";
     console.log(
-      `[ImapService] MessageID: ${savedMessageResult.messageId} - 메시지 저장 실패`
+      `[ImapService] UID: ${logUID}, MessageID: ${logMessageId} - Invalid message save result, skipping calendar processing.`
     );
-    errors.push({
-      seq,
-      uid: parsedEmail.uid,
-      error: "Message save failed",
-      action: "message_save_error",
-    });
   }
 };
 
