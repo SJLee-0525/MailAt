@@ -57,6 +57,35 @@ interface ElectronAPI {
     delete(accountId: number): Promise<{ success: boolean }>;
   };
 
+  // IMAP 관련 API
+  imap: {
+    // 최신 이메일 동기화
+    syncLatest(accountId: number): Promise<{
+      success: boolean;
+      data: any;
+    }>;
+
+    // 특정 폴더 동기화
+    syncFolder({
+      accountId,
+      folderName,
+      limit,
+    }: {
+      accountId: number;
+      folderName: string;
+      limit?: number;
+    }): Promise<{
+      success: boolean;
+      data: any;
+    }>;
+
+    // IMAP 연결 테스트
+    test(config: any): Promise<{
+      success: boolean;
+      data: any;
+    }>;
+  };
+
   // 이메일 관련 API
   email: {
     // 폴더 목록 조회

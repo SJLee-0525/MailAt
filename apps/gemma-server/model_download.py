@@ -1,10 +1,10 @@
 from llama_cpp import Llama
 
 llm = Llama.from_pretrained(
-    # repo_id="google/gemma-3-4b-it-qat-q4_0-gguf",
-    # filename="gemma-3-4b-it-q4_0.gguf",
-    repo_id="tensorblock/gemma-3-4b-it-GGUF",
-    filename="gemma-3-4b-it-Q2_K.gguf",
+    repo_id="google/gemma-3-4b-it-qat-q4_0-gguf",
+    filename="gemma-3-4b-it-q4_0.gguf",
+    # repo_id="tensorblock/gemma-3-4b-it-GGUF",
+    # filename="gemma-3-4b-it-Q2_K.gguf",
     chat_format="gemma",
     local_dir="./models",
     local_dir_use_symlinks=False,

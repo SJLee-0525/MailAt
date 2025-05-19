@@ -4,6 +4,8 @@ import accountRepository from "../repositories/accountRepository.js";
 import messageRepository from "../repositories/messageRepository.js";
 import folderRepository from "../repositories/folderRepository.js";
 import { parseRawEmail } from "../utils/emailParser.js";
+import calendarService from "./calendarService.js";
+import syncManager from "../utils/syncManager.js";
 
 /**
  * IMAP 서버 인증 테스트
@@ -52,198 +54,6 @@ export const testImapAuthentication = async (config) => {
 };
 
 /**
- * 안전하게 메시지 가져오기 (최적화된 전략)
- * @param {ImapWrapper} imap - IMAP 인스턴스
- * @param {String} mailbox - 메일박스 이름
- * @param {Number} seq - 시퀀스 번호
- * @param {Number} totalMessages - 전체 메시지 수
- * @returns {Promise<Object>} { success, data, error }
- */
-const fetchMessageSafely = async (imap, mailbox, seq, totalMessages) => {
-  console.log(`시퀀스 ${seq} 가져오기 시도 (전체: ${totalMessages})`);
-
-  // 메시지가 실제로 존재하는지 먼저 확인
-  if (seq < 1 || seq > totalMessages) {
-    console.log(`시퀀스 ${seq}는 범위를 벗어남 (1-${totalMessages})`);
-    return { success: false, error: "시퀀스 번호가 범위를 벗어남" };
-  }
-
-  // 전략 배열 - 가장 가능성 높은 순서로 정렬
-  const strategies = [
-    { desc: "기본 시퀀스", value: seq },
-    { desc: "0-기반 인덱스", value: seq - 1 },
-  ];
-
-  // 특정 시퀀스에 대한 특별 처리
-  if (seq === totalMessages) {
-    // 마지막 메시지는 다른 전략이 필요할 수 있음
-    strategies.push(
-      { desc: "마지막 메시지 특별 처리", value: totalMessages - 1 },
-      { desc: "역순 첫 번째", value: 0 }
-    );
-  }
-
-  for (const strategy of strategies) {
-    try {
-      // 인덱스가 유효한 범위인지 확인
-      if (strategy.value < 0) {
-        console.log(`${strategy.desc}: 음수 인덱스 스킵 (${strategy.value})`);
-        continue;
-      }
-
-      console.log(`${strategy.desc} 시도: ${strategy.value}`);
-      const rawMessage = imap.fetchOne(mailbox, strategy.value);
-
-      if (rawMessage && rawMessage.length > 0) {
-        console.log(
-          `${strategy.desc} 성공! (크기: ${rawMessage.length} bytes)`
-        );
-        return { success: true, data: rawMessage };
-      } else {
-        console.log(`${strategy.desc}: 빈 메시지`);
-      }
-    } catch (error) {
-      console.log(`${strategy.desc} 실패: ${error.message}`);
-
-      // 특정 에러 유형에 대한 처리
-      if (error.message.includes("invalid vector subscript")) {
-        // 인덱스 에러는 다음 전략 시도
-        continue;
-      } else if (error.message.includes("Fetching message failure")) {
-        // 메시지가 실제로 없을 수 있음
-        if (strategy.value === 0) {
-          console.log("메시지가 실제로 존재하지 않을 수 있음");
-          return { success: false, error: "메시지가 존재하지 않음" };
-        }
-        continue;
-      } else {
-        // 다른 에러는 즉시 반환
-        return { success: false, error: error.message };
-      }
-    }
-  }
-
-  return {
-    success: false,
-    error: "모든 인덱싱 전략 실패",
-  };
-};
-
-/**
- * IMAP 서버의 인덱싱 방식 자동 감지
- * @param {ImapWrapper} imap - IMAP 인스턴스
- * @param {String} mailbox - 메일박스 이름
- * @returns {Object} { indexingType, quirks }
- */
-const detectImapIndexing = (imap, mailbox) => {
-  try {
-    const selectResult = imap.select(mailbox);
-    const total = selectResult.messages_no;
-
-    const quirks = [];
-    let indexingType = "1-based"; // 기본값
-
-    // 첫 번째 메시지 테스트
-    try {
-      imap.fetchOne(mailbox, 1);
-    } catch (e) {
-      try {
-        imap.fetchOne(mailbox, 0);
-        indexingType = "0-based";
-      } catch (e2) {
-        quirks.push("first-message-issue");
-      }
-    }
-
-    // 마지막 메시지 테스트
-    try {
-      imap.fetchOne(mailbox, total);
-    } catch (e) {
-      try {
-        imap.fetchOne(mailbox, total - 1);
-        quirks.push("last-message-needs-decrement");
-      } catch (e2) {
-        quirks.push("last-message-inaccessible");
-      }
-    }
-
-    // 특정 문제 시퀀스 검사
-    const problemSequences = [];
-
-    // 중간 지점 몇 개 테스트
-    const testPoints = [
-      Math.floor(total * 0.25),
-      Math.floor(total * 0.5),
-      Math.floor(total * 0.75),
-    ];
-
-    for (const seq of testPoints) {
-      try {
-        imap.fetchOne(mailbox, seq);
-      } catch (e) {
-        try {
-          imap.fetchOne(mailbox, seq - 1);
-          problemSequences.push(seq);
-        } catch (e2) {
-          // 둘 다 실패
-        }
-      }
-    }
-
-    if (problemSequences.length > 0) {
-      quirks.push(`problem-sequences: ${problemSequences.join(",")}`);
-    }
-
-    return {
-      indexingType,
-      quirks,
-      totalMessages: total,
-    };
-  } catch (error) {
-    console.error("IMAP 인덱싱 감지 실패:", error);
-    return {
-      indexingType: "unknown",
-      quirks: ["detection-failed"],
-      error: error.message,
-    };
-  }
-};
-
-/**
- * 메시지 정보 디버깅
- * @param {ImapWrapper} imap - IMAP 인스턴스
- * @param {String} mailbox - 메일박스 이름
- * @param {Number} totalMessages - 전체 메시지 수
- */
-const debugMessageInfo = (imap, mailbox, totalMessages) => {
-  console.log("\n=== IMAP 메시지 정보 디버깅 ===");
-  console.log(`메일박스: ${mailbox}`);
-  console.log(`총 메시지 수: ${totalMessages}`);
-
-  // 처음 몇 개와 마지막 몇 개 메시지만 테스트
-  const testSequences = [
-    1,
-    2,
-    3,
-    totalMessages - 2,
-    totalMessages - 1,
-    totalMessages,
-  ];
-
-  for (const seq of testSequences) {
-    if (seq < 1 || seq > totalMessages) continue;
-
-    try {
-      const exists = imap.fetchOne(mailbox, seq) ? "존재" : "없음";
-      console.log(`시퀀스 ${seq}: ${exists}`);
-    } catch (error) {
-      console.log(`시퀀스 ${seq}: 에러 - ${error.message}`);
-    }
-  }
-  console.log("=========================\n");
-};
-
-/**
  * 최신 이메일 동기화 (모든 중요 폴더에서)
  * @param {Number} accountId - 계정 ID
  * @returns {Promise<Object>} 동기화 결과
@@ -265,7 +75,7 @@ export const syncLatestEmails = async (accountId) => {
 };
 
 /**
- * 특정 폴더 동기화
+ * 특정 폴더 동기화 (UID 기반)
  * @param {Number} accountId - 계정 ID
  * @param {String} folderName - 폴더 이름
  * @param {Number} limit - 가져올 메시지 개수 제한
@@ -279,172 +89,255 @@ export const syncFolder = async (
   let imap = null;
 
   try {
+    // 폴더 동기화 잠금 획득
+    await syncManager.acquireLock(accountId, folderName);
+    console.log(`[SYNC] ${folderName} 폴더 동기화 시작 (잠금 획득)`);
+
     // 계정 정보 조회
     const accountInfo = await accountRepository.getAccountById(accountId);
     if (!accountInfo) {
       throw new Error(`계정 ID(${accountId})를 찾을 수 없습니다.`);
     }
 
-    // IMAP 연결 및 인증
-    imap = new ImapWrapper(accountInfo.imapHost, accountInfo.imapPort);
-    imap.authenticate(accountInfo.email, accountInfo.password);
-
-    // 폴더 선택
-    const selectResult = imap.select(folderName);
-    console.log(`Selected folder ${folderName}:`, selectResult);
-
-    // 폴더 정보 DB에 저장/업데이트
+    // 폴더 ID 조회 또는 생성
     const folderId = await folderRepository.getOrCreateFolder(
       accountId,
       folderName
     );
 
-    // 폴더 메타데이터 업데이트
-    await folderRepository.updateFolderMetadata({
-      folderId,
-      uidNext: selectResult.uid_next,
-      uidValidity: selectResult.uid_validity,
-      messagesTotal: selectResult.messages_no,
-      messagesRecent: selectResult.messages_recent,
-      messagesUnseen: selectResult.messages_unseen,
-    });
-
-    // 동기화할 메시지 범위 계산
-    const totalMessages = selectResult.messages_no;
-    if (!totalMessages || totalMessages === 0) {
-      return {
-        success: true,
-        syncedCount: 0,
-        folderName,
-        message: "폴더가 비어있습니다.",
-      };
-    }
-
-    const startSeq = Math.max(1, totalMessages - limit + 1);
-    const endSeq = totalMessages;
+    // 기존 UID 목록 조회 - 메모리에 저장하여 비교 속도 개선
+    const existingUidsResult = await messageRepository.getExistingUids(
+      accountId,
+      folderId
+    );
+    const existingUidsSet = new Set(existingUidsResult);
 
     console.log(
-      `폴더 ${folderName} 동기화: ${startSeq}-${endSeq} (전체: ${totalMessages})`
+      `[SYNC] 폴더 ${folderName}의 기존 UID 개수: ${existingUidsSet.size}`
     );
 
-    let syncedCount = 0;
-    const errors = [];
-    const skippedMessages = [];
+    // IMAP 연결 및 인증
+    imap = new ImapWrapper(accountInfo.imapHost, accountInfo.imapPort);
+    imap.authenticate(accountInfo.email, accountInfo.password);
 
-    // 메시지 가져오기 및 저장
-    for (let seq = endSeq; seq >= startSeq; seq--) {
-      try {
-        // 안전하게 메시지 가져오기
-        const fetchResult = await fetchMessageSafely(
-          imap,
+    // 폴더 선택 및 정보 가져오기
+    try {
+      const selectResult = imap.select(folderName);
+      console.log(`[SYNC] 폴더 ${folderName} 선택:`, selectResult);
+
+      // 폴더 메타데이터 업데이트
+      await folderRepository.updateFolderMetadata({
+        folderId,
+        uidNext: selectResult.uid_next,
+        uidValidity: selectResult.uid_validity,
+        messagesTotal: selectResult.messages_no,
+        messagesRecent: selectResult.messages_recent,
+        messagesUnseen: selectResult.messages_unseen,
+      });
+
+      // 동기화할 메시지 범위 계산
+      const totalMessages = selectResult.messages_no;
+      if (!totalMessages || totalMessages === 0) {
+        return {
+          success: true,
+          syncedCount: 0,
           folderName,
-          seq,
-          totalMessages
-        );
-
-        if (!fetchResult.success) {
-          errors.push({
-            seq,
-            error: fetchResult.error,
-            action: "fetch_failed",
-          });
-          skippedMessages.push(seq);
-          continue;
-        }
-
-        const rawMessage = fetchResult.data;
-
-        if (!rawMessage || rawMessage.length === 0) {
-          skippedMessages.push(seq);
-          continue;
-        }
-
-        const parsedEmail = await parseRawEmail(rawMessage);
-        parsedEmail.uid = seq.toString();
-
-        const messageData = {
-          ...parsedEmail,
-          accountId,
-          folderId,
-          isRead: false,
-          isFlagged: false,
+          message: "폴더가 비어있습니다.",
         };
-
-        await messageRepository.saveMessage(messageData);
-        syncedCount++;
-      } catch (error) {
-        errors.push({
-          seq,
-          error: error.message,
-          action: "process_error",
-        });
       }
-    }
 
-    return {
-      success: true,
-      syncedCount,
-      totalProcessed: endSeq - startSeq + 1,
-      totalMessages,
-      folderName,
-      folderId,
-      errors,
-      skippedMessages,
-    };
+      // UID 목록 가져오기
+      const uids = imap.searchAll(folderName);
+      console.log(`[SYNC] searchAll 결과 UID 수: ${uids.length}`);
+
+      if (!uids || uids.length === 0) {
+        return {
+          success: true,
+          syncedCount: 0,
+          folderName,
+          message: "가져올 UID가 없습니다.",
+        };
+      }
+
+      // UID 오름차순 정렬 (오래된 순)
+      const sortedUids = [...uids].sort((a, b) => b - a);
+
+      // 최신 limit개만 선택
+      const latestUids = sortedUids.slice(0, limit);
+
+      // 이미 존재하는 UID 필터링
+      const newUids = latestUids.filter(
+        (uid) => !existingUidsSet.has(uid.toString())
+      );
+      console.log(
+        `[SYNC] 처리할 새로운 UID ${newUids.length}개, 최신 UID ${latestUids.length}개`
+      );
+
+      // 중요: 가져온 UID를 오래된 순서로 다시 정렬하여 처리
+      // 이렇게 하면 오래된 메시지가 작은 message_id를 갖게 됨
+      const orderedNewUids = [...newUids].sort((a, b) => a - b);
+
+      let syncedCount = 0;
+      const errors = [];
+      const skippedMessages = [];
+
+      // 오래된 순서대로 처리
+      for (const uid of orderedNewUids) {
+        try {
+          console.log(`[SYNC] UID ${uid} 처리 중...`);
+          const rawMessage = imap.fetchByUid(folderName, uid);
+
+          if (!rawMessage || rawMessage.length === 0) {
+            console.log(`[SYNC] UID ${uid} 메시지 빈 내용`);
+            skippedMessages.push({ uid, reason: "empty_content" });
+            continue;
+          }
+
+          const parsedEmail = await parseRawEmail(rawMessage);
+          parsedEmail.uid = uid.toString();
+
+          // 메시지 저장
+          const messageData = {
+            ...parsedEmail,
+            accountId,
+            folderId,
+            isRead: false,
+            isFlagged: false,
+          };
+
+          // 다시 한번 UID 중복 체크
+          const existingMessage = await messageRepository.findMessageByUid(
+            accountId,
+            folderId,
+            uid.toString()
+          );
+
+          if (existingMessage) {
+            console.log(`[SYNC] UID ${uid} 이미 존재하므로 건너뜁니다.`);
+            continue;
+          }
+
+          try {
+            const savedMessageResult =
+              await messageRepository.saveMessage(messageData);
+            syncedCount++;
+            console.log(
+              `[SYNC] UID ${uid} 저장 성공 (ID: ${savedMessageResult.messageId})`
+            );
+
+            // 캘린더 연동
+            if (savedMessageResult && savedMessageResult.messageId) {
+              await handleCalendarIntegrationAfterSave(
+                savedMessageResult,
+                accountId,
+                parsedEmail,
+                errors
+              );
+            }
+          } catch (saveError) {
+            console.error(`[SYNC] UID ${uid} 저장 실패:`, saveError.message);
+            errors.push({
+              uid,
+              error: saveError.message,
+              action: "message_save_error",
+            });
+          }
+        } catch (fetchError) {
+          console.error(`[SYNC] UID ${uid} 가져오기 실패:`, fetchError.message);
+          errors.push({
+            uid,
+            error: fetchError.message,
+            action: "fetch_by_uid_failed",
+          });
+        }
+      }
+
+      return {
+        success: true,
+        syncedCount,
+        totalAvailable: totalMessages,
+        processedCount: newUids.length,
+        skippedCount: latestUids.length - newUids.length,
+        folderName,
+        folderId,
+        errors: errors.length > 0 ? errors : undefined,
+        skippedMessages:
+          skippedMessages.length > 0 ? skippedMessages : undefined,
+      };
+    } catch (selectError) {
+      console.error(`[SYNC] 폴더 '${folderName}' 선택 오류:`, selectError);
+      throw new Error(`폴더 선택 실패: ${selectError.message}`);
+    }
   } catch (error) {
-    console.error("폴더 동기화 오류:", error);
+    console.error("[SYNC] 폴더 동기화 오류:", error);
     throw new Error(`폴더 동기화 실패: ${error.message}`);
   } finally {
+    // 자원 정리
     imap = null;
+
+    // 폴더 동기화 잠금 해제
+    syncManager.releaseLock(accountId, folderName);
+    console.log(`[SYNC] ${folderName} 폴더 동기화 완료 (잠금 해제)`);
   }
 };
 
 /**
- * IMAP 메시지 범위 확인 (디버깅용)
- * @param {ImapWrapper} imap - IMAP 인스턴스
- * @param {String} mailbox - 메일박스 이름
- * @returns {Promise<Object>} 메시지 범위 정보
+ * 메시지 저장 후 캘린더 통합 처리 (기존 로직과 거의 동일한 형태 유지)
+ * @param {Object} savedMessageResult - 저장된 메시지 결과
+ * @param {Number} accountId - 계정 ID
+ * @param {Object} parsedEmail - 파싱된 이메일 객체 (UID 포함)
+ * @param {Array} errors - 에러 수집 배열 (mutate)
+ * @param {Number} seq - 시퀀스 번호 (에러 로깅용)
  */
-const checkMessageRange = async (imap, mailbox) => {
-  try {
-    const selectResult = imap.select(mailbox);
-    const total = selectResult.messages_no;
+const handleCalendarIntegrationAfterSave = (
+  savedMessageResult,
+  accountId,
+  parsedEmail,
+  errors,
+  seq
+) => {
+  if (savedMessageResult && savedMessageResult.messageId) {
+    console.log(
+      `[ImapService] Message saved: ID ${savedMessageResult.messageId}, UID ${parsedEmail.uid}`
+    );
 
-    // 실제 접근 가능한 메시지 범위 확인
-    let firstValid = null;
-    let lastValid = null;
+    const emailBodyForCalendar = savedMessageResult.bodyText;
+    if (emailBodyForCalendar && emailBodyForCalendar.trim() !== "") {
+      calendarService
+        .processNewEmailForCalendar({
+          messageId: savedMessageResult.messageId,
+          accountId: accountId,
+          emailBody: emailBodyForCalendar,
+        })
+        .catch((calendarError) => {
+          console.error(
+            `[ImapService] MessageID: ${savedMessageResult.messageId}, UID: ${parsedEmail.uid} - 캘린더 처리 중 오류 (동기화는 계속):`,
+            calendarError.message
+          );
 
-    // 앞에서부터 확인
-    for (let i = 0; i < Math.min(10, total); i++) {
-      try {
-        imap.fetchOne(mailbox, i);
-        firstValid = i;
-        break;
-      } catch (e) {
-        continue;
-      }
+          errors.push({
+            seq,
+            uid: parsedEmail.uid,
+            messageId: savedMessageResult.messageId,
+            error: `CalendarService Error: ${calendarError.message}`,
+            action: "calendar_process_error",
+          });
+        });
+    } else {
+      console.log(
+        `[ImapService] MessageID: ${savedMessageResult.messageId}, UID: ${parsedEmail.uid} - 캘린더 처리를 위한 이메일 본문이 없습니다.`
+      );
     }
-
-    // 뒤에서부터 확인
-    for (let i = total - 1; i >= Math.max(0, total - 10); i--) {
-      try {
-        imap.fetchOne(mailbox, i);
-        lastValid = i;
-        break;
-      } catch (e) {
-        continue;
-      }
-    }
-
-    return {
-      total,
-      firstValid,
-      lastValid,
-      indexingType: firstValid === 0 ? "0-based" : "1-based",
-    };
-  } catch (error) {
-    console.error("메시지 범위 확인 실패:", error);
-    return null;
+  } else {
+    console.log(
+      `[ImapService] MessageID: ${savedMessageResult.messageId} - 메시지 저장 실패`
+    );
+    errors.push({
+      seq,
+      uid: parsedEmail.uid,
+      error: "Message save failed",
+      action: "message_save_error",
+    });
   }
 };
 

@@ -33,6 +33,7 @@ private:
     // Search
     Napi::Value SearchMessages(const Napi::CallbackInfo& info);
     Napi::Value SearchByUid(const Napi::CallbackInfo& info);
+    Napi::Value SearchAll(const Napi::CallbackInfo& info);
 
     // Folder operations
     Napi::Value CreateFolder(const Napi::CallbackInfo& info);

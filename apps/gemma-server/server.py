@@ -5,7 +5,8 @@ import os
 import time
 import logging
 import threading
-import psutil # psutil 모듈 추가
+import psutil
+import json
 
 # --- 로거 설정 ---
 logging.basicConfig(level=logging.INFO,
@@ -26,7 +27,7 @@ def resource_path(relative_path):
 app = Flask(__name__)
 
 # GGUF_PATH 설정
-GGUF_MODEL_FILENAME = "gemma-3-4b-it-Q2_K.gguf"
+GGUF_MODEL_FILENAME = "gemma-3-4b-it-q4_0.gguf"
 GGUF_PATH = resource_path(os.path.join("models", GGUF_MODEL_FILENAME))
 
 # --- 리소스 모니터링 함수 ---
@@ -65,6 +66,7 @@ def get_model():
             MODEL_CACHE["llm"] = Llama(
                 model_path=GGUF_PATH,
                 chat_format="gemma",
+                n_ctx=2048,
                 n_gpu_layers=0,
                 verbose=False
             )
@@ -98,44 +100,91 @@ def summarize_email():
     t_start = time.perf_counter()
     logger.info(f"요약 요청 수신 - 이메일 앞부분: {email_text[:50]}...")
 
-    llm = get_model() # 캐시 또는 새로 로드된 모델 가져오기
+    llm = get_model()
 
     try:
+        weekday_map = ["월", "화", "수", "목", "금", "토", "일"]
+        current_weekday = time.localtime().tm_wday  # 0=월, 6=일
+        weekday_kr = weekday_map[current_weekday]
+
+        today_str = f"{time.localtime().tm_year}-{time.localtime().tm_mon:02d}-{time.localtime().tm_mday:02d}({weekday_kr})"
         messages = [
-            {"role": "system", "content": "이메일 요약 전문가."},
-            {"role": "user", "content": f"아래 이메일을 한줄로 요약: {email_text}"}
+            {
+                "role": "system",
+                "content": (
+                    "이메일 요약 전문가이자 일정/할일 추출자. "
+                    "절대 배열이나 불필요한 문장 없이, 정확히 JSON을 반환하세요: "
+                    "scheduled_at에는 괄호나 추가 설명 없이 YYYY-MM-DD(요일) 형태로만 작성하며 내일 회의일 경우 D+1 그리고 다음 주 라고 작성되어 있을 경우 요일을 계산하여 작성함, "
+                    "task도 단일 문자열(최대 10글자)만 작성하세요. "
+                    "Key값은 영어로 작성하고, 엔터나 백틱 등은 절대 포함하지 마세요."
+                )
+            },
+            {
+                "role": "system",
+                "content": (
+                    "Few-shot 예시:\n"
+                    "오늘 날짜 : 2025-05-15(목)\n"
+                    "이메일: '안녕하세요. 내일 회의가 있습니다.'\n"
+                    '응답: {"summary":"내일 회의 안내","scheduled_at":"2025-05-16(금)","task":"회의"}'
+                )
+            },
+            {
+                "role": "user",
+                "content": (
+                f"\n\n아래 이메일을 최대 두 줄로 요약하고, 일정과 할 일을 JSON으로 반환하세요.\n\n{email_text}"
+                    f'오늘 날짜 : {today_str}\n\n'
+                    '{"summary":"<single-line string>",'
+                    '"scheduled_at":"<YYYY-MM-DD(요일) 또는 null>",'
+                    '"task":"<10글자 이내 한 줄 문자열 또는 null>"}. '
+                )
+            }
         ]
 
-        response = llm.create_chat_completion(
-            messages,
-            max_tokens=256,
-            temperature=0.3,
-            top_p=0.9,
-            repeat_penalty=1.5,
-        )
-        summary = response["choices"][0]["message"]["content"].strip()
-        logger.debug("요약 생성 완료.")
+        JSON_SCHEMA = {
+            "type": "object",
+            "properties": {
+                "summary":  {"type": "string"},
+                "scheduled_at": {"type": "string"},
+                "task":     {"type": "string"}
+            },
+            "required": ["summary", "scheduled_at", "task"],
+            "additionalProperties": False
+        }
 
-        # 모델 사용 시간 갱신 (get_model에서 이미 처리됨)
+
+        response = llm.create_chat_completion(
+            messages=messages,
+            max_tokens=512,
+            temperature=0.0,
+            top_p=0.8,
+            repeat_penalty=1.2,
+            response_format={
+                "type": "json_object",
+                "schema": JSON_SCHEMA,
+            }
+        )
+        
+        content = response["choices"][0]["message"]["content"].strip()
+        print("응답 형식 : ",content)
+        print("===========================")
+        parsed = json.loads(content)
+
+        # 모델 응답을 JSON으로 파싱
+        summary = parsed.get("summary", "")
+        scheduled_at = parsed.get("scheduled_at", None)
+        task = parsed.get("task", None)
+
         with MODEL_CACHE["lock"]:
             MODEL_CACHE["last_used_time"] = time.time()
 
-
     except Exception as e:
         logger.error(f"요약 처리 중 오류 발생: {e}", exc_info=True)
-        # 오류 발생 시에도 모델 사용 시간을 갱신하여 바로 해제되지 않도록 할 수 있으나,
-        # 여기서는 오류 시에는 갱신하지 않아 다음 체크 때 해제될 수 있도록 함.
         return jsonify({"error": "요약 처리 중 오류가 발생했습니다."}), 500
-    # finally 블록에서 del llm 제거 (자동 해제 로직이 담당)
 
     t_end = time.perf_counter()
     logger.info(f"요약 요청 처리 완료. 소요 시간: {t_end - t_start:.2f}초")
 
-    return jsonify({"summary": summary})
+    return jsonify({"summary": summary, "scheduled_at": scheduled_at, "task": task})
 
 if __name__ == "__main__":
-    # 프로덕션 환경에서는 Flask 자체의 debug 모드를 False로 설정하는 것이 일반적입니다.
-    # Gunicorn, uWSGI 등의 WSGI 서버를 사용하는 것이 권장됩니다.
-    # 여기서는 간단하게 debug=False로 설정합니다.
-    # Flask의 기본 로거 외에 위에서 설정한 로거가 사용됩니다.
     app.run(host="0.0.0.0", port=5000, debug=False)
