@@ -203,9 +203,9 @@ const MailReplyForm = ({
   }
 
   return (
-    <div className="flex flex-col w-full h-full bg-light1 rounded-xl pointer-events-auto">
+    <div className="flex flex-col w-full h-full bg-light1 shadow-md pointer-events-auto">
       <MailFormHeader closeForm={setIsReplying} handleSubmit={handleSubmit} />
-      <div className="w-full h-full px-1 pb-1 bg-light1 rounded-b-xl overflow-y-auto">
+      <div className="w-full h-full px-1 pb-1 bg-white overflow-y-auto">
         <MailFormWithAI
           ref={titleRef}
           sender={sender}

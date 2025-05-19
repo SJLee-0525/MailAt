@@ -5,7 +5,8 @@ import MenuIcon from "@assets/icons/MenuIcon";
 import CalendarIcon from "@assets/icons/CalendarIcon";
 import SettingIcon from "@assets/icons/SettingIcon";
 
-import defaultProfile from "@assets/images/defaultProfile.png";
+import logo from "@assets/images/logo_blue.png";
+import whitelogo from "@assets/images/logo_white.png";
 
 import Settings from "@pages/settings/Settings";
 
@@ -38,35 +39,28 @@ const SideNav = () => {
   }
 
   return (
-    <div className="flex flex-col justify-between items=center w-14 py-9 h-screen bg-light1">
+    <div className="flex flex-col justify-between items=center w-14 py-9 h-full bg-bg">
       <nav className="flex flex-col justify-between items-center h-fit gap-1.5">
         <IconButton
           type="button"
-          className="p-2 transition-all duration-200 hover:bg-light2"
-          icon={<MenuIcon />}
+          className="p-2 transition-all duration-200 hover:bg-accept"
+          icon={
+            <img src={whitelogo} alt="logo" className="w-7 h-7 object-cover" />
+          }
           onClick={handleCloseAllModal}
         />
         <IconButton
           type="button"
-          className="p-2 transition-all duration-200 hover:bg-light2"
-          icon={<CalendarIcon />}
+          className="p-2 transition-all duration-200 hover:bg-accept"
+          icon={<CalendarIcon strokeColor="white" />}
           onClick={handleOpenCalendar}
         />
         <IconButton
           type="button"
-          className="p-2 transition-all duration-200 hover:bg-light2"
-          icon={<SettingIcon />}
+          className="p-2 transition-all duration-200 hover:bg-accept"
+          icon={<SettingIcon strokeColor="white" />}
           onClick={() => openModal(<Settings />)}
         />
-      </nav>
-      <nav className="flex flex-col items-center">
-        <div className="flex justify-center items-center w-8 h-8 rounded-full">
-          <img
-            src={defaultProfile}
-            alt="profile"
-            className="rounded-full object-cover"
-          />
-        </div>
       </nav>
     </div>
   );

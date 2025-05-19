@@ -7,17 +7,15 @@ import useUserProgressStore from "@stores/userProgressStore";
 
 import { getEmailsByThreadId } from "@apis/emailApi";
 
-import { AllEmails, EmailDetailByThreadId } from "@/types/emailTypes";
+import { EmailDetailByThreadId } from "@/types/emailTypes";
 
 import ChatHeader from "@components/chat/components/ChatHeader";
 import ChatContents from "@components/chat/components/ChatContents";
 
 const Chat = ({
   selectedMail,
-  onClose,
 }: {
-  selectedMail: AllEmails | null;
-  onClose: () => void;
+  selectedMail: { messageId: number; fromEmail: string } | null;
 }) => {
   const { user } = useAuthenticateStore();
   const { chattingIsClosing } = useUserProgressStore();
@@ -49,13 +47,10 @@ const Chat = ({
 
   return (
     <div
-      className={`absolute z-10 flex flex-col w-md min-w-md h-full max-h-full bg-light1 rounded-xl ${chattingIsClosing ? "chat-is-closing" : "chat-is-open"}`}
+      className={`absolute z-10 flex flex-col w-md min-w-md h-full max-h-full bg-light1 ${chattingIsClosing ? "chat-is-closing" : "chat-is-open"}`}
     >
-      <ChatHeader
-        contact={chatData ? chatData.contact : null}
-        onClose={onClose}
-      />
-      <div className="w-full h-full px-1 pb-1 bg-light1 rounded-b-xl overflow-y-auto">
+      <ChatHeader contact={chatData ? chatData.contact : null} />
+      <div className="w-full h-full px-1 pb-1 bg-white rounded-b-xl overflow-y-auto">
         <ChatContents
           contactEmail={chatData ? chatData.contact.email : null}
           chatData={chatData ? chatData.messages : []}

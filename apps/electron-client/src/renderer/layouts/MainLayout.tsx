@@ -25,7 +25,7 @@ const PopUpLayout = () => {
   }
 
   return (
-    <div className="absolute top-0 right-0 flex flex-row-reverse p-1 gap-1.5 w-full h-full pointer-events-none">
+    <div className="absolute top-0 right-0 flex flex-row-reverse w-full h-full pointer-events-none">
       {inboxIsOpen && !isReplying && <Inbox />}
       {selectedMail !== null && <DetailEmail />}
     </div>
@@ -46,7 +46,7 @@ const MainLayout = () => {
   );
 
   return (
-    <div className="flex w-screen h-screen font-pre-regular">
+    <div className="flex w-full h-full font-pre-regular">
       <SideNav />
       <main className="relative flex-1 overflow-hidden">
         <div className="flex w-full h-full transition-all duration-300 ease-in-out">

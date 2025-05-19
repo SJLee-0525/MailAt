@@ -42,10 +42,10 @@ interface CtxMenuState {
 
 // 줌 및 애니메이션 관련 상수 정의
 const INITIAL_ZOOM_LEVEL = 6.5;
-const NODE_DETAIL_ZOOM_LEVEL = 45;
+const NODE_DETAIL_ZOOM_LEVEL = 120;
 const NEW_GRAPH_APPEAR_ZOOM_LEVEL = INITIAL_ZOOM_LEVEL / 2.5; // 새 그래프가 나타날 때 초기 줌 레벨
-const ZOOM_DURATION = 400;
-const FADE_DURATION = 350;
+const ZOOM_DURATION = 2000;
+const FADE_DURATION = 2000;
 
 const EmailGraph = memo(
   ({ rawNodes, rawEmails, onSelect, onMerge, onNavigateBack }: Props) => {
@@ -120,17 +120,13 @@ const EmailGraph = memo(
     // 그래프 데이터가 바뀌면 줌 리셋 및 투명도 복원
     useEffect(() => {
       if (fgRef.current && graph.nodes.length > 0 && w > 0 && h > 0) {
-        const meNode = graph.nodes.find((n) => n.id === 0);
+        // const meNode = graph.nodes.find((n) => n.id === 0);
 
         if (isTransitioning) {
           // 트랜지션 중 새 데이터 도착 시 (클릭/뒤로가기 후)
-          if (
-            meNode &&
-            typeof meNode.x === "number" &&
-            typeof meNode.y === "number"
-          ) {
-            fgRef.current.centerAt(meNode.x, meNode.y, 0); // 즉시 중앙 정렬
-          }
+
+          fgRef.current.centerAt(0, 0, 0); // 즉시 중앙 정렬
+
           // 그래프는 현재 투명도 0 상태여야 함
           fgRef.current.zoom(NEW_GRAPH_APPEAR_ZOOM_LEVEL, 0); // 즉시 "작은" 크기로 줌 설정
 
@@ -141,24 +137,11 @@ const EmailGraph = memo(
           animateGraphOpacity(1, FADE_DURATION, () => {
             setIsTransitioning(false); // 페이드 인 완료 시 플래그 해제
           });
-
-          // 중앙 정렬
-          if (
-            meNode &&
-            typeof meNode.x === "number" &&
-            typeof meNode.y === "number"
-          ) {
-            fgRef.current.centerAt(meNode.x, meNode.y, FADE_DURATION);
-          }
         } else {
           // 초기 로드 또는 트랜지션과 무관한 데이터 변경 시
-          if (
-            meNode &&
-            typeof meNode.x === "number" &&
-            typeof meNode.y === "number"
-          ) {
-            fgRef.current.centerAt(meNode.x, meNode.y, 0); // 즉시 중앙 정렬
-          }
+
+          fgRef.current.centerAt(0, 0, 0); // 즉시 중앙 정렬
+
           fgRef.current.zoom(INITIAL_ZOOM_LEVEL, 0); // 즉시 최종 줌 레벨로 설정
 
           currentOpacityRef.current = 1; // 투명도 전체 설정
@@ -219,7 +202,7 @@ const EmailGraph = memo(
               typeof node.x === "number" &&
               typeof node.y === "number"
             ) {
-              fgRef.current.centerAt(node.x, node.y, ZOOM_DURATION);
+              fgRef.current.centerAt(node.x, node.y, 0);
               fgRef.current.zoom(NODE_DETAIL_ZOOM_LEVEL, ZOOM_DURATION);
             }
           }
@@ -228,6 +211,7 @@ const EmailGraph = memo(
           animateGraphOpacity(0, FADE_DURATION);
           setTimeout(() => {
             onSelect?.(node.id);
+            fgRef.current && fgRef.current.centerAt(0, 0, ZOOM_DURATION + 200);
           }, ZOOM_DURATION);
 
           console.log("단일클릭! (Zooming in or selecting Me)", node);

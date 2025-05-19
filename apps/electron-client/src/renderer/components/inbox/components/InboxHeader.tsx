@@ -9,7 +9,7 @@ const InboxHeader = () => {
   // const [isSearch, setIsSearch] = useState(false);
 
   return (
-    <div className="flex items-center justify-center w-full h-16 min-h-16 bg-light1 rounded-t-xl">
+    <div className="flex items-center justify-center w-full h-15 min-h-16 bg-white">
       <InboxSearchForm />
     </div>
     // <>

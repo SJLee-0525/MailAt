@@ -70,9 +70,11 @@
   --color-light1: #edeef7;
   --color-light2: #dfe0e2;
   --color-light3: #bcc0c3;
-  --color-bg: #f8f8f8;
+  --color-bg: #0f0f41;
+  --color-bg-dark: #040412;
   --color-icon: #7d7983;
-  --color-theme: #022d48;
+  --color-text: #000000;
+  --color-theme: #072491;
   --color-theme-dark: #022a44;
   --color-title: #505050;
   --color-content: #686868;
@@ -83,6 +85,65 @@
   --color-success: #0094ff;
   --color-warning: #ffb45c;
   --color-error: #ee5c5c;
+}
+
+/* 다크 테마 */
+html.theme-blue-dark {
+  --color-white: #101420;
+  --color-light: #1c2238;
+  --color-light1: #232c4a;
+  --color-light2: #2c3556;
+  --color-light3: #404e6e;
+  --color-bg: #0f0f41; /* 유지 */
+  --color-bg-dark: #040412; /* 유지 */
+  --color-icon: #ebebeb; /* 약간 더 푸르게 조정 */
+  --color-text: #ffffff; /* 유지 */
+  --color-theme: #072491; /* 유지 */
+  --color-theme-dark: #021a60; /* 조금 더 어둡고 진하게 조정 */
+  --color-title: #cdd3f1; /* 연한 블루화이트 */
+  --color-content: #b6b6b6; /* 중간 톤의 푸른 회색 */
+  --color-default: #5f6c94; /* 중립적인 푸른 회색 */
+  --color-accept: #0a5685; /* 유지 */
+  --color-disable: #3d425a; /* 어두운 회색 블루 */
+  --color-cancel: #c04a4a; /* 기존보다 어둡고 채도 낮춤 */
+  --color-success: #0094ff; /* 유지 */
+  --color-warning: #ffb45c; /* 유지 */
+  --color-error: #ee5c5c; /* 유지 */
+}
+
+html.theme-blue-dark #root {
+  background: linear-gradient(270deg, #022a44, #011725, #000);
+  background-size: 600% 600%;
+  animation: spaceBackground 16s ease infinite;
+}
+
+/* 주황색 따뜻한 테마 */
+html.theme-orange-warm {
+  --color-white: #ffffff;
+  --color-light: #fdf3ed;
+  --color-light1: #fae7dc;
+  --color-light2: #f1d6c4;
+  --color-light3: #d9b7a6;
+  --color-bg: #fffaf6;
+  --color-bg-dark: #f5eae0;
+  --color-icon: #a78c80;
+  --color-theme: #c1562e; /* 따뜻한 브릭/테라코타 오렌지 */
+  --color-theme-dark: #8b3b20;
+  --color-title: #5c4033;
+  --color-content: #7a5b4b;
+  --color-default: #d9b7a6;
+  --color-accept: #a8451e;
+  --color-disable: #e0d3ca;
+  --color-cancel: #b32222;
+  --color-success: #ff8b5c;
+  --color-warning: #ffb45c;
+  --color-error: #ee5c5c;
+}
+
+html.theme-orange-warm #root {
+  background: linear-gradient(270deg, #ffd180, #ffab40, #ffd180);
+  background-size: 600% 600%;
+  animation: spaceBackground 16s ease infinite;
 }
 
 /*
@@ -147,6 +208,12 @@ Tailwind 자체 플러그인 설정은 여전히 JS config에서 해 주셔야 �
   background-size: 600% 600%;
   animation: spaceBackground 16s ease infinite;
 } */
+
+#root {
+  background: linear-gradient(270deg, #ededed, #e5ebff, #ededed);
+  background-size: 600% 600%;
+  animation: spaceBackground 16s ease infinite;
+}
 
 .animate-fade-out {
   animation: fadeOut 0.3s ease-in-out;

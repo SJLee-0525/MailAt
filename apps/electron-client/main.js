@@ -268,6 +268,7 @@ async function createWindow() {
     width: 1200,
     height: 800,
     show: false, // 처음에는 창을 숨깁니다.
+    frame: false, // 기본 프레임 및 메뉴 바 제거
 
     // 최소 크기 설정
     minWidth: 800,
@@ -342,6 +343,35 @@ app.whenReady().then(async () => {
 
   // 윈도우 생성
   await createWindow();
+
+  // IPC 핸들러 등록 (사용자 정의 창 컨트롤)
+  ipcMain.on("window-close", () => {
+    if (mainWindow) {
+      mainWindow.close();
+    }
+  });
+
+  ipcMain.on("window-minimize", () => {
+    if (mainWindow) {
+      mainWindow.minimize();
+    }
+  });
+
+  ipcMain.on("window-toggle-maximize", () => {
+    if (mainWindow) {
+      if (mainWindow.isMaximized()) {
+        mainWindow.unmaximize();
+      } else {
+        mainWindow.maximize();
+      }
+    }
+  });
+
+  ipcMain.on("window-reload", () => {
+    if (mainWindow) {
+      mainWindow.webContents.reload();
+    }
+  });
 
   // macOS에서 앱 아이콘 클릭 시 윈도우 재생성
   app.on("activate", () => {

@@ -34,16 +34,16 @@ const InboxSearchForm = () => {
   }
 
   return (
-    <div className="relative flex justify-center items-center z-10 w-full h-full px-3 ">
+    <div className="relative flex justify-center items-center w-full h-full px-3">
       <form
-        className="flex items-center justify-between px-1.5 w-full h-12 bg-white text-gray-700 rounded-full"
+        className="flex items-center justify-between px-1.5 w-full h-12 bg-light1 text-gray-700 rounded-full"
         onSubmit={handleSearch}
       >
         <input
           name="searchQuery"
           type="text"
           placeholder="검색어를 입력하세요."
-          className="font-pre-regular w-full h-10 px-4 py-auto border-none rounded-full focus:outline-none"
+          className="font-pre-regular w-full h-full px-4 py-auto border-none rounded-full focus:outline-none"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -58,7 +58,7 @@ const InboxSearchForm = () => {
           <IconButton
             type="submit"
             icon={<SearchIcon strokeColor="white" width={20} height={20} />}
-            className="p-2.5 transition-all duration-300 bg-theme hover:bg-warning"
+            className="p-2 transition-all duration-300 bg-bg hover:bg-bg-dark"
           />
         </div>
       </form>

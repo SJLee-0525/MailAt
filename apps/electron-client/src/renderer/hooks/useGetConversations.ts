@@ -140,7 +140,6 @@ export const useInfiniteEmails = () => {
   // store 와 동기화 (append)
   useEffect(() => {
     if (query.data) {
-      console.log("iiiiiiiii 이메일 목록:", query.data);
       const flat = query.data.pages.flat();
       setConversations(flat);
     }

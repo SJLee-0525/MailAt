@@ -34,16 +34,18 @@ const SettingsWelcome = ({
   return (
     <>
       {user && user.username ? (
-        <div className="flex flex-col items-center justify-center w-full h-fit gap-3 p-4 text-center font-pre-bold">
+        <div className="flex flex-col items-center justify-center w-full h-fit gap-8 p-4 text-center font-pre-bold">
           <img
             src={defaultProfile}
             alt="1"
             className="w-40 h-40 aspect-[1/1] rounded-full object-cover"
           />
           <h2 className="font-pre-extra-bold text-xl">
-            안녕하세요! {user.username}님!
+            안녕하세요!
+            <br />
+            {user.username}님!
           </h2>
-          <button onClick={() => handleDeleteUser(user.userId)}>삭제</button>
+          {/* <button onClick={() => handleDeleteUser(user.userId)}>삭제</button> */}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center w-full h-fit gap-3 p-4 text-center font-pre-bold">

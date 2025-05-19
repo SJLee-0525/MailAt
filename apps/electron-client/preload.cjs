@@ -102,76 +102,90 @@ try {
         console.log("[PRELOAD] graph.createNode 호출됨", nodeData);
         return ipcRenderer.invoke("graph:createNode", nodeData);
       },
-      updateNode: (nodeId, updateData) => {
-        console.log("[PRELOAD] graph.updateNode 호출됨", {
-          nodeId,
-          updateData,
-        });
-        return ipcRenderer.invoke("graph:updateNode", { nodeId, updateData });
+      updateNode: (nodeId, nodeData) => {
+        console.log("[PRELOAD] graph.updateNode 호출됨", nodeId, nodeData);
+        return ipcRenderer.invoke("graph:updateNode", { nodeId, nodeData });
       },
       deleteNode: (nodeId) => {
         console.log("[PRELOAD] graph.deleteNode 호출됨", nodeId);
         return ipcRenderer.invoke("graph:deleteNode", nodeId);
       },
-      readNode: (params) => {
-        console.log("[PRELOAD] graph.readNode 호출됨", params);
-        return ipcRenderer.invoke("graph:readNode", params);
+      readNode: (nodeId) => {
+        console.log("[PRELOAD] graph.readNode 호출됨", nodeId);
+        return ipcRenderer.invoke("graph:readNode", nodeId);
       },
-      readMessage: (params) => {
-        console.log("[PRELOAD] graph.readMessage 호출됨", params);
-        return ipcRenderer.invoke("graph:readMessage", params);
+      readMessage: (messageId) => {
+        console.log("[PRELOAD] graph.readMessage 호출됨", messageId);
+        return ipcRenderer.invoke("graph:readMessage", messageId);
       },
-      deleteMessage: (params) => {
-        console.log("[PRELOAD] graph.deleteMessage 호출됨", params);
-        return ipcRenderer.invoke("graph:deleteMessage", params);
+      deleteMessage: (messageId) => {
+        console.log("[PRELOAD] graph.deleteMessage 호출됨", messageId);
+        return ipcRenderer.invoke("graph:deleteMessage", messageId);
       },
-      updateLabel: (params) => {
-        console.log("[PRELOAD] graph.updateLabel 호출됨", params);
-        return ipcRenderer.invoke("graph:updateLabel", params);
+      updateLabel: (nodeId, label) => {
+        console.log("[PRELOAD] graph.updateLabel 호출됨", nodeId, label);
+        return ipcRenderer.invoke("graph:updateLabel", { nodeId, label });
       },
-      searchByKeyword: (params) => {
-        console.log("[PRELOAD] graph.searchByKeyword 호출됨", params);
-        return ipcRenderer.invoke("graph:searchByKeyword", params);
+      searchByKeyword: (keyword) => {
+        console.log("[PRELOAD] graph.searchByKeyword 호출됨", keyword);
+        return ipcRenderer.invoke("graph:searchByKeyword", keyword);
       },
-      mergeNode: (params) => {
-        console.log("[PRELOAD] graph.mergeNode 호출됨", params);
-        return ipcRenderer.invoke("graph:mergeNode", params);
+      mergeNode: (sourceNodeId, targetNodeId) => {
+        console.log(
+          "[PRELOAD] graph.mergeNode 호출됨",
+          sourceNodeId,
+          targetNodeId
+        );
+        return ipcRenderer.invoke("graph:mergeNode", {
+          sourceNodeId,
+          targetNodeId,
+        });
       },
-      llmTagNode: (params) => {
-        console.log("[PRELOAD] graph.llmTagNode 호출됨", params);
-        return ipcRenderer.invoke("graph:llmTagNode", params);
+      llmTagNode: (nodeId) => {
+        console.log("[PRELOAD] graph.llmTagNode 호출됨", nodeId);
+        return ipcRenderer.invoke("graph:llmTagNode", nodeId);
       },
-      testGraph: (params) => {
-        console.log("[PRELOAD] graph.testGraph 호출됨", params); // Corrected console log
-        return ipcRenderer.invoke("graph:testGraph", params);
-      },
-      initializeGraphFromSQLite: () => { // Added
+      initializeGraphFromSQLite: () => {
         console.log("[PRELOAD] graph.initializeGraphFromSQLite 호출됨");
         return ipcRenderer.invoke("graph:initializeGraphFromSQLite");
       },
-      getIncomingNodes: (params) => { // Added
-        console.log("[PRELOAD] graph.getIncomingNodes 호출됨", params);
-        return ipcRenderer.invoke("graph:getIncomingNodes", params);
+      getIncomingNodes: (nodeId) => {
+        console.log("[PRELOAD] graph.getIncomingNodes 호출됨", nodeId);
+        return ipcRenderer.invoke("graph:getIncomingNodes", nodeId);
       },
-      getOutgoingNodes: (params) => { // Added
-        console.log("[PRELOAD] graph.getOutgoingNodes 호출됨", params);
-        return ipcRenderer.invoke("graph:getOutgoingNodes", params);
+      getOutgoingNodes: (nodeId) => {
+        console.log("[PRELOAD] graph.getOutgoingNodes 호출됨", nodeId);
+        return ipcRenderer.invoke("graph:getOutgoingNodes", nodeId);
       },
-      deleteAllNodes: () => { // Added
+      deleteAllNodes: () => {
         console.log("[PRELOAD] graph.deleteAllNodes 호출됨");
         return ipcRenderer.invoke("graph:deleteAllNodes");
       },
-      moveComplexNode: (params) => { // Added
-        console.log("[PRELOAD] graph.moveComplexNode 호출됨", params);
-        return ipcRenderer.invoke("graph:moveComplexNode", params);
+      moveComplexNode: (nodeId, targetNodeId) => {
+        console.log(
+          "[PRELOAD] graph.moveComplexNode 호출됨",
+          nodeId,
+          targetNodeId
+        );
+        return ipcRenderer.invoke("graph:moveComplexNode", {
+          nodeId,
+          targetNodeId,
+        });
       },
-      moveEmail: (params) => { // Added
-        console.log("[PRELOAD] graph.moveEmail 호출됨", params);
-        return ipcRenderer.invoke("graph:moveEmail", params);
+      moveEmail: (messageId, targetNodeId) => {
+        console.log(
+          "[PRELOAD] graph.moveEmail 호출됨",
+          messageId,
+          targetNodeId
+        );
+        return ipcRenderer.invoke("graph:moveEmail", {
+          messageId,
+          targetNodeId,
+        });
       },
-      getNodeEmails: (params) => { // Added
-        console.log("[PRELOAD] graph.getNodeEmails 호출됨", params);
-        return ipcRenderer.invoke("graph:getNodeEmails", params);
+      getNodeEmails: (nodeId) => {
+        console.log("[PRELOAD] graph.getNodeEmails 호출됨", nodeId);
+        return ipcRenderer.invoke("graph:getNodeEmails", nodeId);
       },
       createRelationship: (params) => { // Added
         console.log("[PRELOAD] graph.createRelationship 호출됨", params);
@@ -246,14 +260,20 @@ try {
         arch: process.arch,
       }),
     },
-  });
+    },
 
-  // 환경 정보 출력
-  console.log("[PRELOAD] Node.js 버전:", process.versions.node);
-  console.log("[PRELOAD] Electron 버전:", process.versions.electron);
-  console.log("[PRELOAD] Chrome 버전:", process.versions.chrome);
+    // 창 제어 API 추가
+    reloadWindow: () => ipcRenderer.send("window-reload"),
+    minimizeWindow: () => ipcRenderer.send("window-minimize"),
+    toggleMaximizeWindow: () => ipcRenderer.send("window-toggle-maximize"),
+    closeWindow: () => ipcRenderer.send("window-close"),
+
+    // 기타 유틸리티 (필요시 추가)
+    // 예: 파일 시스템 접근, 환경 변수 읽기 등
+  });
+  console.log("[PRELOAD] 🟢 electronAPI 노출 성공");
 } catch (error) {
-  console.error("[PRELOAD] 🔴 contextBridge 오류:", error);
+  console.error("[PRELOAD] 🔴 electronAPI 노출 실패:", error);
 }
 
-console.log("[PRELOAD] ✅ electronAPI가 성공적으로 등록됨");
+console.log("[PRELOAD] 🟢 preload.js 로드 완료");

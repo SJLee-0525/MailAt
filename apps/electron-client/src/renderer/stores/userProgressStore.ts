@@ -1,7 +1,5 @@
 import { create } from "zustand";
 
-import { AllEmails } from "@/types/emailTypes";
-
 interface UserProgressStore {
   bottomNavProgress: "search" | null;
   mailFormIsOpen: boolean;
@@ -10,7 +8,7 @@ interface UserProgressStore {
   calendarIsClosing: boolean;
   inboxIsOpen: boolean;
   inboxIsClosing: boolean;
-  selectedMail: AllEmails | null;
+  selectedMail: { messageId: number; fromEmail: string } | null;
   selectedMailIsClosing: boolean;
   isReplying: boolean;
   chattingIsOpen: boolean;
@@ -19,7 +17,9 @@ interface UserProgressStore {
   setMailFormIsOpen: (isOpen: boolean) => void;
   setInboxIsOpen: (isOpen: boolean) => void;
   setCalendarIsOpen: (isOpen: boolean) => void;
-  setSelectedMail: (email: AllEmails | null) => void;
+  setSelectedMail: (
+    email: { messageId: number; fromEmail: string } | null
+  ) => void;
   setIsReplying: (isReplying: boolean) => void;
   setChattingIsOpen: (isOpen: boolean) => void;
 }

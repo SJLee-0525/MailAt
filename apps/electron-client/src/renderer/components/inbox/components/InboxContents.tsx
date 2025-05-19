@@ -21,7 +21,7 @@ const InboxFolders = ({ folders }: { folders: Record<string, string[]> }) => {
   const { selectedFolder, setSelectedFolder } = useConservationsStore();
 
   return (
-    <div className="flex w-full h-fit p-1 gap-1 bg-white rounded-lg font-pre-bold overflow-x-auto hide-scrollbar">
+    <div className="flex w-full h-fit px-2.5 pb-2 gap-2 bg-white overflow-x-auto hide-scrollbar shadow-[0_2px_3px_-1px_rgba(0,0,0.1,0.1)]">
       {folders &&
         Object.keys(folders).map((folder) => {
           // 폴더 이름을 UTF-7로 디코딩
@@ -30,14 +30,14 @@ const InboxFolders = ({ folders }: { folders: Record<string, string[]> }) => {
           return (
             <span
               key={`${id}-${folder}`}
-              className={`flex justify-center items-center px-2 py-0.5 rounded-md text-center transition-all duration-200 ${folder === selectedFolder ? folders[folder][1] : folders[folder][0]}`}
+              className={`flex justify-center items-center px-2.5 py-0.5 rounded-md text-center transition-all duration-200 ${folder === selectedFolder ? folders[folder][1] : folders[folder][0]}`}
               onClick={
                 folder === selectedFolder
                   ? () => setSelectedFolder(null)
                   : () => setSelectedFolder(folder)
               }
             >
-              <p className="text-sm font-pre-regular whitespace-nowrap">
+              <p className="text-sm font-pre-semi-bold whitespace-nowrap">
                 {decodedFolder}
               </p>
             </span>
@@ -57,19 +57,23 @@ const InboxContents = () => {
 
   // 바닥 감시용 sentinel
   const { ref: bottomRef, inView } = useInView({
-    rootMargin: "20px", // 200px 전에 미리 로드
+    rootMargin: "200px", // 200px 전에 미리 로드
   });
 
   // sentinel 이 화면에 들어오면 다음 페이지 요청
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
+      console.log("[InboxContents] Fetching next page...");
       fetchNextPage();
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   async function openDetailEmail(email: AllEmails) {
     if (email.isRead) {
-      setSelectedMail(email);
+      setSelectedMail({
+        messageId: email.messageId,
+        fromEmail: email.fromEmail,
+      });
       return;
     }
 
@@ -80,7 +84,10 @@ const InboxContents = () => {
       });
 
       if (response.success) {
-        setSelectedMail(email);
+        setSelectedMail({
+          messageId: email.messageId,
+          fromEmail: email.fromEmail,
+        });
       }
     } catch (error) {
       console.error("Error marking email as read:", error);
@@ -88,10 +95,11 @@ const InboxContents = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-between w-full h-full p-2 gap-1 bg-white rounded-lg font-pre-bold ">
+    <div className="flex flex-col items-center justify-between w-full h-full pb-1.5 gap-1 bg-white rounded-lg">
       {folders && <InboxFolders folders={folders} />}
+
       {conversations && (
-        <div className="flex flex-col items-start w-full h-full p-2 gap-1 bg-white rounded-lg font-pre-bold overflow-y-auto hide-scrollbar">
+        <div className="flex flex-col items-start w-full h-full px-2 gap-2 bg-white rounded-lg overflow-y-auto hide-scrollbar">
           {conversations.map((email) => {
             return (
               <InboxContent
@@ -107,7 +115,7 @@ const InboxContents = () => {
           })}
 
           {/* 무한 스크롤 sentinel */}
-          <div ref={bottomRef} />
+          <div ref={bottomRef} className="min-h-1 max-h-1" />
         </div>
       )}
     </div>

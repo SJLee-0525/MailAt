@@ -203,6 +203,12 @@ interface ElectronAPI {
     success: boolean;
     messageId: number;
   }>;
+
+  // 창 제어 API
+  reloadWindow(): void;
+  minimizeWindow(): void;
+  toggleMaximizeWindow(): void;
+  closeWindow(): void;
 }
 
 // ② Window 타입 보강

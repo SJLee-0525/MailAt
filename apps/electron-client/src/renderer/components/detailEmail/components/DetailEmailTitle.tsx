@@ -104,7 +104,7 @@ const DetailEmailTitle = ({
       <div className="flex justify-between items-center w-full h-fit">
         <div className="flex items-center gap-2.5">
           <StarIcon width={22} height={22} />
-          <h1 className="font-pre-extra-bold text-xl">{subject}</h1>
+          <h1 className="font-pre-extra-bold text-xl text-text">{subject}</h1>
         </div>
 
         <span className="flex items-center gap-2">
@@ -123,7 +123,7 @@ const DetailEmailTitle = ({
               <ArrowDownIcon onClick={() => setIsExpanded(true)} />
             )}
             <div className="flex items-center justify-start gap-2">
-              <h3 className="font-pre-semi-bold font-sm whitespace-nowrap">
+              <h3 className="font-pre-semi-bold font-sm whitespace-nowrap text-text">
                 보낸 사람
               </h3>
               <span

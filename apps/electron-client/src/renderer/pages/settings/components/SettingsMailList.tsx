@@ -66,7 +66,7 @@ const InnerList = ({
   return (
     <div className="flex items-center justify-between p-2 w-full">
       <div className="flex justify-center items-center px-1 gap-3 w-fit h-fit">
-        <span className="bg-blue-700 rounded-full p-2">
+        <span className="bg-theme rounded-full p-2">
           {domain === "Gmail" ? (
             <GoogleIcon />
           ) : (
@@ -108,7 +108,7 @@ const SettingsMailList = ({
   onEdit: (account: CreateAccountResponse | null) => void;
 }) => {
   return (
-    <div className="flex flex-col justify-center items-center p-1 gap-1 rounded-2xl bg-white">
+    <div className="flex flex-col justify-center items-center p-1 gap-1 rounded-2xl border border-disable bg-white">
       {users.map((user, index) => (
         <span key={user.accountId} className="w-full h-fit">
           <InnerList user={user} onEdit={onEdit} />

@@ -1,6 +1,6 @@
 import { IconProps } from "@/types/iconProps";
 
-const CloseIcon = ({
+const MinimizeIcon = ({
   width = 24,
   height = 24,
   strokeColor = "white",
@@ -17,13 +17,14 @@ const CloseIcon = ({
       onClick={onClick}
     >
       <path
-        d="M6.4 19L5 17.6L10.6 12L5 6.4L6.4 5L12 10.6L17.6 5L19 6.4L13.4 12L19 17.6L17.6 19L12 13.4L6.4 19Z"
-        fill={strokeColor}
+        d="M6 12H18"
         stroke={strokeColor}
         strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );
 };
 
-export default CloseIcon;
+export default MinimizeIcon;
