@@ -1,3 +1,4 @@
+// src/types/attachmentTypes.ts
 export interface AttachmentInfo {
   attachmentId: number;
   messageId: number;
@@ -5,4 +6,34 @@ export interface AttachmentInfo {
   mimeType: string;
   path: string | null;
   size: number;
+}
+
+export interface Attachment {
+  id: number | string;
+  filename: string;
+  mimeType: string;
+  size: number;
+  path?: string | null;
+  contactName: string;
+  contactEmail: string;
+  messageSubject: string;
+  messageId: number;
+  createdAt: string;
+}
+
+export interface DateGroup {
+  date: string;
+  attachments: Attachment[];
+}
+
+export interface ContactGroup {
+  contactName: string;
+  contactEmail: string;
+  attachments: Attachment[];
+}
+
+export interface FileTypeGroup {
+  type: string;
+  label: string;
+  attachments: Attachment[];
 }
