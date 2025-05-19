@@ -191,6 +191,13 @@ try {
       }
     },
 
+    calendar: {
+      getEvents: (params) => { // params: { accountId, year, month }
+        console.log("[PRELOAD] calendar.getEvents 호출됨", params);
+        return ipcRenderer.invoke("calendar:getEvents", params);
+      }
+    },
+
     // 디버깅 도구
     debug: {
       ping: () => "pong", // 연결 테스트용
