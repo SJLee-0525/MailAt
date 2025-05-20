@@ -71,37 +71,25 @@ const CalendarContents = ({
 
               let className = "font-pre-semi-bold text-sm ";
               if (isCurrentMonth) {
-                className += isSelected
-                  ? "text-black bg-[#E7F0F6]"
-                  : "text-black";
+                className += isSelected ? "text-text bg-header " : "text-text ";
                 // 주말 색상 적용 (현재 달에만)
-                if (dayObj.dayIndexOfWeek === 0 && !isSelected)
-                  className += " text-error";
-                if (dayObj.dayIndexOfWeek === 6 && !isSelected)
-                  className += " text-success";
+                if (dayObj.dayIndexOfWeek === 0) className += "text-error ";
+                if (dayObj.dayIndexOfWeek === 6) className += "text-success ";
               } else {
-                className += "text-content bg-bg";
+                className += "text-content bg-calendardisalbed ";
               }
 
               let borderClassName = "border-light ";
-              if (Math.floor(i / 7) > 0) borderClassName += " border-t";
-              if (i % 7 > 0) borderClassName += " border-l";
+              if (Math.floor(i / 7) > 0) borderClassName += "border-t ";
+              if (i % 7 > 0) borderClassName += " border-l ";
 
               return (
                 <button
                   key={dayObj.date}
                   onClick={() => selectDate(dayObj.date)}
-                  className={`w-full h-full p-1 flex flex-col items-start justify-start ${className} ${borderClassName} hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-theme focus:z-10`}
+                  className={`w-full h-full p-1 flex flex-col items-start justify-start ${className} ${borderClassName} hover:bg-header focus:outline-none focus:z-10`}
                 >
-                  <div
-                    className={
-                      isSelected && isCurrentMonth
-                        ? "text-theme font-pre-bold"
-                        : ""
-                    }
-                  >
-                    {Number(dayObj.day)}
-                  </div>
+                  <div>{Number(dayObj.day)}</div>
                   <div className="flex flex-col gap-0.5 w-full h-fit mt-1 overflow-y-auto scrollbar-hide">
                     {daySchedules.slice(0, 2).map((scheduleItem) => (
                       <span

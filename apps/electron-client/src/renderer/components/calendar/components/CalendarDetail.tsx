@@ -10,10 +10,10 @@ const CalendarDetail = ({
 }) => {
   return (
     <div
-      className={`flex flex-col w-md min-w-md h-full max-h-ful bg-light1 rounded-xl pointer-events-auto ${isClosing ? "calendar-is-closing" : "calendar-is-open"}`}
+      className={`flex flex-col w-md min-w-md h-full max-h-full border-l border-light bg-header pointer-events-auto ${isClosing ? "calendar-is-closing" : "calendar-is-open"}`}
     >
       <CalendarDetailHeader selectedDate={selectedDate} />
-      <div className="w-full h-full px-1 pb-1 bg-light1 rounded-b-xl overflow-y-auto">
+      <div className="w-full h-full px-1 pb-1 bg-header overflow-y-auto text-text">
         <CalendarDetailContents />
       </div>
     </div>

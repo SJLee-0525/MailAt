@@ -22,7 +22,7 @@ const CalendarHeader = ({
   onClose: () => void;
 }) => {
   return (
-    <div className="flex items-center justify-start w-full h-16 min-h-16 px-4 font-pre-bold text-xl">
+    <div className="flex items-center justify-start w-full h-16 min-h-16 px-4 font-pre-bold text-xl text-text">
       <div className="flex items-center gap-2">
         <button onClick={handlePrevMonth} className="p-1">
           &lsaquo;

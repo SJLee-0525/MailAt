@@ -18,7 +18,7 @@ const PopUpLayout = () => {
 
   if (calendarIsOpen) {
     return (
-      <div className="absolute top-0 right-0 flex flex-row-reverse p-1 gap-1.5 w-full h-full pointer-events-none">
+      <div className="absolute top-0 right-0 flex flex-row-reverse p-1 w-full h-full pointer-events-none">
         <Calendar />
       </div>
     );
