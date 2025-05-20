@@ -9,16 +9,23 @@ const pythonScriptsDir = path.join(__dirname, "neo4jPythonModule");
 const pythonExecutable = "python"; // 또는 "python3" 등 Python 실행 파일 경로
 
 /**
- * Python 스크립트를 실행하고 결과를 반환하는 내부 함수
- * @param {string} scriptName 실행할 Python 스크립트 파일 이름 (예: "graph_operations.py")
+ * Python 스크립트 또는 실행 파일을 실행하고 결과를 반환하는 내부 함수
+ * @param {string} scriptName 실행할 Python 스크립트 파일 이름 (예: "graph_operations.py") 또는 실행 파일 이름 (예: "graph_operations.exe")
  * @param {string} operation 수행할 작업 이름
- * @param {object} args Python 스크립트에 전달할 인자 객체
- * @returns {Promise<object>} Python 스크립트의 JSON 출력 결과
+ * @param {object} args Python 스크립트 또는 실행 파일에 전달할 인자 객체
+ * @returns {Promise<object>} Python 스크립트 또는 실행 파일의 JSON 출력 결과
  */
 function runPythonScript(scriptName, operation, args = {}) {
   return new Promise((resolve, reject) => {
     const scriptPath = path.join(pythonScriptsDir, scriptName);
-    const pythonProcess = spawn(pythonExecutable, [scriptPath]);
+    let pythonProcess;
+
+    if (scriptName.toLowerCase().endsWith(".exe")) {
+      pythonProcess = spawn(scriptPath, []); // .exe 파일 직접 실행
+    } else {
+      // .exe가 아닌 경우 기존 로직대로 Python 인터프리터 사용 (주로 .py 파일 대상)
+      pythonProcess = spawn(pythonExecutable, [scriptPath]);
+    }
     
     let stdoutData = "";
     let stderrData = "";
@@ -80,81 +87,144 @@ function runPythonScript(scriptName, operation, args = {}) {
 }
 
 // --- Public API 함수들 ---
-
 export async function testConnection() {
   console.log("[neo4jAdapter] testConnection 호출됨");
-  return runPythonScript("graph_operations.py", "testConnection");
-  console.log("[neo4jAdapter] testConnection 호출됨 완료 ");
-}
-
-export async function deleteNode(nodeId) {
-  return runPythonScript("graph_operations.py", "deleteNode", { nodeId });
-}
-
-export async function updateLabel(C_ID, newLabel) {
-  return runPythonScript("graph_operations.py", "updateLabel", { C_ID, newLabel });
-}
-
-export async function mergeNode(from_C_ID, to_C_ID) {
-  return runPythonScript("graph_operations.py", "mergeNode", { from_C_ID, to_C_ID });
+  return runPythonScript("graph_operations.py", "test_connection");
 }
 
 export async function initializeGraphFromSQLite() {
-  return runPythonScript("graph_operations.py", "initializeGraphFromSQLite");
+  console.log("[neo4jAdapter] initializeGraphFromSQLite 호출됨");
+  return runPythonScript("graph_operations.py", "initialize_graph_from_sqlite");
+}
+
+export async function fetchNodes(C_ID, C_type, IO_type) {
+  console.log("[neo4jAdapter] fetchNodes 호출됨");
+  return runPythonScript("graph_operations.py", "read_node", { C_ID, C_type, IO_type });
+}
+
+export async function fetchEmails(basic_C_ID, C_type, IO_type, in_data = null) {
+  console.log("[neo4jAdapter] fetchEmails 호출됨");
+  return runPythonScript("graph_operations.py", "read_message", { basic_C_ID, C_type, IO_type, in_data });
+}
+
+export async function deleteNode(nodeId) {
+  console.log("[neo4jAdapter] deleteNode 호출됨");
+  return runPythonScript("graph_operations.py", "delete_node", { nodeId });
+}
+
+export async function mergeNode(from_C_ID, to_C_ID) {
+  console.log("[neo4jAdapter] mergeNode 호출됨");
+  return runPythonScript("graph_operations.py", "merge_node", { from_C_ID, to_C_ID });
+}
+
+export async function updateLabel(C_ID, newLabel) {
+  console.log("[neo4jAdapter] updateLabel 호출됨");
+  return runPythonScript("graph_operations.py", "update_label", { C_ID, newLabel });
 }
 
 export async function getIncomingNodes(node_name) {
-  return runPythonScript("graph_operations.py", "getIncomingNodes", { node_name });
+  console.log("[neo4jAdapter] getIncomingNodes 호출됨");
+  return runPythonScript("graph_operations.py", "get_incoming_nodes", { node_name });
 }
 
 export async function deleteAllNodes() {
-  return runPythonScript("graph_operations.py", "deleteAllNodes");
+  console.log("[neo4jAdapter] deleteAllNodes 호출됨");
+  return runPythonScript("graph_operations.py", "delete_all_nodes");
 }
 
 export async function moveComplexNode(a_id, b_id, c_id) {
-  return runPythonScript("graph_operations.py", "moveComplexNode", { a_id, b_id, c_id });
-}
-
-export async function processAndEmbedMessages() {
-  return runPythonScript("graph_operations.py", "processAndEmbedMessages");
+  console.log("[neo4jAdapter] moveComplexNode 호출됨");
+  return runPythonScript("graph_operations.py", "move_complex_node", { a_id, b_id, c_id });
 }
 
 export async function buildGraph() {
-  return runPythonScript("graph_operations.py", "buildGraph"); // Python 스크립트의 operation 이름은 'buildGraph'
+  console.log("[neo4jAdapter] buildGraph 호출됨");
+  return runPythonScript("graph_operations.py", "build_graph");
 }
 
-/**
- * 지정된 노드와 관련된 노드 정보를 가져옵니다.
- * @param {number} C_ID 중심 노드의 ID
- * @param {number} C_type 중심 노드의 타입 (0: Root, 1: Person, 2: Category, 3: Subcategory)
- * @param {number} IO_type 관계 방향 (1: incoming, 2: outgoing, 3: both)
- */
-export async function fetchNodes(C_ID, C_type, IO_type) {
-  return runPythonScript("graph_operations.py", "fetchNodes", { C_ID, C_type, IO_type });
+export async function processAndEmbedMessages() {
+  console.log("[neo4jAdapter] processAndEmbedMessages 호출됨");
+  return runPythonScript("graph_operations.py", "process_and_embed_messages");
 }
 
-/**
- * 지정된 조건에 맞는 이메일 정보를 가져옵니다.
- * @param {number} basic_C_ID 기준 노드의 ID
- * @param {number} C_type 기준 노드의 타입
- * @param {number} IO_type 관계 방향 (search_mail.py의 filter.io_type에 해당)
- * @param {object} [in_data] 추가 필터 데이터 (search_mail.py의 filter.in_data에 해당)
- */
-export async function fetchEmails(basic_C_ID, C_type, IO_type, in_data = null) {
-  return runPythonScript("graph_operations.py", "fetchEmails", { basic_C_ID, C_type, IO_type, in_data });
+// Placeholder functions from Python mock
+export async function readGraphData() {
+  console.log("[neo4jAdapter] readGraphData 호출됨");
+  return runPythonScript("graph_operations.py", "read_graph_data");
+}
+
+export async function createNode(nodeData) {
+  console.log("[neo4jAdapter] createNode 호출됨");
+  return runPythonScript("graph_operations.py", "create_node", { nodeData });
+}
+
+export async function updateNode(nodeId, updateData) {
+  console.log("[neo4jAdapter] updateNode 호출됨");
+  return runPythonScript("graph_operations.py", "update_node", { nodeId, updateData });
+}
+
+export async function createRelationship(fromNodeId, toNodeId, relationshipType, properties) {
+  console.log("[neo4jAdapter] createRelationship 호출됨");
+  return runPythonScript("graph_operations.py", "create_relationship", { fromNodeId, toNodeId, relationshipType, properties });
+}
+
+export async function deleteRelationship(relationshipId) {
+  console.log("[neo4jAdapter] deleteRelationship 호출됨");
+  return runPythonScript("graph_operations.py", "delete_relationship", { relationshipId });
+}
+
+export async function searchByKeyword(keyword) {
+  console.log("[neo4jAdapter] searchByKeyword 호출됨");
+  return runPythonScript("graph_operations.py", "search_by_keyword", { keyword });
+}
+
+export async function llmTagNode(C_ID, llm_tags) {
+  console.log("[neo4jAdapter] llmTagNode 호출됨");
+  return runPythonScript("graph_operations.py", "llm_tag_node", { C_ID, llm_tags });
+}
+
+export async function getOutgoingNodes(node_name) {
+  console.log("[neo4jAdapter] getOutgoingNodes 호출됨");
+  return runPythonScript("graph_operations.py", "get_outgoing_nodes", { node_name });
+}
+
+export async function moveEmail(from_id, to_id, email_uid) {
+  console.log("[neo4jAdapter] moveEmail 호출됨");
+  return runPythonScript("graph_operations.py", "move_email", { from_id, to_id, email_uid });
+}
+
+export async function getNodeEmails(node_name) {
+  console.log("[neo4jAdapter] getNodeEmails 호출됨");
+  return runPythonScript("graph_operations.py", "get_node_emails", { node_name });
+}
+
+export async function printTest() {
+  console.log("[neo4jAdapter] printTest 호출됨");
+  return runPythonScript("graph_operations.py", "print_test");
 }
 
 export default {
   testConnection,
-  deleteNode,
-  updateLabel,
-  mergeNode,
   initializeGraphFromSQLite,
+  fetchNodes,
+  fetchEmails,
+  deleteNode,
+  mergeNode,
+  updateLabel,
   getIncomingNodes,
   deleteAllNodes,
   moveComplexNode,
-  processAndEmbedMessages,
   buildGraph,
-  fetchNodes,
-  fetchEmails,
+  processAndEmbedMessages,
+  readGraphData,
+  createNode,
+  updateNode,
+  createRelationship,
+  deleteRelationship,
+  searchByKeyword,
+  llmTagNode,
+  getOutgoingNodes,
+  moveEmail,
+  getNodeEmails,
+  printTest,
 };

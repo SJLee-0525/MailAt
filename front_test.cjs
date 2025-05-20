@@ -1,5 +1,5 @@
 // // ---------------------------------------------------------------------------
-// // Test Snippets for graph_operations.py functions
+// // Test Snippets for graph_operations.py functions (running against MOCKED Python backend)
 // // Run these in your Electron app's Developer Console.
 // // ---------------------------------------------------------------------------
 
@@ -14,59 +14,59 @@ async function testNeo4jConnection() {
 }
 testNeo4jConnection();
 
-// // 2. Initialize Graph from SQLite (V1 graph structure)
+// // 2. Initialize Graph from SQLite (tests mock response)
 async function testInitializeGraphFromSQLite() {
   try {
     const result = await window.electronAPI.graph.initializeGraphFromSQLite();
-    console.log("Initialize Graph (V1) Result:", result);
+    console.log("Initialize Graph Result:", result);
   } catch (error) {
-    console.error("Initialize Graph (V1) Error:", error);
+    console.error("Initialize Graph Error:", error);
   }
 }
-testInitializeGraphFromSQLite(); // Uncomment to run - this can modify your graph
+testInitializeGraphFromSQLite();
 
-// // 6. Delete Node <- 안됌.
+// // 6. Delete Node (tests mock response)
 async function testDeleteNode() {
   try {
-    const nodeId = 4; // Replace with an actual node ID
+    const nodeId = 4; // Example node ID
     const result = await window.electronAPI.graph.deleteNode(nodeId);
     console.log("Delete Node Result:", result);
   } catch (error) {
     console.error("Delete Node Error:", error);
   }
 }
-testDeleteNode(); // Uncomment to run
+testDeleteNode();
 
-// // 11. Update Label <- 안됌.
+// // 11. Update Label (tests mock response)
 async function testUpdateLabel() {
   try {
-    const C_ID = "16"; // Replace
-    const newLabel = "엄성수수"; // Replace
+    const C_ID = "16"; // Example C_ID
+    const newLabel = "엄성수_mocked"; // Example new label
     const result = await window.electronAPI.graph.updateLabel(C_ID, newLabel);
     console.log("Update Label Result:", result);
   } catch (error) {
     console.error("Update Label Error:", error);
   }
 }
-testUpdateLabel(); // Uncomment to run
+testUpdateLabel();
 
-// // 13. Merge Node <- 안됌.
+// // 13. Merge Node (tests mock response)
 async function testMergeNode() {
   try {
-    const from_C_ID = "node_id_source"; // Replace
-    const to_C_ID = "node_id_target"; // Replace
+    const from_C_ID = "node_id_source_mock"; // Example source node ID
+    const to_C_ID = "node_id_target_mock"; // Example target node ID
     const result = await window.electronAPI.graph.mergeNode(from_C_ID, to_C_ID);
     console.log("Merge Node Result:", result);
   } catch (error) {
     console.error("Merge Node Error:", error);
   }
 }
-testMergeNode(); // Uncomment to run
+testMergeNode();
 
 // // 15. Get Incoming Nodes
 async function testGetIncomingNodes() {
   try {
-    const node_name = "target_node_name"; // Replace
+    const node_name = "target_node_name_mock"; // Example node name
     const result = await window.electronAPI.graph.getIncomingNodes(node_name);
     console.log("Get Incoming Nodes Result:", result);
   } catch (error) {
@@ -78,24 +78,24 @@ testGetIncomingNodes();
 // // 17. Delete All Nodes
 async function testDeleteAllNodes() {
   try {
-    // WARNING: This will delete all nodes in your Neo4j database. Use with extreme caution.
-    // Consider adding a confirmation step if you uncomment this.
+    // WARNING: This will call the deleteAllNodes function.
+    // With a mocked backend, it returns a success message without actual deletion.
     const result = await window.electronAPI.graph.deleteAllNodes();
     console.log("Delete All Nodes Result:", result);
   } catch (error) {
     console.error("Delete All Nodes Error:", error);
   }
 }
-if (confirm("Are you sure you want to delete ALL nodes? This cannot be undone.")) {
+if (confirm("Are you sure you want to call deleteAllNodes? (Mocked backend will simulate success)")) {
   testDeleteAllNodes();
 }
 
-// // 18. Move Complex Node (Note: Python function might be a placeholder)
+// // 18. Move Complex Node (tests mock response)
 async function testMoveComplexNode() {
   try {
-    const a_id = "id_a"; // Replace
-    const b_id = "id_b"; // Replace
-    const c_id = "id_c"; // Replace
+    const a_id = "id_a_mock"; // Example ID
+    const b_id = "id_b_mock"; // Example ID
+    const c_id = "id_c_mock"; // Example ID
     const result = await window.electronAPI.graph.moveComplexNode(a_id, b_id, c_id);
     console.log("Move Complex Node Result:", result);
   } catch (error) {
@@ -104,7 +104,7 @@ async function testMoveComplexNode() {
 }
 testMoveComplexNode();
 
-// // 21. Process and Embed Messages (from embedding.py)
+// // 21. Process and Embed Messages (tests mock response)
 async function testProcessAndEmbedMessages() {
   try {
     const result = await window.electronAPI.graph.processAndEmbedMessages();
@@ -113,19 +113,20 @@ async function testProcessAndEmbedMessages() {
     console.error("Process and Embed Messages Error:", error);
   }
 }
-testProcessAndEmbedMessages(); // Uncomment to run - this processes SQLite data
+testProcessAndEmbedMessages();
 
-// // 22. Build Graph_from make_node.py <- root만 만들어짐.
+// // 22. Build Graph (tests mock response)
 async function testBuildGraph() {
   try {
-    // WARNING: This typically clears existing graph data and rebuilds it.
+    // WARNING: This calls buildGraph.
+    // With a mocked backend, it returns a success message without actual graph building/clearing.
     const result = await window.electronAPI.graph.buildGraph();
     console.log("Build Graph Result:", result);
   } catch (error) {
     console.error("Build Graph Error:", error);
   }
 }
-if (confirm("Are you sure you want to rebuild the graph using logic? This may clear existing data.")) {
+if (confirm("Are you sure you want to call buildGraph? (Mocked backend will simulate success)")) {
  testBuildGraph();
 }
 

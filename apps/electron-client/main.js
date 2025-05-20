@@ -82,28 +82,6 @@ async function initializeControllers() {
     
     const graphChannels = [
       "graph:testConnection",
-      "graph:readData",
-      "graph:createNode",
-      "graph:updateNode",
-      "graph:deleteNode",
-      "graph:createRelationship",
-      "graph:deleteRelationship",
-      "graph:deleteMessage",
-      "graph:updateLabel",
-      "graph:searchByKeyword",
-      "graph:mergeNode",
-      "graph:llmTagNode",
-      "graph:initializeGraphFromSQLite",
-      "graph:getIncomingNodes",
-      "graph:getOutgoingNodes",
-      "graph:deleteAllNodes",
-      "graph:moveComplexNode",
-      "graph:moveEmail",
-      "graph:getNodeEmails",
-      "graph:processAndEmbedMessages",
-      "graph:buildGraph",
-      "graph:fetchNodes",
-      "graph:fetchEmails"
     ];
 
     [...channelsToRemove, ...graphChannels].forEach((channel) => {
