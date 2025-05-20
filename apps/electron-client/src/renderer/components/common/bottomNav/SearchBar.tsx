@@ -47,7 +47,7 @@ const SearchBar = () => {
   return (
     <form
       ref={wrapperRef}
-      className="flex items-center justify-between mb-10 w-80 p-1 gap-2 bg-theme rounded-full shadow-sm"
+      className="flex items-center justify-between mb-10 w-80 p-1 gap-2 bg-bg rounded-full shadow-sm"
       onSubmit={handleSearch}
     >
       <input
@@ -59,7 +59,7 @@ const SearchBar = () => {
       <IconButton
         type="submit"
         icon={<SearchIcon />}
-        className="p-2.5 bg-theme hover:bg-warning"
+        className="p-2.5 bg-bg hover:bg-warning"
       />
     </form>
   );

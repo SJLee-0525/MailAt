@@ -36,7 +36,7 @@ const SettingConnectedEmail = () => {
               <Button
                 type="button"
                 content="추가"
-                className="bg-theme text-white rounded-full text-xs"
+                className="bg-theme text-[#ffffff] rounded-full text-xs"
                 onAction={() => {
                   setIsAddAccount(true);
                 }}
@@ -54,7 +54,7 @@ const SettingConnectedEmail = () => {
           <Button
             type="button"
             content="계정 추가"
-            className="h-10 bg-blue-500 text-white rounded-full"
+            className="h-10 bg-theme text-[#fff] rounded-full"
             onAction={() => {
               setIsAddAccount(true);
             }}

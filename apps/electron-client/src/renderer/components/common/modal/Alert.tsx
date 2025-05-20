@@ -41,7 +41,7 @@ const Alert = () => {
       onClick={handleBackdropClick}
       className={`left-1/2 -translate-x-1/2 -translate-y-1/2 m-0 w-[480px] h-fit rounded-b-xl bg-transparent ${alertIsClosing ? "alert-is-closing" : ""}`}
     >
-      <div className="flex flex-col items-start justify-center w-full h-full gap-4 p-6 bg-white rounded-lg shadow-lg">
+      <div className="flex flex-col items-start justify-center w-full h-full gap-4 p-6 bg-white rounded-lg shadow-lg text-text">
         <h2 className="text-xl font-pre-bold">{alertModalContent.title}</h2>
         <p className="font-pre-regular text-content whitespace-pre-line">
           {alertModalContent.content}
@@ -49,7 +49,7 @@ const Alert = () => {
 
         <div className="flex items-center justify-end w-full h-fit">
           <button
-            className="px-4 py-2 text-sm font-semibold text-white bg-theme rounded-md hover:bg-theme-dark focus:outline-none"
+            className="px-4 py-2 text-sm font-semibold text-[#fff] bg-theme rounded-md hover:bg-theme-dark focus:outline-none"
             onClick={closeAlertModal}
           >
             확인

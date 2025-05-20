@@ -1,11 +1,19 @@
 import { IconProps } from "@/types/iconProps";
 
+import useAuthenticateStore from "@stores/authenticateStore";
+
 const SearchIcon = ({
   width = 28,
   height = 28,
-  strokeColor = "white",
+  strokeColor,
   onClick,
 }: IconProps) => {
+  const { currentTheme } = useAuthenticateStore();
+
+  if (!strokeColor) {
+    strokeColor = currentTheme === "theme-night" ? "#e9e9e9" : "#7d7983";
+  }
+
   return (
     <svg
       width={width}

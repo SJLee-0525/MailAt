@@ -44,7 +44,7 @@ export const useCreateAccount = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation<
-    CreateAccountResponse[],
+    { success: boolean; data: CreateAccountResponse[] },
     Error,
     CreateAccountRequest
   >({

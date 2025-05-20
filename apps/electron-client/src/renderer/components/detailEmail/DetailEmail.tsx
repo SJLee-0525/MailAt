@@ -61,7 +61,7 @@ const DetailEmail = () => {
   }
 
   return (
-    <>
+    <div className="flex flex-row-reverse w-full h-full pointer-events-none">
       {isReplying && (
         <MailReplyForm
           replyData={replyData}
@@ -71,10 +71,10 @@ const DetailEmail = () => {
       )}
 
       <div
-        className={`flex flex-col w-full min-w-96 h-full bg-light1 rounded-xl transition-all duration-300 ease-in-out pointer-events-auto ${selectedMailIsClosing ? "detail-email-is-closing" : "detail-email-is-open "}`}
+        className={`flex flex-col w-full min-w-96 h-full bg-white transition-all duration-300 ease-in-out pointer-events-auto border-r border-header shadow-md ${selectedMailIsClosing ? "detail-email-is-closing" : "detail-email-is-open "}`}
       >
         <DetailEmailHeader onClose={handleClose} />
-        <div className="flex flex-col w-full h-full px-1 pb-1 bg-light1 rounded-b-xl overflow-y-auto">
+        <div className="flex flex-col w-full h-full px-1 pb-1 bg-white overflow-y-auto">
           <DetailEmailContents
             detailEmail={detailEmail}
             onChangeIsRead={changeIsRead}
@@ -83,7 +83,7 @@ const DetailEmail = () => {
           />
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

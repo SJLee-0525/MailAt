@@ -34,16 +34,16 @@ const InboxSearchForm = () => {
   }
 
   return (
-    <div className="relative flex justify-center items-center z-10 w-full h-full px-3 ">
+    <div className="relative flex justify-center items-center w-full h-full px-3">
       <form
-        className="flex items-center justify-between px-1.5 w-full h-12 bg-white text-gray-700 rounded-full"
+        className="flex items-center justify-between px-1.5 w-full h-12 bg-header text-text rounded-full"
         onSubmit={handleSearch}
       >
         <input
           name="searchQuery"
           type="text"
           placeholder="검색어를 입력하세요."
-          className="font-pre-regular w-full h-10 px-4 py-auto border-none rounded-full focus:outline-none"
+          className="font-pre-regular w-full h-full px-4 py-auto border-none rounded-full focus:outline-none text-icon"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -51,14 +51,13 @@ const InboxSearchForm = () => {
         <div className="flex items-center gap-2">
           <IconButton
             type="button"
-            icon={<FilterIcon strokeColor="#7D7983" width={20} height={20} />}
-            className="p-2.5 transition-all duration-300 hover:bg-light1"
+            icon={<FilterIcon width={20} height={20} />}
             onClick={() => setIsExpanded(!isExpanded)}
           />
           <IconButton
             type="submit"
-            icon={<SearchIcon strokeColor="white" width={20} height={20} />}
-            className="p-2.5 transition-all duration-300 bg-theme hover:bg-warning"
+            icon={<SearchIcon width={20} height={20} />}
+            className="p-2 transition-all duration-300 bg-icon-light-theme dark:bg-icon-dark-theme hover:bg-icon-light-theme-hover dark:hover:bg-icon-dark-theme-hover"
           />
         </div>
       </form>

@@ -14,6 +14,7 @@ import MainLayout from "@layouts/MainLayout";
 // import Home from "@pages/home/Home";
 import EmailGraphPage from "@pages/emailGraph/EmailGraphPage";
 
+import TitleBar from "@components/common/nav/TitleBar"; // TitleBar 컴포넌트 import
 import Alert from "@components/common/modal/Alert";
 import NewMailFormModal from "@components/mailForm/NewMailFormModal";
 import Modal from "@components/common/modal/Modal";
@@ -21,7 +22,7 @@ import Modal from "@components/common/modal/Modal";
 const queryClient = new QueryClient();
 
 const App = () => {
-  const { setUserName } = useAuthenticateStore();
+  const { setCurrentTheme, setUserName } = useAuthenticateStore();
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -35,6 +36,11 @@ const App = () => {
       async function getUserIdFromStorage(storedData: string) {
         const parsedData = JSON.parse(storedData);
         console.log(parsedData);
+
+        const theme = parsedData.state.currentTheme;
+        if (theme === "theme-night") {
+          setCurrentTheme("theme-night");
+        }
 
         const user = parsedData.state.user;
         setUserName(user);
@@ -62,15 +68,29 @@ const App = () => {
     try {
       console.log("[FRONTEND] Calling graph.testGraph...");
       // electronAPI가 window 객체에 제대로 노출되었는지 확인합니다.
-      if (window.electronAPI && window.electronAPI.graph && window.electronAPI.graph.testGraph) {
+      if (
+        window.electronAPI &&
+        window.electronAPI.graph &&
+        window.electronAPI.graph.testGraph
+      ) {
         const result = await window.electronAPI.graph.testGraph();
         console.log("[FRONTEND] graph.testGraph result:", result);
-        alert("Graph Test Result: \nStatus: " + result.success + "\nMessage: " + (result.success ? JSON.stringify(result.data) : result.message));
+        alert(
+          "Graph Test Result: \nStatus: " +
+            result.success +
+            "\nMessage: " +
+            (result.success ? JSON.stringify(result.data) : result.message)
+        );
       } else {
-        console.error("[FRONTEND] electronAPI.graph.testGraph is not available.");
-        alert("Error: electronAPI.graph.testGraph is not available. Check preload script.");
+        console.error(
+          "[FRONTEND] electronAPI.graph.testGraph is not available."
+        );
+        alert(
+          "Error: electronAPI.graph.testGraph is not available. Check preload script."
+        );
       }
-    } catch (error: any) { // Explicitly type error as any or a more specific error type
+    } catch (error: any) {
+      // Explicitly type error as any or a more specific error type
       console.error("[FRONTEND] Error calling graph.testGraph:", error);
       alert("Error calling graph.testGraph: " + error.message);
     }
@@ -79,33 +99,47 @@ const App = () => {
   // 로그인 상태에 따라 다른 페이지 렌더링
   if (!isLoggedIn) {
     return (
-      <QueryClientProvider client={queryClient}>
-        <Routes>
-          <Route path="/renderer.html" element={<TutorialLayout />} />
-        </Routes>
-
-        <Alert />
-      </QueryClientProvider>
+      <div className="flex flex-col w-screen h-screen">
+        <QueryClientProvider client={queryClient}>
+          <TitleBar />
+          <div style={{ height: "calc(100vh - 40px)" }}>
+            {" "}
+            {/* 높이 조정 */}
+            <Routes>
+              <Route path="/renderer.html" element={<TutorialLayout />} />
+            </Routes>
+            <Alert />
+          </div>
+        </QueryClientProvider>
+      </div>
     ); // 로그인 페이지 컴포넌트로 대체
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Routes>
-        {/* 모든 페이지에 공통 레이아웃 적용 */}
-        <Route path="/renderer.html" element={<MainLayout />}>
-          {/* <Route index element={<Home />} /> */}
-          <Route index element={<EmailGraphPage />} />
-          <Route path="*" element={<div>Not Found</div>} />
-        </Route>
-      </Routes>
-
-      {/* 모달 컴포넌트들 */}
-      <Alert />
-      <NewMailFormModal />
-      <Modal />
-      <button onClick={handleTestGraphConnection}>Test Graph Connection</button>
-    </QueryClientProvider>
+    <div className="flex flex-col w-screen h-screen">
+      <QueryClientProvider client={queryClient}>
+        <TitleBar />
+        <div style={{ height: "calc(100vh - 40px)" }}>
+          {" "}
+          {/* 높이 조정 */}
+          <Routes>
+            {/* 모든 페이지에 공통 레이아웃 적용 */}
+            <Route path="/renderer.html" element={<MainLayout />}>
+              {/* <Route index element={<Home />} /> */}
+              <Route index element={<EmailGraphPage />} />
+              <Route path="*" element={<div>Not Found</div>} />
+            </Route>
+          </Routes>
+        </div>
+        {/* 모달 컴포넌트들 */}
+        <Alert />
+        <NewMailFormModal />
+        <Modal />
+        <button onClick={handleTestGraphConnection}>
+          Test Graph Connection
+        </button>
+      </QueryClientProvider>
+    </div>
   );
 };
 

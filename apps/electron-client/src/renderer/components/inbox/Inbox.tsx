@@ -19,7 +19,7 @@ import Chat from "@components/chat/Chat";
 
 const Inbox = () => {
   const { user } = useAuthenticateStore();
-  const { inboxIsClosing, selectedMail, chattingIsOpen, setChattingIsOpen } =
+  const { inboxIsClosing, selectedMail, chattingIsOpen } =
     useUserProgressStore();
   const { selectedFolder, filters, setConversations } = useConversationsStore();
 
@@ -39,21 +39,16 @@ const Inbox = () => {
 
   return (
     <div
-      className={`relative flex flex-col w-md min-w-md h-full max-h-full pointer-events-auto  ${inboxIsClosing ? "inbox-is-closing" : "inbox-is-open"}`}
+      className={`relative flex flex-col w-md min-w-md h-full max-h-full pointer-events-auto ${inboxIsClosing ? "inbox-is-closing" : "inbox-is-open"}`}
     >
-      <div className="flex flex-col w-full h-full bg-light1 rounded-xl">
+      <div className="flex flex-col w-full h-full bg-white shadow-[-1px_0px_5px_-3px_rgba(0,0,0,0.1),_-1px_0px_5px_-4px_rgba(0,0,0,0.1)]">
         <InboxHeader />
-        <div className="w-full h-full px-1 pb-1 bg-light1 rounded-b-xl overflow-y-auto">
+        <div className="flex-1 w-full h-full px-1 pb-1 bg-white overflow-y-auto">
           <InboxContents />
         </div>
       </div>
 
-      {chattingIsOpen && (
-        <Chat
-          selectedMail={selectedMail}
-          onClose={() => setChattingIsOpen(false)}
-        />
-      )}
+      {chattingIsOpen && <Chat selectedMail={selectedMail} />}
     </div>
   );
 };

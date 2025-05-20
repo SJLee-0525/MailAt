@@ -82,6 +82,25 @@ async function initializeControllers() {
       "attachment:getContent",
       "attachment:getByMessage",
       "attachment:download",
+      "graph:testGraph",
+      "graph:readData",
+      "graph:createNode",
+      "graph:updateNode",
+      "graph:deleteNode",
+      "graph:readNode",
+      "graph:readMessage",
+      "graph:deleteMessage",
+      "graph:updateLabel",
+      "graph:searchByKeyword",
+      "graph:mergeNode",
+      "graph:llmTagNode",
+      "graph:initializeGraphFromSQLite",
+      "graph:getIncomingNodes",
+      "graph:getOutgoingNodes",
+      "graph:deleteAllNodes",
+      "graph:moveComplexNode",
+      "graph:moveEmail",
+      "graph:getNodeEmails",
     ].forEach((channel) => {
       try {
         ipcMain.removeHandler(channel);
@@ -111,8 +130,8 @@ async function initializeControllers() {
     );
     const calendarControllerModule = await import(
       "./src/main/controllers/calendarController.js"
-    )
-    
+    );
+
     const attachmentControllerModule = await import(
       "./src/main/controllers/attachmentController.js"
     );
@@ -141,7 +160,7 @@ async function initializeControllers() {
 
     attachmentControllerModule.initAttachmentController();
     console.log("[MAIN] 첨부파일 컨트롤러 초기화 완료");
-    
+
     // --- dev:callBackendMethod 핸들러 등록 ---
     console.log("[MAIN] Registering dev:callBackendMethod handler...");
     const servicesForDevTool = {
@@ -150,34 +169,64 @@ async function initializeControllers() {
       // 필요한 만큼 여기에 서비스 객체를 추가합니다.
     };
 
-    ipcMain.handle("dev:callBackendMethod", async (event, { serviceName, methodName, args }) => {
-      console.log(`[MAIN_DEV_TOOL] dev:callBackendMethod received: ${serviceName}.${methodName}`, args);
-      try {
-        if (servicesForDevTool[serviceName] && typeof servicesForDevTool[serviceName][methodName] === 'function') {
-          const service = servicesForDevTool[serviceName];
-          const method = service[methodName];
-          // 인자가 undefined이면 빈 배열, 아니면 배열인지 확인 후 그대로 사용하거나 배열로 감쌈
-          const argsArray = args === undefined ? [] : (Array.isArray(args) ? args : [args]);
-          const result = await method.apply(service, argsArray);
-          console.log(`[MAIN_DEV_TOOL] ${serviceName}.${methodName} result:`, result);
-          return { success: true, data: result };
-        } else {
-          console.error(`[MAIN_DEV_TOOL] Method ${methodName} not found in service ${serviceName} or not a function.`);
-          return { success: false, message: `Method ${methodName} not found in service ${serviceName} or not a function.` };
+    ipcMain.handle(
+      "dev:callBackendMethod",
+      async (event, { serviceName, methodName, args }) => {
+        console.log(
+          `[MAIN_DEV_TOOL] dev:callBackendMethod received: ${serviceName}.${methodName}`,
+          args
+        );
+        try {
+          if (
+            servicesForDevTool[serviceName] &&
+            typeof servicesForDevTool[serviceName][methodName] === "function"
+          ) {
+            const service = servicesForDevTool[serviceName];
+            const method = service[methodName];
+            // 인자가 undefined이면 빈 배열, 아니면 배열인지 확인 후 그대로 사용하거나 배열로 감쌈
+            const argsArray =
+              args === undefined ? [] : Array.isArray(args) ? args : [args];
+            const result = await method.apply(service, argsArray);
+            console.log(
+              `[MAIN_DEV_TOOL] ${serviceName}.${methodName} result:`,
+              result
+            );
+            return { success: true, data: result };
+          } else {
+            console.error(
+              `[MAIN_DEV_TOOL] Method ${methodName} not found in service ${serviceName} or not a function.`
+            );
+            return {
+              success: false,
+              message: `Method ${methodName} not found in service ${serviceName} or not a function.`,
+            };
+          }
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          console.error(
+            `[MAIN_DEV_TOOL] Error calling ${serviceName}.${methodName}:`,
+            errorMessage,
+            error
+          );
+          return {
+            success: false,
+            message: errorMessage,
+            error: error instanceof Error ? error.toString() : String(error),
+          };
         }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`[MAIN_DEV_TOOL] Error calling ${serviceName}.${methodName}:`, errorMessage, error);
-        return { success: false, message: errorMessage, error: error instanceof Error ? error.toString() : String(error) };
       }
-    });
-    console.log("[MAIN] dev:callBackendMethod handler successfully registered.");
+    );
+    console.log(
+      "[MAIN] dev:callBackendMethod handler successfully registered."
+    );
     // --- 핸들러 등록 완료 ---
 
     controllersInitialized = true;
-    console.log("[MAIN] 등록된 IPC 핸들러 (dev 포함 예상):", ipcMain.eventNames());
-    
-    
+    console.log(
+      "[MAIN] 등록된 IPC 핸들러 (dev 포함 예상):",
+      ipcMain.eventNames()
+    );
 
     return true;
   } catch (error) {
@@ -219,10 +268,11 @@ async function createWindow() {
     width: 1200,
     height: 800,
     show: false, // 처음에는 창을 숨깁니다.
+    frame: false, // 기본 프레임 및 메뉴 바 제거
 
     // 최소 크기 설정
-    minWidth: 800,
-    minHeight: 600,
+    minWidth: 1280,
+    minHeight: 720,
 
     webPreferences: {
       preload: preloadPath,
@@ -293,6 +343,35 @@ app.whenReady().then(async () => {
 
   // 윈도우 생성
   await createWindow();
+
+  // IPC 핸들러 등록 (사용자 정의 창 컨트롤)
+  ipcMain.on("window-close", () => {
+    if (mainWindow) {
+      mainWindow.close();
+    }
+  });
+
+  ipcMain.on("window-minimize", () => {
+    if (mainWindow) {
+      mainWindow.minimize();
+    }
+  });
+
+  ipcMain.on("window-toggle-maximize", () => {
+    if (mainWindow) {
+      if (mainWindow.isMaximized()) {
+        mainWindow.unmaximize();
+      } else {
+        mainWindow.maximize();
+      }
+    }
+  });
+
+  ipcMain.on("window-reload", () => {
+    if (mainWindow) {
+      mainWindow.webContents.reload();
+    }
+  });
 
   // macOS에서 앱 아이콘 클릭 시 윈도우 재생성
   app.on("activate", () => {

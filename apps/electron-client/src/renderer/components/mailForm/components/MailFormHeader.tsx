@@ -13,12 +13,12 @@ const MailFormHeader = ({
   handleSubmit: () => void;
 }) => {
   return (
-    <div className="flex items-center justify-between w-full h-16 min-h-16  px-4">
+    <div className="flex items-center justify-between w-full h-15 min-h-15 px-4">
       <nav>
         <IconButton
           type="button"
           icon={<CloseIcon width={20} height={20} />}
-          className="p-2.5 transition-all duration-300 bg-default hover:bg-error"
+          className="p-2 transition-all duration-300 bg-default hover:bg-error"
           onClick={() => closeForm(false)}
         />
       </nav>
@@ -32,12 +32,12 @@ const MailFormHeader = ({
         <IconButton
           type="button"
           icon={<TimerIcon width={20} height={20} />}
-          className="p-2.5 transition-all duration-300 bg-accept hover:bg-theme"
+          className="p-2 transition-all duration-300 bg-accept hover:bg-theme"
         />
         <IconButton
           type="button"
           icon={<SendIcon width={20} height={20} />}
-          className="p-2.5 transition-all duration-300 bg-theme hover:bg-theme-dark"
+          className="p-2 transition-all duration-300 bg-theme hover:bg-theme-dark"
           onClick={handleSubmit}
         />
       </nav>

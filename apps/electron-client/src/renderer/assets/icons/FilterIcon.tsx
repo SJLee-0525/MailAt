@@ -1,11 +1,12 @@
 import { IconProps } from "@/types/iconProps";
 
-const FilterIcon = ({
-  width = 24,
-  height = 24,
-  strokeColor = "white",
-  onClick,
-}: IconProps) => {
+import useAuthenticateStore from "@stores/authenticateStore";
+
+const FilterIcon = ({ width = 24, height = 24, onClick }: IconProps) => {
+  const { currentTheme } = useAuthenticateStore();
+
+  const strokeColor = currentTheme === "theme-night" ? "#e9e9e9" : "#7d7983";
+
   return (
     <svg
       width={width}

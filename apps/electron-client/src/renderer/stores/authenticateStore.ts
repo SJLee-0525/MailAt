@@ -12,13 +12,14 @@ interface AuthenticateStore {
   deleteAuthUser: (authUsers: CreateAccountResponse | null) => void;
   selectedUser: CreateAccountResponse | null;
   setSelectedUser: (user: CreateAccountResponse | null) => void;
+  currentTheme: string;
+  setCurrentTheme: (themeClass: string) => void;
 }
 
 // 실제로 persist될 상태의 타입 정의
-type PersistedAuthState = Pick<AuthenticateStore, "user">;
+type PersistedAuthState = Pick<AuthenticateStore, "user" | "currentTheme">;
 
 const useAuthenticateStore = create<AuthenticateStore>()(
-  // create 함수에만 기본 상태 타입 지정
   persist(
     (set) => ({
       user: null, // 초기값
@@ -44,6 +45,11 @@ const useAuthenticateStore = create<AuthenticateStore>()(
         })),
       setSelectedUser: (user) =>
         set({ selectedUser: user !== null ? user : null }),
+      currentTheme: "", // Default to light theme (empty class string)
+      setCurrentTheme: (themeClass: string) => {
+        set({ currentTheme: themeClass });
+        document.documentElement.className = themeClass;
+      },
     }),
     {
       name: "authenticate-storage", // 로컬 스토리지에 저장될 키 이름
@@ -51,6 +57,7 @@ const useAuthenticateStore = create<AuthenticateStore>()(
       // partialize 함수의 반환 타입을 명시적으로 지정
       partialize: (state): PersistedAuthState => ({
         user: state.user, // persist할 상태
+        currentTheme: state.currentTheme,
       }),
     }
   )

@@ -1,19 +1,18 @@
 import React, { forwardRef, useState, useEffect, useRef } from "react";
 
 import { MailFormWithAIProps } from "@/types/emailTypes";
-
 import {
   AUTO_COMPLETE_PROMPT_TEXT,
   AUTO_COMPLETE_ALL_PROMPT_TEXT,
 } from "@data/AI_AUTOFILL";
 
-import { generateEmailContent } from "@apis/emailApi";
+import useUserProgressStore from "@stores/userProgressStore";
 
+import { generateEmailContent } from "@apis/emailApi";
 import { useDebounce } from "@hooks/useDebounceHook";
 
 import SenderList from "@components/mailForm/components/SenderList";
 import MailTextEditor from "@components/mailForm/components/MailTextEditor";
-// import useModalStore from "@stores/modalStore";
 
 // 부모로부터 title input ref를 받아서 연동하기 위해 forwardRef 사용
 const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
@@ -33,8 +32,13 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
     },
     titleRef
   ) => {
-    // const { openAlertModal } = useModalStore();
+    const {
+      setLoading: setApiLoading,
+      setLoadingMessage,
+      setCloseLoadingMessage,
+    } = useUserProgressStore();
 
+    // UI 관련 상태
     const [isCcOpen, setIsCcOpen] = useState(false);
     const [isBccOpen, setIsBccOpen] = useState(false);
     const [aiEnabled, setAiEnabled] = useState(true);
@@ -43,120 +47,61 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
     );
 
     // AI 관련 상태
-    const [suggestion, setSuggestion] = useState("");
+    const [suggestion, setSuggestion] = useState(""); // 커서 뒤 고스트 텍스트
     const [loading, setLoading] = useState(false);
     const [correctionMode, setCorrectionMode] = useState(false);
     const [correctionSuggestion, setCorrectionSuggestion] = useState("");
     const [fullEmailSuggestion, setFullEmailSuggestion] = useState("");
     const [plainText, setPlainText] = useState("");
-    // const [cursorPosition, setCursorPosition] = useState(0);
+    const [cursorBounds, setCursorBounds] = useState<{
+      left: number;
+      top: number;
+      height: number;
+      width: number;
+    } | null>(null);
 
-    // 이메일 생성 관련 추가 상태
+    // 이메일 생성 상태 (full-email 모드 전용)
     const [emailGenerated, setEmailGenerated] = useState(false);
     const [regenerateEnabled, setRegenerateEnabled] = useState(false);
     const regenerateCooldownRef = useRef<NodeJS.Timeout | null>(null);
 
-    // 토스트 표시 상태
+    // 토스트(맞춤법/전체메일) 표시 상태
     const [showToast, setShowToast] = useState(false);
     const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    // 제안 비활성화 상태
-    const [suggestionPaused, setSuggestionPaused] = useState(false);
-    const suggestionPauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-    // 에디터의 내용이 변경되면 일반 텍스트로 변환해서 AI에 전달하기 위함
+    // 1. 에디터 HTML → plain text 변환
     useEffect(() => {
       if (initialHtml) {
-        // HTML에서 태그를 제거하고 텍스트만 추출
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = initialHtml;
-        setPlainText(tempDiv.textContent || tempDiv.innerText || "");
+        const tmp = document.createElement("div");
+        tmp.innerHTML = initialHtml;
+        setPlainText(tmp.textContent || tmp.innerText || "");
       } else {
         setPlainText("");
       }
     }, [initialHtml]);
 
-    // 디바운스된 텍스트
     const debouncedText = useDebounce(plainText, 500);
 
-    // 제안이 있을 때 토스트 메시지 표시
-    useEffect(() => {
-      if (
-        suggestion ||
-        correctionMode ||
-        fullEmailSuggestion ||
-        emailGenerated
-      ) {
-        setShowToast(true);
-
-        // 이전 타임아웃이 있으면 제거
-        if (toastTimeoutRef.current) {
-          clearTimeout(toastTimeoutRef.current);
-        }
-
-        // 10초 후에 토스트 숨기기 (이메일 생성 상태에서는 15초)
-        toastTimeoutRef.current = setTimeout(
-          () => {
-            setShowToast(false);
-          },
-          emailGenerated ? 15000 : 10000
-        );
-      } else {
-        setShowToast(false);
-      }
-
-      return () => {
-        if (toastTimeoutRef.current) {
-          clearTimeout(toastTimeoutRef.current);
-        }
-      };
-    }, [suggestion, correctionMode, fullEmailSuggestion, emailGenerated]);
-
-    // 재생성 활성화 함수
-    function enableRegeneration() {
-      setRegenerateEnabled(true);
-      setSuggestionPaused(false);
-
-      // 기존 타임아웃 정리
-      if (regenerateCooldownRef.current) {
-        clearTimeout(regenerateCooldownRef.current);
-      }
-
-      // 일정 시간 후 다시 재생성 비활성화 (선택적)
-      regenerateCooldownRef.current = setTimeout(() => {
-        setRegenerateEnabled(false);
-      }, 300000); // 5분 후 다시 비활성화
-    }
-
-    // AI 자동완성 제안 가져오기
+    // 2. Gemini API 호출
     async function getSuggestion(text: string) {
-      // 이미 생성되었고 재생성이 활성화되지 않았으면 전체 이메일 생성 방지
-      if (mode === "full-email" && emailGenerated && !regenerateEnabled) {
-        return;
-      }
+      if (text.length < 5 || !aiEnabled) return;
+      // full-email 모드에서 이미 생성됐고 재생성 비활성화 시 무시
+      if (mode === "full-email" && emailGenerated && !regenerateEnabled) return;
 
-      if (text.length < 5 || !aiEnabled || suggestionPaused) return;
+      setApiLoading(true);
+      setLoadingMessage("AI 제안 중...");
 
       try {
         setLoading(true);
 
-        // 현재 모든 제안 초기화
-        setSuggestion("");
-        setCorrectionMode(false);
-        setFullEmailSuggestion("");
-
-        let promptText = "";
-        const titleValue =
+        // 프롬프트 준비
+        const title =
           (titleRef as React.RefObject<HTMLInputElement>)?.current?.value || "";
-        const recipientsText = sender.join(", ");
-
-        if (mode === "autocomplete") {
-          // 자동완성 모드 프롬프트
-          promptText = AUTO_COMPLETE_PROMPT_TEXT;
-        } else {
-          // 전체 이메일 생성 모드 프롬프트
-          promptText = AUTO_COMPLETE_ALL_PROMPT_TEXT;
-        }
+        const recipients = sender.join(", ");
+        const promptText =
+          mode === "autocomplete"
+            ? AUTO_COMPLETE_PROMPT_TEXT
+            : AUTO_COMPLETE_ALL_PROMPT_TEXT;
 
         const requestBody = {
           contents: [
@@ -164,8 +109,8 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
               parts: [
                 {
                   text: `${promptText}
-                  수신자: ${recipientsText}
-                  제목: ${titleValue}
+                  수신자: ${recipients}
+                  제목: ${title}
                   내용: ${text}`,
                 },
               ],
@@ -180,317 +125,151 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
         };
 
         const data = await generateEmailContent(requestBody);
-        console.log("AI 응답:", data);
+        const responseText =
+          data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
 
-        if (data.candidates && data.candidates[0].content.parts[0].text) {
-          const responseText = data.candidates[0].content.parts[0].text.trim();
-
-          if (mode === "autocomplete") {
-            // 자동완성 모드 응답 처리
-            if (responseText.startsWith("[CORRECTION]")) {
-              // 맞춤법 수정 제안
-              const correctedText = responseText
-                .replace("[CORRECTION]", "")
-                .trim();
-              setCorrectionMode(true);
-              setCorrectionSuggestion(correctedText);
-              setSuggestion("");
-              setFullEmailSuggestion("");
-            } else if (responseText.startsWith("[COMPLETION]")) {
-              // 자동완성 제안
-              const completionText = responseText
-                .replace("[COMPLETION]", "")
-                .trim();
-              setCorrectionMode(false);
-              setSuggestion(completionText);
-              setFullEmailSuggestion("");
-            } else {
-              // 태그가 없는 경우 기본적으로 자동완성으로 처리
-              setCorrectionMode(false);
-              setSuggestion(responseText);
-              setFullEmailSuggestion("");
-            }
-          } else {
-            // 전체 이메일 생성 모드 응답 처리
-            const fullEmail = responseText.replace("[FULL-EMAIL]", "").trim();
-            setFullEmailSuggestion(fullEmail);
+        if (mode === "autocomplete") {
+          if (responseText.startsWith("[CORRECTION]")) {
+            setLoadingMessage("AI 맞춤법 제안 중...");
+            setCorrectionMode(true);
+            setCorrectionSuggestion(
+              responseText.replace("[CORRECTION]", "").trim()
+            );
             setSuggestion("");
+          } else {
+            const compText = responseText.replace("[COMPLETION]", "").trim();
+
+            setLoadingMessage("AI 자동완성 제안 중...");
             setCorrectionMode(false);
+            setSuggestion(compText);
           }
         } else {
-          setSuggestion("");
+          setFullEmailSuggestion(
+            responseText.replace("[FULL-EMAIL]", "").trim()
+          );
+
+          setLoadingMessage("AI 전체메일 제안 중...");
           setCorrectionMode(false);
-          setFullEmailSuggestion("");
+          setSuggestion("");
         }
-      } catch (error) {
-        console.error("AI 제안 가져오기 오류:", error);
+      } catch (err) {
+        console.error("AI 제안 오류", err);
+        setLoadingMessage("AI 제안 오류");
         setSuggestion("");
         setCorrectionMode(false);
         setFullEmailSuggestion("");
       } finally {
         setLoading(false);
+        setApiLoading(false);
+        setLoadingMessage("AI 제안 완료");
+        setCloseLoadingMessage();
       }
     }
 
-    // 텍스트 변경될 때마다 추천 업데이트
+    // 3. 디바운스된 텍스트 감시
     useEffect(() => {
-      // 제안 일시 중단 상태거나 AI가 비활성화되었으면 제안 생성하지 않음
-      if (suggestionPaused || !aiEnabled || !debouncedText) {
-        return;
+      if (!aiEnabled) return;
+      if (mode === "autocomplete") {
+        if (debouncedText) getSuggestion(debouncedText);
+      } else {
+        // full-email 모드 처리
+        if (debouncedText) getSuggestion(debouncedText);
       }
+    }, [debouncedText, aiEnabled, mode]);
 
-      // 이미 생성되었고 재생성이 활성화되지 않았으면 전체 이메일 모드에서 생성하지 않음
-      if (mode === "full-email" && emailGenerated && !regenerateEnabled) {
-        return;
-      }
-
-      getSuggestion(debouncedText);
-    }, [
-      debouncedText,
-      mode,
-      aiEnabled,
-      suggestionPaused,
-      emailGenerated,
-      regenerateEnabled,
-    ]);
-
-    // 제안 일시 중단 함수
-    function pauseSuggestion(durationMs = 2000) {
-      setSuggestionPaused(true);
-
-      // 이전 타이머가 있으면 제거
-      if (suggestionPauseTimeoutRef.current) {
-        clearTimeout(suggestionPauseTimeoutRef.current);
-      }
-
-      // 지정된 시간 후 다시 제안 활성화
-      suggestionPauseTimeoutRef.current = setTimeout(() => {
-        setSuggestionPaused(false);
-      }, durationMs);
-    }
-
-    // 자동완성 제안 수락 처리
-    function acceptSuggestion() {
-      if (suggestion) {
-        // 현재 HTML에 제안 추가 (줄바꿈 보존)
-        const formattedSuggestion = suggestion
-          .replace(/\n/g, "<br>")
-          .replace(/\s\s/g, "&nbsp;&nbsp;");
-
-        const newHtml = initialHtml + formattedSuggestion;
-        setHtml(newHtml);
-        setSuggestion("");
-        setShowToast(false);
-
-        // 제안 일시 중단 (1.5초)
-        pauseSuggestion(1500);
-      }
-    }
-
-    // 맞춤법 수정 제안 수락 처리
-    function acceptCorrection() {
-      if (correctionSuggestion) {
-        // 텍스트를 HTML로 변환 (줄바꿈 보존)
-        const formattedCorrection = correctionSuggestion
-          .replace(/\n/g, "<br>")
-          .replace(/\s\s/g, "&nbsp;&nbsp;");
-
-        setHtml(formattedCorrection);
-        setCorrectionMode(false);
-        setCorrectionSuggestion("");
-        setShowToast(false);
-
-        // 제안 일시 중단 (1.5초)
-        pauseSuggestion(1500);
-      }
-    }
-
-    // 전체 이메일 제안 수락
-    function acceptFullEmail() {
-      if (fullEmailSuggestion) {
-        // HTML 형식으로 변환 (줄바꿈 보존)
-        const formattedHtml = fullEmailSuggestion
-          .replace(/\n/g, "<br>")
-          .replace(/\s\s/g, "&nbsp;&nbsp;");
-
-        setHtml(formattedHtml);
-        setFullEmailSuggestion("");
-        setShowToast(false);
-
-        // 이메일 생성 완료 상태로 설정
-        setEmailGenerated(true);
-        // 재생성 비활성화
-        setRegenerateEnabled(false);
-
-        // 제안 일시 중단 (장시간 - 사실상 수동으로 활성화할 때까지 중단)
-        pauseSuggestion(3600000); // 1시간 동안 제안 일시 중단
-
-        // 재생성 버튼을 위한 토스트 표시
+    // 4. 맞춤법/전체메일 토스트 표시 관리
+    useEffect(() => {
+      if (correctionMode || fullEmailSuggestion) {
         setShowToast(true);
+        if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+        toastTimeoutRef.current = setTimeout(() => setShowToast(false), 15000);
+      } else {
+        setShowToast(false);
+      }
 
-        // 이전 타임아웃이 있으면 제거
-        if (toastTimeoutRef.current) {
-          clearTimeout(toastTimeoutRef.current);
+      return () => {
+        if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+      };
+    }, [correctionMode, fullEmailSuggestion]);
+
+    // 5. 제안 수락/거절 핸들러
+    function acceptSuggestion() {
+      if (!suggestion) return;
+      const formatted = suggestion
+        .replace(/\n/g, "<br>")
+        .replace(/\s\s/g, "&nbsp;&nbsp;");
+      setHtml(initialHtml + formatted);
+      setSuggestion("");
+    }
+
+    function acceptCorrection() {
+      if (!correctionSuggestion) return;
+      const formatted = correctionSuggestion
+        .replace(/\n/g, "<br>")
+        .replace(/\s\s/g, "&nbsp;&nbsp;");
+      setHtml(formatted);
+      setCorrectionMode(false);
+      setCorrectionSuggestion("");
+    }
+
+    function acceptFullEmail() {
+      if (!fullEmailSuggestion) return;
+      const formatted = fullEmailSuggestion
+        .replace(/\n/g, "<br>")
+        .replace(/\s\s/g, "&nbsp;&nbsp;");
+      setHtml(formatted);
+      setFullEmailSuggestion("");
+      setEmailGenerated(true);
+      setRegenerateEnabled(false);
+    }
+
+    // 6. Tab / Esc 단축키
+    function handleKeyDown(e: React.KeyboardEvent) {
+      if (e.key === "Tab") {
+        if (suggestion) {
+          acceptSuggestion();
+          e.preventDefault();
+        } else if (correctionMode) {
+          acceptCorrection();
+          e.preventDefault();
+        } else if (fullEmailSuggestion) {
+          acceptFullEmail();
+          e.preventDefault();
         }
-
-        // 토스트 메시지 지속 시간 설정
-        toastTimeoutRef.current = setTimeout(() => {
-          setShowToast(false);
-        }, 15000); // 15초 동안 토스트 표시
+      }
+      if (e.key === "Escape") {
+        setSuggestion("");
+        setCorrectionMode(false);
+        setFullEmailSuggestion("");
       }
     }
 
-    // AI 활성화/비활성화 토글
+    // 7. AI 토글
     function toggleAI() {
       setAiEnabled(!aiEnabled);
-      // AI 비활성화 시 모든 제안 초기화
       if (aiEnabled) {
         setSuggestion("");
         setCorrectionMode(false);
         setFullEmailSuggestion("");
-        setShowToast(false);
       }
     }
 
-    // 컴포넌트 언마운트 시 타이머 정리
+    // 8. 컴포넌트 언마운트 시 타이머 정리
     useEffect(() => {
       return () => {
-        if (toastTimeoutRef.current) {
-          clearTimeout(toastTimeoutRef.current);
-        }
-        if (suggestionPauseTimeoutRef.current) {
-          clearTimeout(suggestionPauseTimeoutRef.current);
-        }
-        if (regenerateCooldownRef.current) {
+        if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+        if (regenerateCooldownRef.current)
           clearTimeout(regenerateCooldownRef.current);
-        }
       };
     }, []);
 
-    // Tab 키로 제안 수락 처리
-    function handleKeyDown(e: React.KeyboardEvent) {
-      if (e.key === "Tab" && showToast) {
-        if (suggestion) {
-          e.preventDefault();
-          acceptSuggestion();
-        } else if (correctionMode) {
-          e.preventDefault();
-          acceptCorrection();
-        } else if (fullEmailSuggestion) {
-          e.preventDefault();
-          acceptFullEmail();
-        }
-      } else if (e.key === "Escape" && showToast) {
-        e.preventDefault();
-        setSuggestion("");
-        setCorrectionMode(false);
-        setFullEmailSuggestion("");
-        setShowToast(false);
-      }
-    }
-
+    // 9. JSX 렌더링
     return (
       <div
-        className="relative flex flex-col w-full h-full rounded-lg bg-white p-2 font-pre-bold"
+        className="flex flex-col w-full h-full justify-start items-center rounded-lg bg-white text-text p-2 font-pre-bold"
         onKeyDown={handleKeyDown}
       >
-        {/* 모던한 AI 컨트롤 */}
-        <div className="flex items-center gap-4 mb-4">
-          <div
-            className={`flex items-center gap-3 px-3 py-1.5 rounded-full transition-all cursor-pointer ${
-              aiEnabled
-                ? "bg-gradient-to-r from-theme/90 to-theme shadow-md"
-                : "bg-gradient-to-r from-light2 to-light1"
-            }`}
-            onClick={toggleAI}
-          >
-            <div className="flex items-center">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="transition-colors"
-                stroke={aiEnabled ? "#ffffff" : "#7d7983"}
-                strokeWidth="1.5"
-              >
-                <path
-                  d="M12 3C7.03 3 3 7.03 3 12C3 16.97 7.03 21 12 21C16.97 21 21 16.97 21 12C21 7.03 16.97 3 12 3Z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z"
-                  fill={aiEnabled ? "#ffffff" : "none"}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span
-                className={`ml-1 text-sm font-pre-medium transition-colors ${aiEnabled ? "text-white" : "text-title"}`}
-              >
-                AI {aiEnabled ? "활성화" : "비활성화"}
-              </span>
-            </div>
-
-            <div
-              className={`relative w-10 h-5 rounded-full transition-colors ${
-                aiEnabled ? "bg-white/30" : "bg-light3"
-              }`}
-            >
-              <div
-                className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-md transition-transform duration-300 ${
-                  aiEnabled ? "translate-x-5" : ""
-                }`}
-              ></div>
-            </div>
-          </div>
-
-          {aiEnabled && (
-            <div className="flex-1 flex rounded-full overflow-hidden shadow-sm">
-              <button
-                type="button"
-                className={`flex-1 text-xs px-4 py-1.5 transition-all duration-200 ${
-                  mode === "autocomplete"
-                    ? "bg-theme text-white font-pre-semibold"
-                    : "bg-white text-content hover:bg-light1/50"
-                }`}
-                onClick={() => {
-                  setMode("autocomplete");
-                  // 자동 완성 모드로 변경 시 이메일 생성 상태 초기화 옵션
-                  // setEmailGenerated(false);
-                }}
-              >
-                자동완성
-              </button>
-              <button
-                type="button"
-                className={`flex-1 text-xs px-4 py-1.5 transition-all duration-200 ${
-                  mode === "full-email"
-                    ? "bg-theme text-white font-pre-semibold"
-                    : "bg-white text-content hover:bg-light1/50"
-                }`}
-                onClick={() => {
-                  setMode("full-email");
-                  if (emailGenerated) {
-                    enableRegeneration();
-                  }
-                }}
-              >
-                전체 이메일 생성
-              </button>
-            </div>
-          )}
-
-          {aiEnabled && loading && (
-            <div className="absolute top-14 left-0 right-0 h-0.5">
-              <div className="h-full bg-theme/70 rounded-full animate-pulse-loading shadow-sm"></div>
-            </div>
-          )}
-        </div>
-
-        {/* 수신자 표시 */}
+        {/* 수신자 블록 */}
         {(sender.length > 0 || cc.length > 0 || bcc.length > 0) && (
           <SenderList
             sender={sender}
@@ -502,169 +281,247 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
           />
         )}
 
-        {/* 받는 사람 입력 폼 */}
+        {/* 받는 사람 입력 */}
         <form
           onSubmit={addSender}
-          className="flex justify-between items-center h-fit border-b-2 border-light1"
+          className="flex justify-between items-center w-full h-fit border-b-2 border-light1"
         >
           <input
             name="sender"
             type="text"
             placeholder="받는 사람"
-            className="w-full h-9 text-sm focus:outline-none focus:bg-gray-100"
+            className="w-full h-9 px-1 text-sm focus:outline-none focus:bg-light"
           />
           <span className="flex items-center justify-between w-fit h-9 gap-2.5 text-sm">
             <button
               type="button"
               onClick={() => setIsCcOpen(!isCcOpen)}
-              className="font-pre-bold text-xs whitespace-nowrap"
+              className={`font-pre-bold text-xs px-1.5 py-0.5 rounded-full whitespace-nowrap ${
+                isCcOpen ? "bg-orange-400 text-white" : ""
+              }`}
             >
               참조
             </button>
             <button
               type="button"
               onClick={() => setIsBccOpen(!isBccOpen)}
-              className="font-pre-bold text-xs whitespace-nowrap"
+              className={`font-pre-bold text-xs px-1.5 py-0.5 rounded-full whitespace-nowrap ${
+                isBccOpen ? "bg-red-500 text-white" : ""
+              }`}
             >
               숨은 참조
             </button>
           </span>
         </form>
 
-        {/* 참조 입력 폼 */}
+        {/* 참조 입력 */}
         {isCcOpen && (
-          <form className="h-fit" onSubmit={addCc}>
+          <form className="w-full h-fit" onSubmit={addCc}>
             <input
               name="cc"
               type="text"
               placeholder="참조"
-              className="w-full h-9 text-sm border-b-2 border-light1 focus:outline-none focus:bg-gray-100"
+              className="w-full h-9 px-1 text-sm border-b-2 border-light1 bg-light focus:outline-none"
             />
           </form>
         )}
 
-        {/* 숨은 참조 입력 폼 */}
+        {/* 숨은 참조 입력 */}
         {isBccOpen && (
-          <form className="h-fit" onSubmit={addBcc}>
+          <form className="w-full h-fit" onSubmit={addBcc}>
             <input
               name="bcc"
               type="text"
               placeholder="숨은 참조"
-              className="w-full h-9 text-sm border-b-2 border-light1 focus:outline-none focus:bg-gray-100"
+              className="w-full h-9 px-1 text-sm border-b-2 border-light1 bg-light focus:outline-none"
             />
           </form>
         )}
 
         {/* 제목 입력 */}
-        <input
-          ref={titleRef}
-          name="title"
-          type="text"
-          placeholder="제목"
-          className="w-full h-10 text-sm border-b-2 border-light1 focus:outline-none focus:bg-gray-100"
-        />
+        <div className="w-full h-fit">
+          <input
+            ref={titleRef}
+            name="title"
+            type="text"
+            placeholder="제목"
+            className="w-full h-9 px-1 text-sm border-b-2 border-light1 focus:outline-none focus:bg-light"
+          />
+        </div>
 
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between w-full h-9 text-sm">
+        {/* 본문 */}
+        <div className="flex flex-col w-full flex-1 overflow-y-hidden">
+          <div className="flex items-center justify-between w-full h-9 px-1 text-sm">
             본문
           </div>
 
-          {/* AI 로딩 인디케이터 제거 - 상단에 통합 */}
+          {/* AI 컨트롤 바 */}
+          <div className="relative flex items-center w-full h-10 gap-4">
+            {/* AI 토글 스위치 */}
+            <div
+              className={`flex items-center gap-3 px-3 py-1 rounded-full transition-all cursor-pointer ${
+                aiEnabled ? "bg-accept shadow-md" : "bg-light"
+              }`}
+              onClick={toggleAI}
+            >
+              <div className="flex items-center">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="transition-colors"
+                  stroke={aiEnabled ? "#ffffff" : "#7d7983"}
+                  strokeWidth="1.5"
+                >
+                  <path
+                    d="M12 3C7.03 3 3 7.03 3 12C3 16.97 7.03 21 12 21C16.97 21 21 16.97 21 12C21 7.03 16.97 3 12 3Z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z"
+                    fill={aiEnabled ? "#ffffff" : "none"}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span
+                  className={`ml-1 text-sm font-pre-medium transition-colors ${
+                    aiEnabled ? "text-[#ffffff]" : "text-light3"
+                  }`}
+                >
+                  AI {aiEnabled ? "활성화" : "비활성화"}
+                </span>
+              </div>
 
-          {/* 본문 에디터 */}
-          <div className="relative flex-1 overflow-hidden">
-            <MailTextEditor initialHtml={initialHtml} setHtml={setHtml} />
+              <div
+                className={`relative w-10 h-5 rounded-full transition-colors ${
+                  aiEnabled ? "bg-white/30" : "bg-light3"
+                }`}
+              >
+                <div
+                  className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-md transition-transform duration-300 ${
+                    aiEnabled ? "translate-x-5" : ""
+                  }`}
+                ></div>
+              </div>
+            </div>
 
-            {/* 토스트 메시지 - 제안 표시 */}
-            {showToast && (
-              <div className="fixed bottom-4 right-4 max-w-xs z-50 transform transition-all duration-300 ease-in-out">
-                {/* 자동완성 제안 */}
-                {suggestion && (
-                  <div className="bg-white rounded-lg shadow-lg p-3 mb-2 border-l-4 border-theme animate-fade-in">
-                    <p className="text-xs text-content mb-1 flex justify-between">
-                      <span>자동완성 제안</span>
-                      <span className="text-theme">Tab 키로 수락</span>
-                    </p>
-                    <p className="text-sm bg-light1 p-2 rounded whitespace-pre-wrap">
-                      {suggestion}
-                    </p>
-                    <div className="flex justify-end gap-2 mt-2">
-                      <button
-                        type="button"
-                        onClick={() => setShowToast(false)}
-                        className="text-xs px-2 py-1 rounded bg-light2 hover:bg-light3 text-title"
-                      >
-                        무시
-                      </button>
-                      <button
-                        type="button"
-                        onClick={acceptSuggestion}
-                        className="text-xs px-2 py-1 rounded bg-theme text-white hover:bg-theme-dark"
-                      >
-                        수락
-                      </button>
-                    </div>
+            {aiEnabled && (
+              <div className="flex-1 flex rounded-full overflow-hidden shadow-sm">
+                <button
+                  type="button"
+                  className={`flex-1 text-xs px-4 py-1.5 transition-all duration-200 ${
+                    mode === "autocomplete"
+                      ? "bg-accept text-[#ffffff] font-pre-semibold"
+                      : "bg-light text-light3 hover:bg-light1/50"
+                  }`}
+                  onClick={() => {
+                    setMode("autocomplete");
+                    setSuggestion("");
+                    setCorrectionMode(false);
+                    setFullEmailSuggestion("");
+                    if (emailGenerated) setRegenerateEnabled(true);
+                  }}
+                >
+                  자동완성
+                </button>
+                <button
+                  type="button"
+                  className={`flex-1 text-xs px-4 py-1.5 transition-all duration-200 ${
+                    mode === "full-email"
+                      ? "bg-accept text-[#ffffff] font-pre-semibold"
+                      : "bg-light text-light3 hover:bg-light1/50"
+                  }`}
+                  onClick={() => {
+                    setMode("full-email");
+                    setSuggestion("");
+                    setCorrectionMode(false);
+                    setFullEmailSuggestion("");
+                  }}
+                >
+                  전체 이메일 생성
+                </button>
+              </div>
+            )}
+
+            {aiEnabled && loading && (
+              <div className="absolute top-9 left-0 right-0 h-0.5">
+                <div className="h-full bg-theme/70 rounded-full animate-pulse-loading shadow-sm"></div>
+              </div>
+            )}
+          </div>
+
+          {/* 에디터 */}
+          <div className="relative h-full overflow-hidden">
+            <MailTextEditor
+              initialHtml={initialHtml}
+              setHtml={setHtml}
+              onCursorBoundsChange={setCursorBounds}
+              ghostText={suggestion}
+              cursorBounds={cursorBounds}
+            />
+
+            {/* 맞춤법/전체메일 토스트 */}
+            {showToast && correctionMode && (
+              <div className="fixed bottom-4 right-4 max-w-xs z-50 animate-fade-in">
+                <div className="bg-white rounded-lg shadow-lg p-3 mb-2 border-l-4 border-warning">
+                  <p className="text-xs text-content mb-1 flex justify-between">
+                    <span>맞춤법 수정 제안</span>
+                    <span className="text-warning">Tab 키로 수락</span>
+                  </p>
+                  <p className="text-sm bg-light1 p-2 rounded whitespace-pre-wrap">
+                    {correctionSuggestion}
+                  </p>
+                  <div className="flex justify-end gap-2 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowToast(false)}
+                      className="text-xs px-2 py-1 rounded bg-light2 hover:bg-light3 text-title"
+                    >
+                      무시
+                    </button>
+                    <button
+                      type="button"
+                      onClick={acceptCorrection}
+                      className="text-xs px-2 py-1 rounded bg-warning text-white hover:bg-amber-600"
+                    >
+                      수정
+                    </button>
                   </div>
-                )}
+                </div>
+              </div>
+            )}
 
-                {/* 맞춤법 수정 제안 */}
-                {correctionMode && (
-                  <div className="bg-white rounded-lg shadow-lg p-3 mb-2 border-l-4 border-warning animate-fade-in">
-                    <p className="text-xs text-content mb-1 flex justify-between">
-                      <span>맞춤법 수정 제안</span>
-                      <span className="text-warning">Tab 키로 수락</span>
-                    </p>
-                    <p className="text-sm bg-light1 p-2 rounded whitespace-pre-wrap">
-                      {correctionSuggestion}
-                    </p>
-                    <div className="flex justify-end gap-2 mt-2">
-                      <button
-                        type="button"
-                        onClick={() => setShowToast(false)}
-                        className="text-xs px-2 py-1 rounded bg-light2 hover:bg-light3 text-title"
-                      >
-                        무시
-                      </button>
-                      <button
-                        type="button"
-                        onClick={acceptCorrection}
-                        className="text-xs px-2 py-1 rounded bg-warning text-white hover:bg-amber-600"
-                      >
-                        수정
-                      </button>
-                    </div>
+            {showToast && fullEmailSuggestion && (
+              <div className="fixed bottom-4 right-4 max-w-xs z-50 animate-fade-in">
+                <div className="bg-white rounded-lg shadow-lg p-3 mb-2 border-l-4 border-accept">
+                  <p className="text-xs text-content mb-1 flex justify-between">
+                    <span>이메일 자동 작성</span>
+                    <span className="text-accept">Tab 키로 수락</span>
+                  </p>
+                  <div className="text-sm bg-light1 p-2 rounded max-h-60 overflow-y-auto whitespace-pre-wrap">
+                    {fullEmailSuggestion}
                   </div>
-                )}
-
-                {/* 전체 이메일 제안 */}
-                {fullEmailSuggestion && (
-                  <div className="bg-white rounded-lg shadow-lg p-3 mb-2 border-l-4 border-accept animate-fade-in">
-                    <p className="text-xs text-content mb-1 flex justify-between">
-                      <span>이메일 자동 작성</span>
-                      <span className="text-accept">Tab 키로 수락</span>
-                    </p>
-                    {/* 전체 이메일 제안 */}
-                    <div className="text-sm bg-light1 p-2 rounded max-h-60 overflow-y-auto whitespace-pre-wrap">
-                      {fullEmailSuggestion}
-                    </div>
-                    <div className="flex justify-end gap-2 mt-2">
-                      <button
-                        type="button"
-                        onClick={() => setShowToast(false)}
-                        className="text-xs px-2 py-1 rounded bg-light2 hover:bg-light3 text-title"
-                      >
-                        무시
-                      </button>
-                      <button
-                        type="button"
-                        onClick={acceptFullEmail}
-                        className="text-xs px-2 py-1 rounded bg-accept text-white hover:bg-blue-700"
-                      >
-                        적용
-                      </button>
-                    </div>
+                  <div className="flex justify-end gap-2 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowToast(false)}
+                      className="text-xs px-2 py-1 rounded bg-light2 hover:bg-light3 text-title"
+                    >
+                      무시
+                    </button>
+                    <button
+                      type="button"
+                      onClick={acceptFullEmail}
+                      className="text-xs px-2 py-1 rounded bg-accept text-white hover:bg-blue-700"
+                    >
+                      적용
+                    </button>
                   </div>
-                )}
+                </div>
               </div>
             )}
           </div>

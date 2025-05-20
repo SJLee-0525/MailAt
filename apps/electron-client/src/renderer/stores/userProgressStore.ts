@@ -1,8 +1,8 @@
 import { create } from "zustand";
 
-import { AllEmails } from "@/types/emailTypes";
-
 interface UserProgressStore {
+  isLoading: boolean;
+  loadingMessage: string | null;
   bottomNavProgress: "search" | null;
   mailFormIsOpen: boolean;
   mailFormIsClosing: boolean;
@@ -10,21 +10,28 @@ interface UserProgressStore {
   calendarIsClosing: boolean;
   inboxIsOpen: boolean;
   inboxIsClosing: boolean;
-  selectedMail: AllEmails | null;
+  selectedMail: { messageId: number; fromEmail: string } | null;
   selectedMailIsClosing: boolean;
   isReplying: boolean;
   chattingIsOpen: boolean;
   chattingIsClosing: boolean;
+  setLoading: (isLoading: boolean) => void;
+  setLoadingMessage: (loadingMessage: string) => void;
+  setCloseLoadingMessage: () => void;
   setBottomNavProgress: (progress: "search" | null) => void;
   setMailFormIsOpen: (isOpen: boolean) => void;
   setInboxIsOpen: (isOpen: boolean) => void;
   setCalendarIsOpen: (isOpen: boolean) => void;
-  setSelectedMail: (email: AllEmails | null) => void;
+  setSelectedMail: (
+    email: { messageId: number; fromEmail: string } | null
+  ) => void;
   setIsReplying: (isReplying: boolean) => void;
   setChattingIsOpen: (isOpen: boolean) => void;
 }
 
 const useUserProgressStore = create<UserProgressStore>((set) => ({
+  isLoading: false,
+  loadingMessage: null,
   bottomNavProgress: null,
   mailFormIsOpen: false,
   mailFormIsClosing: false,
@@ -37,6 +44,13 @@ const useUserProgressStore = create<UserProgressStore>((set) => ({
   isReplying: false,
   chattingIsOpen: false,
   chattingIsClosing: false,
+  setLoading: (isLoading) => set({ isLoading }),
+  setLoadingMessage: (loadingMessage) => set({ loadingMessage }),
+  setCloseLoadingMessage: () => {
+    setTimeout(() => {
+      set({ loadingMessage: null });
+    }, 3000);
+  },
   setBottomNavProgress: (progress) => set({ bottomNavProgress: progress }),
   setMailFormIsOpen: (isOpen) => {
     if (isOpen) {

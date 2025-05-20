@@ -70,7 +70,7 @@ export const deleteUser = async (
 // 이메일 계정 등록
 export const createAccount = async (
   accountData: CreateAccountRequest
-): Promise<CreateAccountResponse[]> => {
+): Promise<{ success: boolean; data: CreateAccountResponse[] }> => {
   try {
     const response = await window.electronAPI.account.create(accountData);
     console.log(
@@ -79,7 +79,7 @@ export const createAccount = async (
       )})`,
       response
     );
-    return response.data;
+    return response;
   } catch (error: unknown) {
     throw new Error(error as string);
   }
