@@ -1,12 +1,20 @@
 import { IconProps } from "@/types/iconProps";
 
-const MinimizeIcon = ({
+import useAuthenticateStore from "@stores/authenticateStore";
+
+const ReloadIcon = ({
   width = 24,
   height = 24,
-  strokeColor = "white",
+  strokeColor,
   strokeWidth = 2,
   onClick,
 }: IconProps) => {
+  const { currentTheme } = useAuthenticateStore();
+
+  if (!strokeColor) {
+    strokeColor = currentTheme === "theme-night" ? "#ffffff" : "#000000";
+  }
+
   return (
     <svg
       width={width}
@@ -27,4 +35,4 @@ const MinimizeIcon = ({
   );
 };
 
-export default MinimizeIcon;
+export default ReloadIcon;

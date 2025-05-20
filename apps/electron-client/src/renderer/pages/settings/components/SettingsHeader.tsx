@@ -119,7 +119,6 @@ const SettingsHeader = () => {
         <ReloadIcon
           width={20}
           height={20}
-          strokeColor="#000000"
           strokeWidth={2}
           onClick={() => setIsOpenSync(!isOpenSync)}
         />
