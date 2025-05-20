@@ -1,3 +1,15 @@
+export interface EmailSyncResponse {
+  success: boolean;
+  syncedCount: number; // 실제로 연동되어 DB저장에 성공한 동기화 이메일 수
+  totalAvailable: number;
+  processedCount: number; //처리를 시도한 동기화 이메일 수
+  skippedCount: number;
+  folderName: string;
+  folderId: number;
+  errors: undefined;
+  skippedMessages: undefined;
+}
+
 export interface FolderResponse {
   folderId: number; // 폴더 ID
   accountId: number; // 계정 ID

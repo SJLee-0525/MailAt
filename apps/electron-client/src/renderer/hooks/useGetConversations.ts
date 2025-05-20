@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query";
 
 import {
+  EmailSyncResponse,
   AllEmails,
   FolderResponse,
   EmailSearchFilters,
@@ -34,7 +35,7 @@ export const useSyncEmail = () => {
   const { user } = useAuthenticateStore();
 
   const mutation = useMutation<
-    { success: boolean; syncedCount: number },
+    { success: boolean; data: EmailSyncResponse },
     Error,
     { accountId: number; folderName?: string; limit?: number }
   >({

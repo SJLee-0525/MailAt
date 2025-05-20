@@ -1,6 +1,7 @@
 import { aiInstance } from "@apis/instance";
 
 import {
+  EmailSyncResponse,
   FolderResponse,
   AllEmails,
   // EmailSummary,
@@ -31,7 +32,7 @@ export const getSyncEmail = async ({
   accountId: number | null;
   folderName: string;
   limit: number;
-}): Promise<{ success: boolean; syncedCount: number }> => {
+}): Promise<{ success: boolean; data: EmailSyncResponse }> => {
   if (!accountId) {
     throw new Error("Account ID is required to sync email.");
   }
@@ -46,7 +47,7 @@ export const getSyncEmail = async ({
     const response = await window.electronAPI.imap.syncFolder(params);
     console.log(
       `[POST] window.electronAPI.imap.syncFolder(${params})`,
-      response
+      response.data
     );
     return response;
   } catch (error: unknown) {

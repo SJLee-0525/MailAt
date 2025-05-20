@@ -7,6 +7,7 @@ import {
 } from "@/types/user";
 
 import {
+  EmailSyncResponse,
   FolderResponse,
   EmailSearchFiltersParams,
   AllEmails,
@@ -209,7 +210,7 @@ interface ElectronAPI {
       accountId: number;
       folderName: string;
       limit?: number;
-    }): Promise<{ success: boolean; syncedCount: number }>;
+    }): Promise<{ success: boolean; data: EmailSyncResponse }>;
   };
 
   // 이메일 전송

@@ -88,7 +88,7 @@ const SettingsHeader = () => {
 
         openAlertModal({
           title: "동기화 성공",
-          content: `${response.syncedCount}개의 이메일이 동기화되었습니다.`,
+          content: `${response.data.syncedCount}개의 이메일이 동기화되었습니다.`,
         });
       } else {
         setLoading(false);
