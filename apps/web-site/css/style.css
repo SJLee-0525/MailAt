@@ -151,10 +151,70 @@ footer {
     color: #555; /* 푸터 텍스트 색상 */
     text-align: center;
     padding: 25px 0; /* 푸터 패딩 증가 */
-    margin-top: auto;
+    /* margin-top: auto; /* 이 부분은 배너 추가로 인해 조정될 수 있음 */
     width: 100%;
     border-top: 1px solid #e0e0e0; /* 푸터 상단 구분선 */
 }
+
+/* 개발자 크레딧 배너 스타일 */
+.developer-credits-banner-container {
+    width: 100%;
+    overflow: hidden;
+    background-color: #f8f9fa;
+    padding: 15px 0; /* 배너 상하 패딩 증가 (두께 조절) */
+    border-top: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* 마우스 호버 시 애니메이션 일시 정지 */
+.developer-credits-banner-container:hover .developer-credits-banner-content {
+    animation-play-state: paused;
+}
+
+.developer-credits-banner-content {
+    display: inline-block;
+    white-space: nowrap;
+    animation: traditional-marquee 25s linear infinite; /* 애니메이션 지속 시간 조절 가능 */
+    /* animation-play-state: running; /* 기본값 */
+}
+
+.developer-credits-banner-content span {
+    display: inline-block; /* 각 개발자 정보를 인라인 블록으로 처리 */
+    padding: 0 25px; /* 각 항목 사이의 좌우 간격 */
+    font-size: 0.9em;
+    color: #495057; /* 텍스트 색상 */
+}
+
+.developer-credits-banner-content span a {
+    color: #007bff; /* 링크 색상 */
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.developer-credits-banner-content span a:hover {
+    text-decoration: underline;
+}
+
+/* Marquee 애니메이션 정의 - 전통적인 방식 (오른쪽에서 나타나 왼쪽으로 사라짐) */
+@keyframes traditional-marquee {
+    from { /* 0% */
+        /* 콘텐츠의 왼쪽 끝이 뷰포트의 오른쪽 바깥에서 시작하도록 설정 */
+        transform: translateX(100vw);
+    }
+    to { /* 100% */
+        /* 콘텐츠의 오른쪽 끝이 뷰포트의 왼쪽 바깥으로 사라지도록 설정
+           (즉, 콘텐츠의 왼쪽 끝이 자신의 너비만큼 왼쪽으로 이동) */
+        transform: translateX(-100%); /* 여기서 -100%는 .developer-credits-banner-content 요소 자체의 너비를 의미합니다. */
+    }
+}
+
+/* 기존 푸터 위의 margin-top: auto가 main 요소에 적용되어 있다면,
+   배너가 main 외부에 있으므로 푸터가 항상 하단에 고정되도록 body, html에 min-height: 100% 와
+   body { display: flex; flex-direction: column; } main { flex: 1; } 등을 확인하세요.
+   (이전 답변에서 body에 이미 flex 설정이 적용되어 있다면 문제 없을 것입니다.)
+*/
 
 /* 반응형 디자인은 기존 코드를 유지하되, 필요시 미세 조정이 들어갈 수 있습니다. */
 /* 예를 들어, feature-item의 flex-basis 등을 새 디자인에 맞게 조정할 수 있습니다. */
