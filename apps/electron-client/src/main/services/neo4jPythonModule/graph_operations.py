@@ -1,13 +1,23 @@
 import sys
 import json
-import neo4j
+from neo4j import GraphDatabase
+from neo4j.exceptions import AuthError, ServiceUnavailable
 import sqlite3
 import os
+import sqlite3
+from bs4 import BeautifulSoup
+import joblib
+import torch
+from sentence_transformers import SentenceTransformer
+import time
+import tracemalloc
+import re
 
 # --- Configuration ---
 NEO4J_URI = "bolt://localhost:7687"
 NEO4J_USER = "neo4j"
-NEO4J_PASS = "12345678" # From other scripts
+NEO4J_PASS = "message-gustav-rufus-alex-roman-2104" # From other scripts
+FINAL_MAP_PATH = "final_name_map.json"
 
 # Determine the absolute path to the script's directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -20,595 +30,689 @@ print(f"[Python] SQLITE_DB_PATH: {SQLITE_DB_PATH}")
 LABEL_MAP_SN = {0: 'Root', 1: 'Person', 2: 'Category', 3: 'Subcategory'}
 CTYPE_MAP_SN = {v: k for k, v in LABEL_MAP_SN.items()}
 
-driver = None
+# embedding 부분 - sqlite가 만들어졌다면 바로 실행(category 생성)
+def process_and_embed_messages_py(DB_PATH=SQLITE_DB_PATH):
+    # --- 측정 시작 ---
+    total_start = time.time()
+    tracemalloc.start()
 
-def get_driver():
-    global driver
-    if driver is None:
-        try:
-            driver = neo4j.GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASS))
-            driver.verify_connectivity() # 연결 확인
-            print("[Python] Neo4j driver initialized and connected.")
-        except neo4j.exceptions.AuthError as e:
-            print(f"[Python] Neo4j authentication failed: {e}")
-            raise
-        except neo4j.exceptions.ServiceUnavailable as e:
-            print(f"[Python] Neo4j service unavailable: {e}")
-            raise
-        except Exception as e:
-            print(f"[Python] Error initializing Neo4j driver: {e}")
-            raise
-    return driver
+    # --- 모델 로드 ---
+    clf = joblib.load("xgb_model_384to64_miniLM.pkl")
+    pca = joblib.load("pca_64_from_384_miniLM.pkl")
+    le = joblib.load("label_encoder_384to64_miniLM.pkl")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"✅ SBERT device: {device}")
+    sbert = SentenceTransformer("sbert_model_miniLM.pkl", device=device)
 
-def close_driver():
-    global driver
-    if driver is not None:
-        driver.close()
-        driver = None
-        print("[Python] Neo4j driver closed.")
+    # --- HTML → 텍스트 변환 함수 ---
+    def html_to_text(html: str) -> str:
+        if not html:
+            return ''
+        return BeautifulSoup(html, 'html.parser').get_text(separator='\n', strip=True)
 
-def _execute_query(query, params=None):
-    """Helper to run queries and handle sessions."""
-    loc_driver = get_driver()
-    with loc_driver.session(database="neo4j") as session: # 명시적으로 데이터베이스 지정
-        try:
-            result = session.run(query, params)
-            return result
-        except Exception as e:
-            print(f"[Python] Error executing query: {query} with params {params}. Error: {e}")
-            raise
+    # --- 조직명 추출 도구 ---
+    org_keywords = [
+        "대학교", "대학", "캠퍼스", "학교", "중학교", "고등학교",
+        "전자", "자동차", "화학", "건설", "통신", "제약", "바이오",
+        "연구소", "인사팀", "그룹", "센터", "병원", "협회", "기관"
+    ]
+    org_pattern = re.compile(r"(?:\(?주\)?식회사|\(?주\)|㈜)[\s]*([가-힣A-Za-z0-9&·]+)")
+
+    def extract_signature(text):
+        tail = text[-300:]
+        blocks = [tail[i:i+50] for i in range(0, len(tail), 50)]
+        org_lines = []
+        for line in blocks:
+            if any(kw in line for kw in org_keywords) or org_pattern.search(line):
+                org_lines.append(line)
+        return org_lines
+
+    def extract_organization(org_lines):
+        for line in org_lines:
+            match = org_pattern.search(line)
+            if match:
+                return match.group(1).strip()
+        return None
+
+    # --- 룰 기반 분류 ---
+    RULES = [
+        ("주소를 찾을 수 없음", "개인:알림"),
+        ("메일을 전송하지 못했습니다", "개인:알림"),
+        ("지원 결과", "채용:결과"),
+        ("면접 일정", "채용:결과"),
+        ("채용공고", "채용:공고"),
+        ("공고", "채용:공고"),
+        ("모집", "채용:공고"),
+        ("(광고)", "광고:교육"),
+        ("인프런", "광고:교육"),
+        ("강의", "광고:교육"),
+        ("워크샵", "회사:공지"),
+        ("연차", "회사:공지"),
+        ("휴가", "회사:공지"),
+        ("회식", "회사:공지"),
+        ("문의드립니다", "회사:업무"),
+        ("회신 부탁", "회사:업무"),
+        ("회의 요청", "회사:일정"),
+        ("미팅 일정", "회사:일정"),
+        ("자료 요청", "회사:업무"),
+        ("보고서", "회사:업무"),
+        ("협조 요청", "회사:업무"),
+        ("Jira", "JIRA"),
+    ]
+
+    def apply_rules(text: str) -> str | None:
+        for keyword, label in RULES:
+            if keyword in text:
+                return label
+        return None
+
+    def predict_label(text: str) -> str:
+        emb = sbert.encode([text])
+        emb_pca = pca.transform(emb)
+        pred_num = clf.predict(emb_pca)[0]
+        return le.inverse_transform([pred_num])[0]
+
+    # --- DB 연결 ---
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+
+    # --- Category 캐시 ---
+    cur.execute("SELECT category_id, category_name FROM Category;")
+    category_cache = {name: cid for cid, name in cur.fetchall()}
+
+    def get_or_create_category_id(name: str) -> int:
+        name = name.strip()
+        if name in category_cache:
+            return category_cache[name]
+        cur.execute("INSERT INTO Category (category_name) VALUES (?);", (name,))
+        cid = cur.lastrowid
+        category_cache[name] = cid
+        return cid
+
+    # --- body_html → body_text 변환 및 저장 ---
+    cur.execute("SELECT rowid, body_html FROM Message;")
+    rows = cur.fetchall()
+    text_updates = [(html_to_text(html), rowid) for rowid, html in rows]
+    cur.executemany(
+        "UPDATE Message SET body_text = ? WHERE rowid = ?;",
+        text_updates
+    )
+    conn.commit()
+
+    # --- 메시지 조회 및 분류 준비 ---
+    cur.execute("SELECT message_id, body_text FROM Message;")
+    messages = cur.fetchall()
+
+    updates = []
+    for mid, text in messages:
+        if not text or not text.strip():
+            continue
+        plain_text = text
+        org_lines = extract_signature(plain_text)
+        org_name = extract_organization(org_lines)
+        base_label = apply_rules(plain_text) or predict_label(plain_text)
+        if org_name and ":" in base_label:
+            _, sub = base_label.split(":", 1)
+            cat = org_name
+        elif ":" in base_label:
+            cat, sub = base_label.split(":", 1)
+        else:
+            cat, sub = base_label, None
+        cat_id = get_or_create_category_id(cat)
+        sub_id = get_or_create_category_id(sub) if sub else None
+        updates.append((cat_id, sub_id, mid))
+
+    # --- DB 업데이트 ---
+    cur.executemany(
+        "UPDATE Message SET category_id=?, sub_category_id=? WHERE message_id=?;",
+        updates
+    )
+    conn.commit()
+    conn.close()
+
+    # --- 측정 종료 ---
+    total_end = time.time()
+    current, peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+
+    print(f"✅ 총 {len(updates)}개 메시지 분류 완료")
+    print(f"⏱️ 처리 시간: {total_end - total_start:.2f}초")
+    print(f"💾 메모리 사용: 현재 {current/1024/1024:.2f}MB / 최대 {peak/1024/1024:.2f}MB")
 
 # --- Function from make_node.py ---
+# graphdb 생성 - embedding 이후에 바로 실행
+def resolve_final_name(name, mapping):
+    visited = set()
+    while name in mapping and name not in visited:
+        visited.add(name)
+        name = mapping[name]
+    return name
+
 def initialize_graph_from_sqlite_py():
-    print("[Python] Attempting to initialize graph from SQLite...")
-    if not os.path.exists(SQLITE_DB_PATH):
-        print(f"[Python] SQLite database file not found at {SQLITE_DB_PATH}")
-        return {"status": "error", "message": f"Python: SQLite database file not found at {SQLITE_DB_PATH}"}
+    conn = sqlite3.connect(SQLITE_DB_PATH)
+    cur = conn.cursor()
 
-    try:
-        # 1) SQLite에서 데이터 로드
-        conn = sqlite3.connect(SQLITE_DB_PATH)
-        cur = conn.cursor()
-        print("[Python] Connected to SQLite.")
+    cur.execute("SELECT email FROM Account;")
+    account_emails = [row[0].lower() for row in cur.fetchall()]
 
-        cur.execute("SELECT email FROM Account;")
-        account_emails = [row[0].lower() for row in cur.fetchall()]
-        print(f"[Python] Loaded {len(account_emails)} account emails from SQLite.")
+    cur.execute("SELECT message_id, category_id, sub_category_id FROM Message;")
+    messages = cur.fetchall()
 
-        cur.execute("SELECT message_id, category_id, sub_category_id, from_email, subject, sent_at FROM Message;") # Message 테이블에서 필요한 컬럼 추가
-        messages_data = cur.fetchall()
-        print(f"[Python] Loaded {len(messages_data)} messages from SQLite.")
+    msg_contacts = {}
+    cur.execute("SELECT message_id, contact_id, type FROM MessageContact;")
+    for mid, cid, typ in cur.fetchall():
+        msg_contacts.setdefault(mid, {}).setdefault(typ, []).append(cid)
 
-        msg_contacts = {} # {message_id: {'from': [contact_id], 'to': [contact_id], 'cc': [contact_id], 'bcc': [contact_id]}}
-        cur.execute("SELECT message_id, contact_id, type FROM MessageContact;")
-        for mid, cid, typ in cur.fetchall():
-            if mid not in msg_contacts:
-                msg_contacts[mid] = {'from': [], 'to': [], 'cc': [], 'bcc': []}
-            # type이 실제 MessageContact 테이블의 'type' 컬럼 값에 따라 다를 수 있음 (예: 'FROM', 'TO', 'CC')
-            if typ.upper() == 'FROM': # type 값을 대문자로 비교하여 일관성 유지
-                 msg_contacts[mid]['from'].append(cid)
-            elif typ.upper() == 'TO':
-                 msg_contacts[mid]['to'].append(cid)
-            elif typ.upper() == 'CC':
-                 msg_contacts[mid]['cc'].append(cid)
-            elif typ.upper() == 'BCC':
-                msg_contacts[mid]['bcc'].append(cid)
+    cur.execute("SELECT contact_id, name, email FROM EmailContact;")
+    email_contacts = {cid: (name, email.lower()) for cid, name, email in cur.fetchall()}
 
-        print(f"[Python] Loaded {len(msg_contacts)} message contact relations from SQLite.")
+    cur.execute("SELECT category_id, category_name FROM Category;")
+    category_map = {cid: name for cid, name in cur.fetchall()}
 
-        cur.execute("SELECT contact_id, name, email FROM EmailContact;")
-        email_contacts_map = {cid: (name, email.lower() if email else None) for cid, name, email in cur.fetchall()}
-        print(f"[Python] Loaded {len(email_contacts_map)} email contacts from SQLite.")
+    conn.close()
 
-        cur.execute("SELECT category_id, category_name FROM Category;")
-        category_map = {cid: name for cid, name in cur.fetchall()}
-        print(f"[Python] Loaded {len(category_map)} categories from SQLite.")
-        conn.close()
-        print("[Python] SQLite connection closed.")
+    if os.path.exists(FINAL_MAP_PATH):
+        final_name_map = json.load(open(FINAL_MAP_PATH, encoding="utf-8"))
+    else:
+        final_name_map = {}
 
-        # 2) Neo4j 연결 및 그래프 생성
-        loc_driver = get_driver()
-        with loc_driver.session(database="neo4j") as sess: # 명시적으로 데이터베이스 지정
-            print("[Python] Neo4j session started.")
-            # 기존 그래프 데이터 삭제 (초기화 시 필요할 수 있음, 주의해서 사용)
-            # print("[Python] Clearing existing graph data...")
-            # sess.run("MATCH (n) DETACH DELETE n")
-            # print("[Python] Existing graph data cleared.")
+    driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASS))
+    with driver.session() as sess:
+        sess.run("MATCH (n) DETACH DELETE n")
 
-            # Account 노드 생성
-            for acc_email in account_emails:
-                sess.run("MERGE (a:Account {email: $email})", email=acc_email)
-            print(f"[Python] Created/Merged {len(account_emails)} Account nodes.")
+        sess.run("""
+            MERGE (root:Root {name: '나'})
+            ON CREATE SET root.emails = $emails,
+                          root.contact_id = 0
+        """, emails=account_emails)
 
-            # Person 노드 생성 (EmailContact 기반)
-            for contact_id, (name, email) in email_contacts_map.items():
-                if email: # 이메일이 있는 경우에만 Person 노드 생성 시도
-                    sess.run("MERGE (p:Person {email: $email}) ON CREATE SET p.contact_id = $contact_id, p.name = $name ON MATCH SET p.contact_id = coalesce(p.contact_id, $contact_id), p.name = coalesce(p.name, $name)",
-                             contact_id=contact_id, name=name, email=email)
-                elif name: # 이메일은 없지만 이름은 있는 경우 (예: 로컬 주소록의 이름만 있는 연락처)
-                     sess.run("MERGE (p:Person {name: $name, contact_id: $contact_id})", # 이메일 없이 이름과 ID로 MERGE
-                             contact_id=contact_id, name=name)
+        for msg_id, cat_id, subcat_id in messages:
+            raw_category_name = category_map.get(cat_id)
+            raw_subcategory_name = category_map.get(subcat_id) if subcat_id is not None else None
 
-            print(f"[Python] Created/Merged {len(email_contacts_map)} Person nodes (based on email_contacts_map).")
+            category_name = resolve_final_name(raw_category_name, final_name_map)
+            subcategory_name = resolve_final_name(raw_subcategory_name, final_name_map) if raw_subcategory_name else None
 
-            # Category 노드 생성
-            for cat_id, cat_name in category_map.items():
-                sess.run("MERGE (c:Category {category_id: $cat_id}) SET c.name = $cat_name",
-                         cat_id=cat_id, cat_name=cat_name)
-            print(f"[Python] Created/Merged {len(category_map)} Category nodes.")
+            contacts = msg_contacts.get(msg_id, {})
+            recips = [
+                cid for cid in contacts.get('TO', [])
+                if email_contacts.get(cid, ('', ''))[1] not in account_emails
+            ]
+            if not recips:
+                recips = contacts.get('FROM', [])
 
-            # Message 노드 및 관계 생성
-            for msg_id, cat_id, sub_cat_id, from_email_sqlite, subject, sent_at in messages_data:
-                # Message 노드 생성 (message_id를 고유 식별자로 사용)
-                sess.run("MERGE (m:Message {message_id: $msg_id}) SET m.subject = $subject, m.sent_at = $sent_at, m.from_address_raw = $from_email",
-                         msg_id=msg_id, subject=subject, sent_at=sent_at, from_email=from_email_sqlite)
+            for cid in recips:
+                name, _ = email_contacts.get(cid, (None, None))
+                if not name:
+                    continue
+                name = resolve_final_name(name, final_name_map)
 
-                # Message와 Category 연결
-                if cat_id and cat_id in category_map:
-                    sess.run("""
-                        MATCH (m:Message {message_id: $msg_id})
-                        MATCH (c:Category {category_id: $cat_id})
-                        MERGE (m)-[:BELONGS_TO]->(c)
-                    """, msg_id=msg_id, cat_id=cat_id)
+                sess.run("""
+                    MATCH (root:Root {name: '나'})
+                    MERGE (p:Person {name: $name})
+                      SET p.contact_id = $cid
+                    MERGE (root)-[r1:INTERACTS_WITH]->(p)
+                    SET r1.msg_ids = coalesce(r1.msg_ids, []) + [$msg_id]
 
-                # Message와 Person (보낸 사람) 연결
-                # msg_contacts에 해당 message_id의 'from' 정보가 있는지 확인
-                if msg_id in msg_contacts and msg_contacts[msg_id]['from']:
-                    sender_contact_id = msg_contacts[msg_id]['from'][0] # 첫 번째 보낸 사람 ID 사용
-                    if sender_contact_id in email_contacts_map and email_contacts_map[sender_contact_id][1]: # 이메일 주소가 있는지 확인
-                        sender_email = email_contacts_map[sender_contact_id][1]
-                        sess.run("""
-                            MATCH (m:Message {message_id: $msg_id})
-                            MATCH (p:Person {email: $sender_email})
-                            MERGE (p)-[:SENT]->(m)
-                        """, msg_id=msg_id, sender_email=sender_email)
-                elif from_email_sqlite: # MessageContact에 정보가 없고 Message 테이블에 from_email이 있다면
-                    sess.run("""
-                        MATCH (m:Message {message_id: $msg_id})
-                        MERGE (p:Person {email: $from_email_sqlite}) // 보낸 사람 Person 노드 (없으면 생성)
-                        MERGE (p)-[:SENT]->(m)
-                    """, msg_id=msg_id, from_email_sqlite=from_email_sqlite.lower())
+                    MERGE (c:Category {name: $category_name})
+                    MERGE (p)-[r2:HAS_CATEGORY]->(c)
+                    SET
+                      r2.msg_ids    = coalesce(r2.msg_ids, []) + [$msg_id],
+                      c.category_id = $category_id
 
+                    WITH c, $subcategory_name AS subcat, $cid AS cid, $msg_id AS mid, $subcategory_id AS scid
+                    WHERE subcat IS NOT NULL
+                    MERGE (s:Subcategory {name: subcat})
+                    MERGE (c)-[sr:HAS_SUBCATEGORY]->(s)
+                    SET
+                      sr.cids         = coalesce(sr.cids, []) + [cid],
+                      sr.msg_ids      = coalesce(sr.msg_ids, []) + [mid],
+                      s.subcategory_id = scid
+                """, {
+                    'name':             name,
+                    'cid':              cid,
+                    'msg_id':           msg_id,
+                    'category_name':    category_name,
+                    'category_id':      cat_id,
+                    'subcategory_name': subcategory_name,
+                    'subcategory_id':   subcat_id or 0
+                })
 
-                # Message와 Person (받는 사람 - TO, CC, BCC) 연결
-                if msg_id in msg_contacts:
-                    for rel_type, contact_ids in msg_contacts[msg_id].items():
-                        if rel_type == 'from': continue # 보낸 사람은 위에서 처리
-                        neo_rel_type = ""
-                        if rel_type == 'to': neo_rel_type = "ADDRESSED_TO"
-                        elif rel_type == 'cc': neo_rel_type = "CC_TO"
-                        elif rel_type == 'bcc': neo_rel_type = "BCC_TO"
-
-                        if neo_rel_type:
-                            for recipient_contact_id in contact_ids:
-                                if recipient_contact_id in email_contacts_map and email_contacts_map[recipient_contact_id][1]: # 이메일 주소가 있는지 확인
-                                    recipient_email = email_contacts_map[recipient_contact_id][1]
-                                    sess.run(f"""
-                                        MATCH (m:Message {{message_id: $msg_id}})
-                                        MATCH (p:Person {{email: $recipient_email}})
-                                        MERGE (m)-[:{neo_rel_type}]->(p)
-                                    """, msg_id=msg_id, recipient_email=recipient_email)
-            print(f"[Python] Created/Merged Message nodes and their relationships.")
-
-            # Account와 Person (사용자 자신) 연결
-            # Account의 이메일과 일치하는 Person 노드가 있다면 :IS_USER 관계 추가
-            for acc_email_val in account_emails:
-                 sess.run("""
-                    MATCH (acc:Account {email: $acc_email})
-                    MATCH (p:Person {email: $acc_email}) // 계정 이메일과 동일한 이메일을 가진 Person
-                    MERGE (acc)-[:IS_PERSON]->(p)
-                    MERGE (p)-[:IS_ACCOUNT_HOLDER_OF]->(acc) // 양방향 또는 단방향 선택
-                 """, acc_email=acc_email_val)
-            print(f"[Python] Linked Account nodes to their corresponding Person nodes.")
-
-            print("[Python] Neo4j session finished.")
-        return {"status": "success", "message": "Python: Graph initialized successfully from SQLite."}
-    except sqlite3.Error as e:
-        print(f"[Python] SQLite error: {e}")
-        return {"status": "error", "message": f"Python: SQLite error - {str(e)}"}
-    except neo4j.exceptions.Neo4jError as e:
-        print(f"[Python] Neo4jError: {e}")
-        return {"status": "error", "message": f"Python: Neo4jError - {str(e)}"}
-    except Exception as e:
-        import traceback
-        print(f"[Python] Error initializing graph: {str(e)}")
-        print(traceback.format_exc())
-        return {"status": "error", "message": f"Python: Error initializing graph - {str(e)}"}
+    driver.close()
+    print("✅ 그래프 생성 완료.")
 
 # --- Function from search_node.py (for read_node_py) ---
-def read_node_py(c_id, c_type, io_type):
+# 주변 노드 조회 - front에서 해당 노드 주변의 노드를 요청할때 실행
+"""
+front에서 전달해야 하는 json 형태
+{
+    "C_ID": 중심 노드 ID,
+    "C_type": 중심 노드 타입,
+    "IO_type": inout 타입 
+}
+중심 노드 타입 - 0 : Root, 1 : Person, 2 : Category, 3 : Subcategory
+중심 노드 ID - Root, Person : contact_id, Category, Subcategory : category_id
+inout 타입 - 1 : in, 2 : out, 3 : in&out
+front로 전달하는 json 형태
+{
+  "status": "success" or "fail",
+  "message": "nodes fetched",
+  "result": {
+    "nodes": [
+      {
+        "id": 중심 확인용 노드 ID
+        "C_ID": 노드 ID,
+        "C_type": 노드 타입입,
+        "data": {
+          "label": 노드드 이름
+        },
+        "count": 메세지 갯수
+      },
+    ]
+  }
+}
+중심 확인용 노드 ID - 0 : 중심 노드, 외에는 graphdb의 id라 의미가 없음
+노드 ID - Root, Person : contact_id, Category, Subcategory : category_id
+메세지 갯수를 가지고 내림차순으로 정렬
+"""
+LABEL_MAP = {0: 'Root', 1: 'Person', 2: 'Category', 3: 'Subcategory'}
+CTYPE_MAP = {v: k for k, v in LABEL_MAP.items()}
+
+def read_node_py(json_obj):
     try:
-        loc_driver = get_driver()
-        label = LABEL_MAP_SN.get(c_type)
-        if not label:
-            return {"status": "error", "message": f"Python: Invalid C_type {c_type}"}
+        c_id = json_obj["C_ID"]
+        c_type = json_obj["C_type"]
+        io_type = json_obj["IO_type"]
+    except KeyError as e:
+        return {'status': 'fail', 'message': f'입력 JSON에 필드 누락: {e}', 'result': {}}
 
-        prop_name = 'contact_id' if c_type in (0, 1) else 'category_id' if c_type == 2 else 'subcategory_id'
+    label = LABEL_MAP[c_type]
+    prop = 'contact_id' if c_type in (0, 1) else 'category_id' if c_type == 2 else 'subcategory_id'
 
-        with loc_driver.session() as session:
-            center_node_query = f"MATCH (n:{label} {{{prop_name}: $cid}}) RETURN n.name AS name, n.{prop_name} AS id_val"
-            center_rec = session.run(center_node_query, cid=c_id).single()
+    if io_type == 1:
+        rel_pattern = f"(x)-[r]->(n:{label} {{{prop}: $cid}})"
+    elif io_type == 2:
+        rel_pattern = f"(n:{label} {{{prop}: $cid}})-[r]->(x)"
+    else:
+        rel_pattern = f"(x)-[r]-(n:{label} {{{prop}: $cid}})"
 
-            if not center_rec:
-                return {"status": "error", "message": f"Python: Node {label} with {prop_name}={c_id} not found."}
-            
-            center_name, center_id_val = center_rec['name'], center_rec['id_val']
-            
-            nodes_result = [{'id': 0, 'C_ID': center_id_val, 'C_type': c_type, 'data': {'label': center_name}}]
-            seen_names = {center_name}
-            idx = 1
+    driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASS))
+    try:
+        with driver.session() as session:
+            # 중심 노드 조회
+            rec = session.run(
+                f"MATCH (n:{label} {{{prop}: $cid}}) RETURN n.name AS name, n.{prop} AS cid",
+                cid=c_id
+            ).single()
+            if not rec:
+                raise ValueError(f"{label} with {prop}={c_id} not found")
+            center_name, center_cid = rec['name'], rec['cid']
+            nodes = [{
+                'id': 0,
+                'C_ID': center_cid,
+                'C_type': c_type,
+                'data': {'label': center_name},
+                'count': 0
+            }]
+            seen = {center_name}
 
-            if io_type == 1: # incoming
-                rel_pattern = f"(x)-[]->(n:{label} {{{prop_name}: $cid}})"
-            elif io_type == 2: # outgoing
-                rel_pattern = f"(n:{label} {{{prop_name}: $cid}})-[]->(x)"
-            else: # both
-                rel_pattern = f"(x)-[]-(n:{label} {{{prop_name}: $cid}})"
-            
-            neighbor_query = (
+            # 이웃 노드 조회
+            query = (
                 f"MATCH {rel_pattern} "
-                "RETURN DISTINCT x.name AS name, labels(x) AS labs, "
-                "x.contact_id AS contact_id, x.category_id AS category_id, x.subcategory_id AS subcategory_id"
+                "WITH x, r, labels(x) AS labs "
+                "RETURN x.name AS name, labs, "
+                "x.contact_id AS contact_id, x.category_id AS category_id, x.subcategory_id AS subcategory_id, "
+                "size(coalesce(r.msg_ids, [])) AS count"
             )
-            rows = session.run(neighbor_query, cid=c_id).data()
+            rows = session.run(query, cid=c_id).data()
 
+            idx = 1
+            neighbors = []
             for r in rows:
                 name = r['name']
-                if name in seen_names or name is None: # Skip if name is None or already seen
+                if name in seen:
                     continue
-                seen_names.add(name)
-                
+                seen.add(name)
                 labs = r.get('labs') or []
-                node_c_type, node_c_id = 0, None # Default
 
-                if 'Person' in labs:
-                    node_c_type, node_c_id = CTYPE_MAP_SN.get('Person', 1), r['contact_id']
-                elif 'Root' in labs: # Root might also have contact_id if it's 0
-                     node_c_type, node_c_id = CTYPE_MAP_SN.get('Root', 0), r.get('contact_id')
+                if 'Person' in labs or 'Root' in labs:
+                    nb_type, nb_cid = CTYPE_MAP.get(labs[0], 0), r['contact_id']
                 elif 'Category' in labs:
-                    node_c_type, node_c_id = CTYPE_MAP_SN.get('Category', 2), r['category_id']
+                    nb_type, nb_cid = 2, r['category_id']
                 elif 'Subcategory' in labs:
-                    node_c_type, node_c_id = CTYPE_MAP_SN.get('Subcategory', 3), r['subcategory_id']
-                
-                nodes_result.append({'id': idx, 'C_ID': node_c_id, 'C_type': node_c_type, 'data': {'label': name}})
+                    nb_type, nb_cid = 3, r['subcategory_id']
+                else:
+                    nb_type, nb_cid = 0, None
+
+                neighbors.append({
+                    'id': idx,
+                    'C_ID': nb_cid,
+                    'C_type': nb_type,
+                    'data': {'label': name},
+                    'count': r.get('count', 0)
+                })
                 idx += 1
-        return {"status": "success", "message": "Python: Nodes fetched successfully.", "result": {"nodes": nodes_result}}
+
+        neighbors.sort(key=lambda x: x['count'], reverse=True)
+        nodes.extend(neighbors)
+
+        # result = {
+        #     'status': 'success',
+        #     'message': 'nodes fetched',
+        #     'result': {'nodes': nodes}
+        # }
+        # print(json.dumps(result, ensure_ascii=False, indent=2))
+        return {'status': 'success', 'message': 'nodes fetched', 'result': {'nodes': nodes}}
+
     except Exception as e:
-        return {"status": "error", "message": f"Python: Error reading node: {str(e)}"}
+        return {'status': 'fail', 'message': str(e), 'result': {}}
+    finally:
+        driver.close()
 
-
-# --- Function from search_mail.py (for read_message_py) ---
-def read_message_py(basic_c_id, c_type, filter_data):
+# 해당 노드 메세지 조회 - front에서 해당 노드의 메세지지를 요청할때 실행
+"""
+front에서 전달해야 하는 json 형태
+{
+    "C_ID": 중심 노드 ID,
+    "C_type": 중심 노드 타입,
+    "IO_type": inout 타입 - 항싱 1
+    "In": [주변 노드 ID 리스트]
+}
+중심 노드 타입 - 0 : Root, 1 : Person, 2 : Category, 3 : Subcategory
+중심 노드 ID - Root, Person : contact_id, Category, Subcategory : category_id
+inout 타입 - 1 : in, 2 : out, 3 : in&out
+주변 노드 ID 리스트 - Root, Person : [], Category: [Person ID], Subcategory: [[Person의  C_ID], [Category의 C_ID]]
+front로 전달하는 json 형태
+{
+  "status": "success" or "fail",
+  "message": "emails fetched",
+  "result": {
+    "emails": [
+      {
+        "message_id": 메세지 ID,
+        "threadId": Thread ID,
+        "fromEmail": From Email,
+        "fromName": From Name,
+        "subject": Subject,
+        "snippet": Snippet,
+        "sentAt": 보낸 날짜,
+        "isRead": 읽었는지 확인 - true or false
+      },
+    ]
+  }
+}
+"""
+def read_message_py(json_obj):
     try:
-        io_type = filter_data.get("io_type")
-        in_data = filter_data.get("in_data") # Expected to be [[person_ids], [category_ids]] for c_type=3
+        c_id     = json_obj["C_ID"]
+        c_type   = json_obj["C_type"]
+        io_type  = json_obj["IO_type"]
+        in_data  = json_obj.get("In", None)
+    except KeyError as e:
+        result = {'status': 'fail', 'message': f'입력 JSON에 필드 누락: {e}', 'result': {}}
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return result
 
-        loc_driver = get_driver()
-        msg_ids = []
-        with loc_driver.session() as session:
-            # This logic is complex and adapted from EmailGenerator.fetch_msg_ids
-            if c_type == 0: # Root - all messages (potentially very large)
-                # Simplified: Get some messages, or define specific logic for Root
-                # For now, let's assume it means it means messages related to '나' (Root)
-                for rec in session.run("MATCH (r:Root {name:'나'})-[rel:INTERACTS_WITH]-() RETURN rel.msg_ids AS msg_ids"):
-                    msg_ids.extend(rec.get('msg_ids') or [])
-            elif c_type == 1: # Person
+    driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASS))
+    conn = sqlite3.connect(SQLITE_DB_PATH)
+
+    try:
+        ids = []
+        with driver.session() as session:
+            if c_type == 0:
+                for rec in session.run("MATCH ()-[r]->() RETURN r.msg_ids AS msg_ids"):
+                    ids.extend(rec.get('msg_ids') or [])
+            elif c_type == 1:
                 for rec in session.run(
-                    "MATCH (p:Person {contact_id: $cid})-[r]-(:Root) RETURN r.msg_ids AS msg_ids", cid=basic_c_id
+                    "MATCH (p:Person {contact_id: $cid})-[r]-(root:Root) RETURN r.msg_ids AS msg_ids", cid=c_id
                 ):
-                    msg_ids.extend(rec.get('msg_ids') or [])
-                for rec in session.run(
-                    "MATCH (p:Person {contact_id: $cid})-[r]-(:Category) RETURN r.msg_ids AS msg_ids", cid=basic_c_id
-                ):
-                    msg_ids.extend(rec.get('msg_ids') or [])
-            elif c_type == 2: # Category
-                # in_data might contain person_ids to filter by
-                person_ids_filter = in_data.get('person_ids') if isinstance(in_data, dict) else (in_data[0] if isinstance(in_data, list) and len(in_data)>0 else None)
-                if person_ids_filter:
-                    for pid in person_ids_filter:
+                    ids.extend(rec.get('msg_ids') or [])
+            elif c_type == 2:
+                if not in_data:
+                    for rec in session.run(
+                        "MATCH (c:Category {category_id: $cid})-[r]-(p:Person) RETURN r.msg_ids AS msg_ids", cid=c_id
+                    ):
+                        ids.extend(rec.get('msg_ids') or [])
+                else:
+                    for pid in in_data:
                         for rec in session.run(
                             "MATCH (p:Person {contact_id: $pid})-[r]-(c:Category {category_id: $cid}) RETURN r.msg_ids AS msg_ids",
-                            pid=pid, cid=basic_c_id
+                            pid=pid, cid=c_id
                         ):
-                            msg_ids.extend(rec.get('msg_ids') or [])
-                else: # No person filter, get all messages for this category
+                            ids.extend(rec.get('msg_ids') or [])
+            elif c_type == 3 and isinstance(in_data, list) and len(in_data) == 2:
+                person_ids, category_ids = in_data
+                if person_ids and category_ids:
+                    for pid in person_ids:
+                        for cat in category_ids:
+                            recs = session.run(
+                                "MATCH (p:Person {contact_id: $pid})-[r1]-(c:Category {category_id: $cat})-[r2]-(s:Subcategory {subcategory_id: $cid}) "
+                                "RETURN r2.msg_ids AS msg_ids, r2.cids AS cids",
+                                pid=pid, cat=cat, cid=c_id
+                            )
+                            for rec in recs:
+                                mids = rec.get('msg_ids') or []
+                                cids = rec.get('cids') or []
+                                for i, contact in enumerate(cids):
+                                    if contact in person_ids:
+                                        ids.append(mids[i])
+                elif person_ids:
+                    for pid in person_ids:
+                        for rec in session.run(
+                            "MATCH (p:Person {contact_id: $pid})-[r]-(c:Category) RETURN r.msg_ids AS msg_ids, r.cids AS cids", pid=pid
+                        ):
+                            mids = rec.get('msg_ids') or []
+                            cids = rec.get('cids') or []
+                            for i, contact in enumerate(cids):
+                                if contact == pid:
+                                    ids.append(mids[i])
+                elif category_ids:
+                    for cat in category_ids:
+                        for rec in session.run(
+                            "MATCH (c:Category {category_id: $cat})-[r]-(s:Subcategory {subcategory_id: $cid}) "
+                            "RETURN r.msg_ids AS msg_ids",
+                            cat=cat, cid=c_id
+                        ):
+                            ids.extend(rec.get('msg_ids') or [])
+                else:
                     for rec in session.run(
-                        "MATCH (c:Category {category_id: $cid})-[r]-(p:Person) RETURN r.msg_ids AS msg_ids", cid=basic_c_id
+                        "MATCH (s:Subcategory {subcategory_id: $cid})-[r]-(c:Category) RETURN r.msg_ids AS msg_ids", cid=c_id
                     ):
-                        msg_ids.extend(rec.get('msg_ids') or [])
-            elif c_type == 3: # Subcategory
-                # in_data: [[person_ids], [category_ids]]
-                person_ids_filter = in_data[0] if isinstance(in_data, list) and len(in_data) > 0 else None
-                # category_ids_filter = in_data[1] if isinstance(in_data, list) and len(in_data) > 1 else None # Not directly used in search_mail.py logic for subcat msg_ids
+                        ids.extend(rec.get('msg_ids') or [])
 
-                # Logic from search_mail.py for Subcategory was to find relations to Category, then check cids in relation
-                # This is a simplified interpretation for now.
-                # The original search_mail.py logic for c_type=3 was quite involved.
-                # This part needs careful review against the exact desired behavior from search_mail.py
-                query = """
-                MATCH (s:Subcategory {subcategory_id: $cid})<-[r_sc:HAS_SUBCATEGORY]-(cat:Category)
-                OPTIONAL MATCH (p:Person)-[r_pc:HAS_CATEGORY]->(cat)
-                WHERE ($pids IS NULL OR p.contact_id IN $pids)
-                WITH r_sc, r_pc
-                UNWIND (coalesce(r_sc.msg_ids, []) + coalesce(r_pc.msg_ids, [])) AS msg_id
-                RETURN DISTINCT msg_id
-                """
-                results = session.run(query, cid=basic_c_id, pids=person_ids_filter)
-                for rec in results:
-                    msg_ids.append(rec["msg_id"])
+        ids = list(dict.fromkeys(ids))  # 중복 제거
 
-            unique_msg_ids = list(dict.fromkeys(m_id for m_id in msg_ids if m_id is not None))
+        # SQLite 메일 조회
+        emails = []
+        if ids:
+            cur = conn.cursor()
+            placeholders = ','.join('?' for _ in ids)
+            sql = f"""
+                SELECT message_id, thread_id, from_email, from_name, subject, snippet, sent_at, is_read
+                FROM Message WHERE message_id IN ({placeholders})
+                ORDER BY sent_at DESC
+            """
+            cur.execute(sql, ids)
+            for row in cur.fetchall():
+                emails.append({
+                    "message_id": row[0],
+                    "threadId":   row[1],
+                    "fromEmail":  row[2],
+                    "fromName":   row[3],
+                    "subject":    row[4],
+                    "snippet":    row[5],
+                    "sentAt":     row[6],
+                    "isRead":     bool(row[7]),
+                })
 
-        if not unique_msg_ids:
-            return {"status": "success", "message": "Python: No messages found for the criteria.", "result": {"messages": []}}
+        result = {'status': 'success', 'message': 'emails fetched', 'result': {'emails': emails}}
+        #print(json.dumps(result, ensure_ascii=False, indent=2))
+        return result
 
-        # Fetch emails from SQLite
-        conn = sqlite3.connect(SQLITE_DB_PATH)
-        cursor = conn.cursor()
-        placeholders = ','.join('?' for _ in unique_msg_ids)
-        sql = (
-            f"SELECT message_id, thread_id, from_email, from_name, subject, snippet, sent_at, is_read "
-            f"FROM Message WHERE message_id IN ({placeholders}) ORDER BY sent_at DESC"
-        )
-        cursor.execute(sql, unique_msg_ids)
-        rows = cursor.fetchall()
+    except Exception as e:
+        error = {'status': 'fail', 'message': str(e), 'result': {}}
+        #print(json.dumps(error, ensure_ascii=False, indent=2))
+        return error
+
+    finally:
+        driver.close()
         conn.close()
 
-        emails = [
-            {
-                'message_id': r[0], 'threadId': r[1], 'fromEmail': r[2], 'fromName': r[3],
-                'subject': r[4], 'snippet': r[5], 'sentAt': r[6], 'isRead': bool(r[7])
-            } for r in rows
-        ]
-        return {"status": "success", "message": "Python: Messages fetched successfully.", "result": {"messages": emails}}
-    except Exception as e:
-        return {"status": "error", "message": f"Python: Error reading messages: {str(e)}"}
+# 노드 생성
+# 입력: {"C_name": "새로운 카테고리"}
+# 출력: {"status": "success", "message": "성공"} 또는 {"status": "fail", "message": "오류 내용"}
+def create_node_py(json_obj):
+    name = json_obj.get("C_name")
+    if not name:
+        return {"status": "fail", "message": "내용이 비어있습니다."}
 
-# --- Functions from modify_node.py ---
-def delete_node_py(node_id): # Corresponds to delete_node_if_empty
+    name = name.strip()
+
     try:
-        # Assuming node_id is the 'id' property used in modify_node.py
-        # This function expects a generic 'Node' label and 'id' property.
-        # This might need adjustment if your nodes have specific labels and ID properties (e.g., contact_id for Person)
-        # For now, we'll assume a generic 'id' property. If C_ID is passed, it might be an internal DB ID.
-        # The original deleteNode in graphController passes just 'nodeId'.
-        # Let's assume nodeId is a unique identifier property on the node.
-        query = """
-        MATCH (n) WHERE n.id = $node_id OR id(n) = $node_id_int
-        OPTIONAL MATCH (n)-[r]-()
-        WITH n, count(r) as rel_count
-        WHERE rel_count = 0 // Or specific logic from delete_node_if_empty
-        DETACH DELETE n
-        RETURN count(n) as deleted_count
-        """
-        # Try to convert nodeId to int if it's a numeric string, for matching id(n)
-        node_id_int = -1
-        try:
-            node_id_int = int(node_id)
-        except ValueError:
-            pass
+        conn = sqlite3.connect(SQLITE_DB_PATH)
+        cur = conn.cursor()
 
-        result = _execute_query(query, params={"node_id": node_id, "node_id_int": node_id_int}).single()
-        deleted_count = result["deleted_count"] if result else 0
+        print(f"[create_node_py] Checking if '{name}' already exists in Category...")
+        cur.execute("SELECT category_name FROM Category")
+        existing_names = [row[0].strip().lower() for row in cur.fetchall()]
+        if name.lower() in existing_names:
+            return {"status": "fail", "message": f"'{name}'는 이미 존재합니다."}
 
-        if deleted_count > 0:
-            return {"status": "success", "message": f"Python: Node '{node_id}' deleted successfully.", "result": {"deletedNodeId": node_id}}
+        cur.execute("SELECT MAX(category_id) FROM Category")
+        max_id = cur.fetchone()[0] or 0
+
+        print(f"[create_node_py] Inserting new category: ID={max_id+1}, name={name}")
+        cur.execute("INSERT INTO Category (category_id, category_name) VALUES (?, ?)", (max_id + 1, name))
+        conn.commit()
+        conn.close()
+
+        initialize_graph_from_sqlite_py()
+        return {"status": "success", "message": "성공"}
+    except Exception as e:
+        return {"status": "fail", "message": str(e)}
+
+# 노드 삭제
+# 입력: {"C_ID": 노드 ID, "C_type": 노드 타입}
+# 출력: {"status": "success"} 또는 {"status": "fail"}
+def delete_node_py(json_obj):
+    c_id = json_obj.get("C_ID")
+    c_type = json_obj.get("C_type")
+    if c_id is None or c_type not in [1, 2, 3]:
+        return {"status": "fail"}
+
+    label = {1: "Person", 2: "Category", 3: "Subcategory"}.get(c_type)
+    prop = {1: "contact_id", 2: "category_id", 3: "subcategory_id"}.get(c_type)
+
+    driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASS))
+    try:
+        with driver.session() as session:
+            result = session.run(f"MATCH (n:{label} {{{prop}: $val}}) RETURN count(n) AS count", val=c_id)
+            count = result.single()["count"]
+        driver.close()
+        return {"status": "fail" if count else "success"}
+    except:
+        return {"status": "fail"}
+
+# 노드 이름 변경
+# 입력: {"before_name": "노드 이전 이름", "after_name": "노드 새 이름"}
+# 출력: {"status": "success"} 또는 {"status": "fail"}
+def rename_node_py(json_obj):
+    before = json_obj.get("before_name")
+    after = json_obj.get("after_name")
+    if not before or not after:
+        return {"status": "fail"}
+
+    try:
+        if os.path.exists(FINAL_MAP_PATH):
+            final_map = json.load(open(FINAL_MAP_PATH, encoding="utf-8"))
         else:
-            # This part needs the exact logic of "delete_node_if_empty" if it's more complex
-            # The query from modify_node.py was:
-            # MATCH (n:Node {id: $a_id}) OPTIONAL MATCH (n)-[r]-()
-            # WITH n, collect(r) AS rels, collect(CASE WHEN startNode(r).id = $a_id THEN endNode(r).id ELSE startNode(r).id END) AS linked_ids, keys(n) AS node_keys
-            # WITH n, node_keys, linked_ids, reduce(s = [], x IN linked_ids | CASE WHEN x IN s THEN s ELSE s + [x] END) AS unique_ids
-            # WHERE size(unique_ids) = 1 AND all(key IN node_keys WHERE key = 'id') DETACH DELETE n
-            # This is too specific if node_id is not always on a :Node with only 'id' property.
-            # For now, a simpler "delete if no relationships" is implemented above.
-            return {"status": "success", "message": f"Python: Node '{node_id}' not deleted (either not found or has relationships/failed conditions).", "result": {"deletedNodeId": None}}
+            final_map = {}
+
+        # 전체 연쇄 추적 반영
+        for k in list(final_map):
+            if resolve_final_name(final_map[k], final_map) == before:
+                final_map[k] = after
+        final_map[before] = after
+
+        json.dump(final_map, open(FINAL_MAP_PATH, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+        initialize_graph_from_sqlite_py()
+        return {"status": "success"}
     except Exception as e:
-        return {"status": "error", "message": f"Python: Error deleting node '{node_id}': {str(e)}"}
+        print("[rename_node_py error]", e)
+        return {"status": "fail"}
 
-def merge_node_py(from_c_id, to_c_id): # Corresponds to merge_nodes_to_new
+# 노드 병합
+# 입력: {"before_name1": "노드 이전 이름1", "before_name2": "노드 이전 이름2", "after_name": "노드 새 이름"}
+# 출력: {"status": "success"} 또는 {"status": "fail"}
+def merge_node_py(json_obj):
+    b1 = json_obj.get("before_name1")
+    b2 = json_obj.get("before_name2")
+    after = json_obj.get("after_name")
+    if not b1 or not b2 or not after:
+        return {"status": "fail"}
+
     try:
-        # Assuming from_c_id and to_c_id are values of a common 'id' property (e.g., 'name' or 'unique_id')
-        # The original script used generic :Node {id: ...}
-        # This needs to be adapted if your IDs are specific (e.g. contact_id on :Person)
-        # For simplicity, let's assume 'name' property for merging.
-        # The new node will be named from_c_id + "_" + to_c_id
-
-        new_node_id = f"{from_c_id}_{to_c_id}"
-        query = """
-        MATCH (a {name: $from_id}), (b {name: $to_id})
-        WHERE id(a) <> id(b)
-        CALL apoc.refactor.mergeNodes([a,b], {properties: 'combine', mergeRels: true}) YIELD node
-        SET node.name = $new_id
-        RETURN node.name as merged_node_name
-        """
-        # This uses APOC. If APOC is not available, the manual merge from modify_node.py is needed.
-        # Manual merge logic from modify_node.py (if APOC not available or desired):
-        # MERGE (c:Node {id: $new_node_id_val})
-        # WITH a, b, c
-        # CALL { WITH a, c, b MATCH (a)-[r]->(x) WHERE x <> b MERGE (c)-[new_r:REL]->(x) SET new_r = r }
-        # CALL { WITH a, c, b MATCH (x)-[r]->(a) WHERE x <> b MERGE (x)-[new_r:REL]->(c) SET new_r = r }
-        # CALL { WITH b, c, a MATCH (b)-[r]->(x) WHERE x <> a MERGE (c)-[new_r:REL]->(x) SET new_r = r }
-        # CALL { WITH b, c, a MATCH (x)-[r]->(b) WHERE x <> a MERGE (x)-[new_r:REL]->(c) SET new_r = r }
-        # DETACH DELETE a,b
-        # RETURN c.id as merged_node_name
-        # For now, assuming APOC for brevity. Replace with manual if needed.
-        
-        result = _execute_query(query, params={"from_id": from_c_id, "to_id": to_c_id, "new_id": new_node_id}).single()
-        if result and result["merged_node_name"]:
-            return {"status": "success", "message": f"Python: Nodes '{from_c_id}' and '{to_c_id}' merged into '{result['merged_node_name']}'.", "result": {"mergedNodeId": result["merged_node_name"]}}
+        if os.path.exists(FINAL_MAP_PATH):
+            final_map = json.load(open(FINAL_MAP_PATH, encoding="utf-8"))
         else:
-            # Check if nodes exist
-            check_query = "MATCH (n {name: $id}) RETURN count(n) as count"
-            count_from = _execute_query(check_query, params={"id": from_c_id}).single()["count"]
-            count_to = _execute_query(check_query, params={"id": to_c_id}).single()["count"]
-            if count_from == 0 or count_to == 0:
-                 return {"status": "error", "message": f"Python: One or both nodes for merging not found ('{from_c_id}', '{to_c_id}')."}
-            if from_c_id == to_c_id:
-                 return {"status": "error", "message": f"Python: Cannot merge a node with itself ('{from_c_id}')."}
+            final_map = {}
 
-            return {"status": "error", "message": f"Python: Failed to merge nodes '{from_c_id}' and '{to_c_id}'. They might be the same or not found."}
+        # 전체 연쇄 추적 반영
+        for k in list(final_map):
+            if resolve_final_name(final_map[k], final_map) in [b1, b2]:
+                final_map[k] = after
+        final_map[b1] = after
+        final_map[b2] = after
 
+        json.dump(final_map, open(FINAL_MAP_PATH, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+        initialize_graph_from_sqlite_py()
+        return {"status": "success"}
     except Exception as e:
-        return {"status": "error", "message": f"Python: Error merging nodes: {str(e)}"}
+        print("[merge_node_py error]", e)
+        return {"status": "fail"}
 
+# 메일 삭제
+# 입력: {"message_id": 메세지 ID}
+# 출력: {"status": "success"} 또는 {"status": "fail"}
+def delete_mail_py(json_obj):
+    message_id = json_obj.get("message_id")
+    if message_id is None:
+        return {"status": "fail"}
 
-def update_label_py(c_id, new_label_name): # c_id is the identifier, new_label_name is the new name/label value
     try:
-        # Assuming c_id is a unique property value (e.g., contact_id, category_id, or a generic 'id')
-        # And we are updating a 'name' property.
-        # This needs to know which property identifies the node and which property to update.
-        # Let's assume we match by a property 'id_prop' (could be contact_id, etc.) and set 'name'.
-        # This is a guess. The JS side sends C_ID and newLabel.
-        # Let's try to update the 'name' property of a node identified by ANY of its unique IDs.
-        
-        # Attempt to find node by common ID properties and update its 'name'
-        # This is a generic attempt; specific node types might need different ID properties.
-        query = """
-        MATCH (n)
-        WHERE n.contact_id = $id_val OR n.category_id = $id_val OR n.subcategory_id = $id_val OR n.name = $id_val_str OR n.id = $id_val_str
-        SET n.name = $new_name
-        RETURN count(n) as updated_count
-        """
-        id_val_int = None
-        try:
-            id_val_int = int(c_id)
-        except ValueError: # c_id is not purely integer
-            pass
+        conn = sqlite3.connect(SQLITE_DB_PATH)
+        cur = conn.cursor()
+        cur.execute("DELETE FROM Message WHERE message_id = ?", (message_id,))
+        conn.commit()
+        conn.close()
+        initialize_graph_from_sqlite_py()
+        return {"status": "success"}
+    except:
+        return {"status": "fail"}
 
-        params = {"id_val": id_val_int if id_val_int is not None else c_id, "id_val_str": str(c_id), "new_name": new_label_name}
-        result = _execute_query(query, params=params).single()
-        
-        if result and result["updated_count"] > 0:
-            return {"status": "success", "message": f"Python: Node identified by '{c_id}' updated with new name/label '{new_label_name}'.", "result": {"updatedNodeId": c_id, "newName": new_label_name}}
-        else:
-            return {"status": "error", "message": f"Python: Node identified by '{c_id}' not found or no update occurred."}
-    except Exception as e:
-        return {"status": "error", "message": f"Python: Error updating node label/name: {str(e)}"}
+# 메일 이동
+# 입력: {"message_id": 메세지 ID, "category_id": 카테고리 ID, "sub_category_id": 서브카테고리 ID}
+# 출력: {"status": "success"} 또는 {"status": "fail"}
+def move_mail_py(json_obj):
+    message_id = json_obj.get("message_id")
+    category_id = json_obj.get("category_id")
+    sub_category_id = json_obj.get("sub_category_id")
+    if None in [message_id, category_id, sub_category_id]:
+        return {"status": "fail"}
 
-def get_incoming_nodes_py(node_name_param):
     try:
-        # From modify_node.py's show_incoming_nodes, assuming node_name_param is the 'name' property
-        query = """
-        MATCH (x)-[]->(n {name: $name_val})
-        WHERE x.name IS NOT NULL
-        RETURN DISTINCT x.name AS name, labels(x) as labels,
-               x.contact_id as contact_id, x.category_id as category_id, x.subcategory_id as subcategory_id
-        ORDER BY x.name
-        """
-        results = _execute_query(query, params={"name_val": node_name_param}).data()
-        nodes = []
-        for record in results:
-            node_details = {"name": record["name"], "labels": record["labels"]}
-            # Add C_ID and C_type based on labels
-            c_type, c_id = None, None
-            if "Person" in record["labels"]:
-                c_type = CTYPE_MAP_SN.get("Person")
-                c_id = record["contact_id"]
-            elif "Category" in record["labels"]:
-                c_type = CTYPE_MAP_SN.get("Category")
-                c_id = record["category_id"]
-            elif "Subcategory" in record["labels"]:
-                c_type = CTYPE_MAP_SN.get("Subcategory")
-                c_id = record["subcategory_id"]
-            elif "Root" in record["labels"]:
-                c_type = CTYPE_MAP_SN.get("Root")
-                c_id = record.get("contact_id") # Assuming Root might have contact_id = 0
-            node_details["C_ID"] = c_id
-            node_details["C_type"] = c_type
-            nodes.append(node_details)
-
-        return {"status": "success", "message": f"Python: Incoming nodes for '{node_name_param}' fetched.", "result": {"nodes": nodes}}
-    except Exception as e:
-        return {"status": "error", "message": f"Python: Error fetching incoming nodes: {str(e)}"}
-
-def delete_all_nodes_py():
-    try:
-        _execute_query("MATCH (n) DETACH DELETE n")
-        return {"status": "success", "message": "Python: All nodes and relationships deleted."}
-    except Exception as e:
-        return {"status": "error", "message": f"Python: Error deleting all nodes: {str(e)}"}
-
-def move_complex_node_py(a_id, b_id, c_id): # From modify_node.py's move_node
-    try:
-        # This assumes :Node label and 'id' property as in modify_node.py
-        # This is a complex operation and might need adjustment for specific graph models
-        query = """
-        MATCH (a:Node {id: $a_id_val})
-        MATCH (b:Node {id: $b_id_val})
-        MERGE (c:Node {id: $c_id_val})
-        
-        // Replicate relationships from a to c, excluding b
-        CALL {
-            WITH a, c, b
-            MATCH (a)-[r]->(x) WHERE x <> b
-            MERGE (c)-[new_r:REL]->(x) SET new_r = properties(r)
-        }
-        CALL {
-            WITH a, c, b
-            MATCH (x)-[r]->(a) WHERE x <> b
-            MERGE (x)-[new_r:REL]->(c) SET new_r = properties(r)
-        }
-        // Detach and delete a
-        DETACH DELETE a
-        // Original script also deleted relationships between a and b, which is covered by DETACH DELETE a
-        // And created new relationships between a and c, which is now c and others.
-        // The original query was:
-        // OPTIONAL MATCH (a)-[r1:REL]->(b) OPTIONAL MATCH (b)-[r2:REL]->(a) DELETE r1, r2
-        // MERGE (a)-[:REL {name: $a_id}]->(c) MERGE (c)-[:REL {name: $a_id}]->(a)
-        // This logic seems to be about making 'c' a proxy for 'a' in some contexts.
-        // The provided query in modify_node.py is specific. For now, a simpler "move relationships and delete"
-        // is implemented above by refactoring 'a's relationships to 'c' then deleting 'a'.
-        """
-        # The query from modify_node.py is very specific and creates new relationships.
-        # For now, this is a placeholder for that complex logic.
-        # A full implementation would require careful porting of its Cypher.
-        # _execute_query(query, params={"a_id_val": a_id, "b_id_val": b_id, "c_id_val": c_id})
-        return {"status": "success", "message": f"Python: move_complex_node_py (placeholder) called for {a_id}, {b_id}, {c_id}. Full logic TBD."}
-    except Exception as e:
-        return {"status": "error", "message": f"Python: Error in move_complex_node: {str(e)}"}
-
-
-# --- Placeholder functions from original graph_operations.py or un-implemented from modify_node.py ---
-def test_connection():
-    try:
-        # 여기에 실제 Neo4j 드라이버 연결 테스트 로직을 추가할 수 있습니다.
-        # 예시로 간단히 성공 응답을 반환합니다.
-        get_driver() # 드라이버 초기화 시도
-        close_driver() # 테스트 후 드라이버 닫기 (선택 사항)
-        return {"status": "success", "message": "Python: Neo4j connection test successful."}
-    except Exception as e:
-        return {"status": "error", "message": f"Python: Neo4j connection test failed: {str(e)}"}
-
-def read_graph_data_py():
-    return {"status": "success", "message": "Python: read_graph_data_py (placeholder) called", "result": {"nodes": [], "edges": []}}
-
-def create_node_py(node_data):
-    return {"status": "success", "message": "Python: create_node_py (placeholder) called", "result": {"nodeId": 123, "data": node_data}}
-
-def update_node_py(node_id, update_data):
-    return {"status": "success", "message": f"Python: update_node_py (placeholder) called for node {node_id}", "result": {"updatedData": update_data}}
-
-def create_relationship_py(from_node_id, to_node_id, relationship_type, properties):
-    return {"status": "success", "message": f"Python: create_relationship_py (placeholder) called between {from_node_id} and {to_node_id}", "result": {"relationshipId": 789}}
-
-def delete_relationship_py(relationship_id):
-    return {"status": "success", "message": f"Python: delete_relationship_py (placeholder) called for relationship {relationship_id}", "result": {"deletedRelationshipId": relationship_id}}
-
-def search_by_keyword_py(keyword):
-    return {"status": "success", "message": f"Python: search_by_keyword_py (placeholder) called with keyword '{keyword}'", "result": {"nodes": []}}
-
-def llm_tag_node_py(c_id, llm_tags):
-    return {"status": "success", "message": f"Python: llm_tag_node_py (placeholder) called for C_ID {c_id} with tags {llm_tags}", "result": {}}
-
-def get_outgoing_nodes_py(node_name):
-    return {"status": "success", "message": f"Python: get_outgoing_nodes_py (placeholder) called for node {node_name}", "result": {"nodes": []}}
-
-def move_email_py(from_id, to_id, email_uid):
-    return {"status": "success", "message": f"Python: move_email_py (placeholder) called for email {email_uid} from {from_id} to {to_id}", "result": {}}
-
-def get_node_emails_py(node_name):
-    return {"status": "success", "message": f"Python: get_node_emails_py (placeholder) called for node {node_name}", "result": {"emails": []}}
+        conn = sqlite3.connect(SQLITE_DB_PATH)
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE Message SET category_id = ?, sub_category_id = ? WHERE message_id = ?",
+            (category_id, sub_category_id, message_id)
+        )
+        conn.commit()
+        conn.close()
+        initialize_graph_from_sqlite_py()
+        return {"status": "success"}
+    except:
+        return {"status": "fail"}
 
 
 if __name__ == "__main__":
@@ -624,52 +728,26 @@ if __name__ == "__main__":
         args = input_data.get("args", {})
         result = None
 
-        if operation == "testConnection":
-            result = test_connection()
-        elif operation == "initializeGraphFromSQLite":
-            result = initialize_graph_from_sqlite_py()
-        elif operation == "readGraphData":
-            result = read_graph_data_py()
-        elif operation == "createNode":
-            result = create_node_py(args.get("nodeData"))
-        elif operation == "updateNode":
-            result = update_node_py(args.get("nodeId"), args.get("updateData"))
+        if operation == "createNode":
+            create_node_py(args)
+        elif operation == "renameNode":
+            result = rename_node_py(args)
         elif operation == "deleteNode":
-            result = delete_node_py(args.get("nodeId"))
-        elif operation == "createRelationship":
-            result = create_relationship_py(args.get("fromNodeId"), args.get("toNodeId"), args.get("relationshipType"), args.get("properties"))
-        elif operation == "deleteRelationship":
-            result = delete_relationship_py(args.get("relationshipId"))
+            result = delete_node_py(args)
         elif operation == "readNode":
-            result = read_node_py(args.get("C_ID"), args.get("C_type"), args.get("IO_type"))
+            result = read_node_py(args)
         elif operation == "readMessage":
-            # Assuming filter_data is passed directly if it's a complex object
-            # or reconstruct it if passed as individual args
-            filter_arg = args.get("filter") if args.get("filter") is not None else {"io_type": args.get("IO_type"), "in_data": args.get("in_data")}
-            result = read_message_py(args.get("basic_C_ID"), args.get("C_type"), filter_arg)
-        elif operation == "deleteMessage": # This was a placeholder, remains so unless logic is provided
-             result = {"status": "success", "message": f"Python: delete_message_py called for message_C_ID {args.get('message_C_ID')}, except_C_ID {args.get('except_C_ID')}", "result": {}}
+            result = read_message_py(args)
+        elif operation == "deleteMessage":
+             result = delete_mail_py(args)
         elif operation == "updateLabel":
-            result = update_label_py(args.get("C_ID"), args.get("newLabel"))
-        elif operation == "searchByKeyword":
-            result = search_by_keyword_py(args.get("keyword"))
+            result = rename_node_py(args)
         elif operation == "mergeNode":
-            result = merge_node_py(args.get("from_C_ID"), args.get("to_C_ID"))
-        elif operation == "llmTagNode":
-            result = llm_tag_node_py(args.get("C_ID"), args.get("llm_tags"))
-        # New operations
-        elif operation == "getIncomingNodes":
-            result = get_incoming_nodes_py(args.get("node_name"))
-        elif operation == "getOutgoingNodes":
-            result = get_outgoing_nodes_py(args.get("node_name"))
-        elif operation == "deleteAllNodes":
-            result = delete_all_nodes_py()
-        elif operation == "moveComplexNode":
-            result = move_complex_node_py(args.get("a_id"), args.get("b_id"), args.get("c_id"))
+            result = merge_node_py(args)
         elif operation == "moveEmail":
-            result = move_email_py(args.get("from_id"), args.get("to_id"), args.get("email_uid"))
-        elif operation == "getNodeEmails":
-            result = get_node_emails_py(args.get("node_name"))
+            result = move_mail_py(args)
+        # elif operation == "searchByKeyword":
+        #     result = search_by_keyword_py(args.get("keyword"))
         else:
             result = {"status": "error", "message": f"Python: Unknown operation '{operation}'"}
 
@@ -686,5 +764,3 @@ if __name__ == "__main__":
         print(json.dumps(err_msg), file=sys.stderr)
         sys.stderr.flush()
         sys.exit(1)
-    finally:
-        close_driver() # Ensure driver is closed if it was opened

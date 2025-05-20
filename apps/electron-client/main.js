@@ -4,13 +4,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import fs from "fs";
+import * as graphServiceForDev from "./src/main/services/neo4jAdapter.js"; //test용
 
-// 필요한 서비스 모듈들을 여기에 import 합니다.
-import * as graphServiceForDev from "./src/main/services/neo4jAdapter.js";
-// 예시: 다른 서비스를 사용하려면 추가 import
-// import * as emailServiceForDev from "./src/main/services/emailService.js";
-
-// ESM에서 __dirname 사용하기 위한 설정
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -59,48 +54,51 @@ async function initializeControllers() {
   try {
     // 모든 기존 핸들러 제거
     [
-      "user:create",
-      "user:get",
-      "user:update",
+      // 사용자 관련
+      "user:create", 
+      "user:get", 
+      "user:update", 
       "user:delete",
-      "account:create",
-      "account:getAll",
+      // 계정 관련
+      "account:create", 
+      "account:getAll", 
       "account:delete",
-      "email:send",
-      "smtp:test",
-      "imap:syncLatest",
-      "imap:syncFolder",
+      // 이메일 관련
+      "email:send", 
+      "smtp:test", 
+      "imap:syncLatest", 
+      "imap:syncFolder", 
       "imap:test",
-      "email:getFolders",
-      "email:getEmails",
-      "email:getThreads",
+      "email:getFolders", 
+      "email:getEmails", 
+      "email:getThreads", 
       "email:getThreadsByEmail",
-      "email:getDetail",
-      "email:delete",
+      "email:getDetail", 
+      "email:delete", 
       "email:markAsRead",
-      "attachment:getInfo",
-      "attachment:getContent",
-      "attachment:getByMessage",
+      // 첨부파일 관련
+      "attachment:getInfo", 
+      "attachment:getContent", 
+      "attachment:getByMessage", 
       "attachment:download",
-      "graph:testGraph",
-      "graph:readData",
-      "graph:createNode",
-      "graph:updateNode",
-      "graph:deleteNode",
-      "graph:readNode",
-      "graph:readMessage",
-      "graph:deleteMessage",
-      "graph:updateLabel",
-      "graph:searchByKeyword",
-      "graph:mergeNode",
-      "graph:llmTagNode",
-      "graph:initializeGraphFromSQLite",
-      "graph:getIncomingNodes",
-      "graph:getOutgoingNodes",
-      "graph:deleteAllNodes",
-      "graph:moveComplexNode",
-      "graph:moveEmail",
-      "graph:getNodeEmails",
+      // 구 그래프 API
+      "graph:readData", "graph:createNode", "graph:updateNode", "graph:deleteNode", 
+      "graph:readNode", "graph:readMessage", "graph:deleteMessage", "graph:updateLabel",
+      "graph:searchByKeyword", "graph:mergeNode", "graph:llmTagNode", 
+      "graph:initializeGraphFromSQLite", "graph:getIncomingNodes", "graph:getOutgoingNodes",
+      "graph:deleteAllNodes", "graph:moveComplexNode", "graph:moveEmail", 
+      "graph:getNodeEmails", "graph:createRelationship", "graph:deleteRelationship",
+      // Python 기반 새 그래프 채널
+      "graph:processAndEmbedMessagesPy", 
+      "graph:initializeGraphFromSQLitePy", 
+      "graph:readNodePy",
+      "graph:readMessagePy", 
+      "graph:createNodePy", 
+      "graph:deleteNodePy", 
+      "graph:renameNodePy",
+      "graph:mergeNodePy", 
+      "graph:deleteMailPy", 
+      "graph:moveMailPy"
     ].forEach((channel) => {
       try {
         ipcMain.removeHandler(channel);
@@ -131,7 +129,6 @@ async function initializeControllers() {
     const calendarControllerModule = await import(
       "./src/main/controllers/calendarController.js"
     );
-
     const attachmentControllerModule = await import(
       "./src/main/controllers/attachmentController.js"
     );
@@ -165,8 +162,6 @@ async function initializeControllers() {
     console.log("[MAIN] Registering dev:callBackendMethod handler...");
     const servicesForDevTool = {
       graph: graphServiceForDev,
-      // email: emailServiceForDev, // 다른 서비스 추가 시
-      // 필요한 만큼 여기에 서비스 객체를 추가합니다.
     };
 
     ipcMain.handle(
