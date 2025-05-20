@@ -5,470 +5,138 @@ import * as graphService from "../services/neo4jAdapter.js"; // neo4jAdapter.js�
  * Graph 컨트롤러 초기화
  */
 export const initGraphController = () => {
+  // 기존 핸들러들은 주석 처리 (Python 기반 새 API로 마이그레이션 중)
+  /*
   // 그래프 데이터 읽기 요청 처리
-  ipcMain.handle("graph:testGraph", async (event) => {
+  ipcMain.handle("graph:testGraph", async (event) => { ... });
+  ipcMain.handle("graph:readData", async (event) => { ... });
+  ipcMain.handle("graph:createNode", async (event, nodeData) => { ... });
+  ipcMain.handle("graph:updateNode", async (event, { nodeId, updateData }) => { ... });
+  ipcMain.handle("graph:deleteNode", async (event, nodeId) => { ... });
+  ipcMain.handle("graph:readNode", async (event, { C_ID, C_type, IO_type }) => { ... });
+  ipcMain.handle("graph:readMessage", async (event, { basic_C_ID, C_type, filter }) => { ... });
+  ipcMain.handle("graph:deleteMessage", async (event, { message_C_ID, except_C_ID }) => { ... });
+  ipcMain.handle("graph:updateLabel", async (event, { C_ID, newLabel }) => { ... });
+  ipcMain.handle("graph:searchByKeyword", async (event, { keyword }) => { ... });
+  ipcMain.handle("graph:mergeNode", async (event, { from_C_ID, to_C_ID }) => { ... });
+  ipcMain.handle("graph:llmTagNode", async (event, { C_ID, llm_tags }) => { ... });
+  ipcMain.handle("graph:initializeGraphFromSQLite", async () => { ... });
+  ipcMain.handle("graph:getIncomingNodes", async (event, { node_name }) => { ... });
+  ipcMain.handle("graph:getOutgoingNodes", async (event, { node_name }) => { ... });
+  ipcMain.handle("graph:deleteAllNodes", async () => { ... });
+  ipcMain.handle("graph:moveComplexNode", async (event, { a_id, b_id, c_id }) => { ... });
+  ipcMain.handle("graph:moveEmail", async (event, { from_id, to_id, email_uid }) => { ... });
+  ipcMain.handle("graph:getNodeEmails", async (event, { node_name }) => { ... });
+  */
+
+  // --- New handlers based on graph_operations.py ---
+  ipcMain.handle("graph:processAndEmbedMessagesPy", async (event) => {
     try {
-      const result = await graphService.testGraph();
-      console.log("그래프 IPC 통신 테스트 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return {
-          success: false,
-          message: result.message,
-          error: result.message,
-        };
-      }
+      const result = await graphService.processAndEmbedMessagesPy();
+      console.log("[GraphCtrl] IPC (processAndEmbedMessagesPy):", result);
+      return result; // Python 스크립트의 반환 값을 그대로 전달
     } catch (error) {
-      console.error("그래프 IPC 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
+      console.error("[GraphCtrl] Error (processAndEmbedMessagesPy):", error);
+      return { status: "fail", message: error.message, error: error.toString() };
     }
   });
 
-  ipcMain.handle("graph:readData", async (event) => {
+  ipcMain.handle("graph:initializeGraphFromSQLitePy", async (event) => {
     try {
-      const result = await graphService.readGraphData();
-      console.log("그래프 데이터 읽기 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return {
-          success: false,
-          message: result.message,
-          error: result.message,
-        };
-      }
+      const result = await graphService.initializeGraphFromSQLitePy();
+      console.log("[GraphCtrl] IPC (initializeGraphFromSQLitePy):", result);
+      return result;
     } catch (error) {
-      console.error("그래프 데이터 읽기 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
+      console.error("[GraphCtrl] Error (initializeGraphFromSQLitePy):", error);
+      return { status: "fail", message: error.message, error: error.toString() };
     }
   });
 
-  // 노드 생성 요청 처리
-  ipcMain.handle("graph:createNode", async (event, nodeData) => {
+  ipcMain.handle("graph:readNodePy", async (event, json_obj) => {
     try {
-      const result = await graphService.createNode(nodeData);
-      console.log("노드 생성 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return {
-          success: false,
-          message: result.message,
-          error: result.message,
-        };
-      }
+      const result = await graphService.readNodePy(json_obj);
+      console.log("[GraphCtrl] IPC (readNodePy):", result);
+      return result;
     } catch (error) {
-      console.error("노드 생성 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
+      console.error("[GraphCtrl] Error (readNodePy):", error);
+      return { status: "fail", message: error.message, error: error.toString() };
     }
   });
 
-  // 노드 업데이트 요청 처리
-  ipcMain.handle("graph:updateNode", async (event, { nodeId, updateData }) => {
+  ipcMain.handle("graph:readMessagePy", async (event, json_obj) => {
     try {
-      const result = await graphService.updateNode(nodeId, updateData);
-      console.log("노드 업데이트 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return {
-          success: false,
-          message: result.message,
-          error: result.message,
-        };
-      }
+      const result = await graphService.readMessagePy(json_obj);
+      console.log("[GraphCtrl] IPC (readMessagePy):", result);
+      return result;
     } catch (error) {
-      console.error("노드 업데이트 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
+      console.error("[GraphCtrl] Error (readMessagePy):", error);
+      return { status: "fail", message: error.message, error: error.toString() };
     }
   });
 
-  // 노드 삭제 요청 처리
-  ipcMain.handle("graph:deleteNode", async (event, nodeId) => {
+  ipcMain.handle("graph:createNodePy", async (event, json_obj) => {
     try {
-      const result = await graphService.deleteNode(nodeId);
-      console.log("노드 삭제 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return {
-          success: false,
-          message: result.message,
-          error: result.message,
-        };
-      }
+      const result = await graphService.createNodePy(json_obj);
+      console.log("[GraphCtrl] IPC (createNodePy):", result);
+      return result;
     } catch (error) {
-      console.error("노드 삭제 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
+      console.error("[GraphCtrl] Error (createNodePy):", error);
+      return { status: "fail", message: error.message, error: error.toString() };
     }
   });
 
-  // 노드 읽기 요청 처리
-  ipcMain.handle("graph:readNode", async (event, { C_ID, C_type, IO_type }) => {
+  ipcMain.handle("graph:deleteNodePy", async (event, json_obj) => {
     try {
-      const result = await graphService.readNode(C_ID, C_type, IO_type);
-      console.log("노드 읽기 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return {
-          success: false,
-          message: result.message,
-          error: result.message,
-        };
-      }
+      const result = await graphService.deleteNodePy(json_obj);
+      console.log("[GraphCtrl] IPC (deleteNodePy):", result);
+      return result;
     } catch (error) {
-      console.error("노드 읽기 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
+      console.error("[GraphCtrl] Error (deleteNodePy):", error);
+      return { status: "fail", message: error.message, error: error.toString() };
     }
   });
 
-  // 메시지 읽기 요청 처리
-  ipcMain.handle(
-    "graph:readMessage",
-    async (event, { basic_C_ID, C_type, filter }) => {
-      try {
-        const result = await graphService.readMessage(
-          basic_C_ID,
-          C_type,
-          filter
-        );
-        console.log("메시지 읽기 결과:", result);
-        if (result.status === "success") {
-          return { success: true, data: result.result };
-        } else {
-          return {
-            success: false,
-            message: result.message,
-            error: result.message,
-          };
-        }
-      } catch (error) {
-        console.error("메시지 읽기 컨트롤러 오류:", error);
-        return {
-          success: false,
-          message: error.message,
-          error: error.message,
-        };
-      }
+  ipcMain.handle("graph:renameNodePy", async (event, json_obj) => {
+    try {
+      const result = await graphService.renameNodePy(json_obj);
+      console.log("[GraphCtrl] IPC (renameNodePy):", result);
+      return result;
+    } catch (error) {
+      console.error("[GraphCtrl] Error (renameNodePy):", error);
+      return { status: "fail", message: error.message, error: error.toString() };
     }
   );
 
-  // 메시지 삭제 요청 처리
-  ipcMain.handle(
-    "graph:deleteMessage",
-    async (event, { message_C_ID, except_C_ID }) => {
-      try {
-        const result = await graphService.deleteMessage(
-          message_C_ID,
-          except_C_ID
-        );
-        console.log("메시지 삭제 결과:", result);
-        if (result.status === "success") {
-          return { success: true, data: result.result };
-        } else {
-          return {
-            success: false,
-            message: result.message,
-            error: result.message,
-          };
-        }
-      } catch (error) {
-        console.error("메시지 삭제 컨트롤러 오류:", error);
-        return {
-          success: false,
-          message: error.message,
-          error: error.message,
-        };
-      }
+  ipcMain.handle("graph:mergeNodePy", async (event, json_obj) => {
+    try {
+      const result = await graphService.mergeNodePy(json_obj);
+      console.log("[GraphCtrl] IPC (mergeNodePy):", result);
+      return result;
+    } catch (error) {
+      console.error("[GraphCtrl] Error (mergeNodePy):", error);
+      return { status: "fail", message: error.message, error: error.toString() };
     }
   );
 
-  // 노드 라벨 수정 요청 처리
-  ipcMain.handle("graph:updateLabel", async (event, { C_ID, newLabel }) => {
+  ipcMain.handle("graph:deleteMailPy", async (event, json_obj) => {
     try {
-      const result = await graphService.updateLabel(C_ID, newLabel);
-      console.log("노드 라벨 수정 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return {
-          success: false,
-          message: result.message,
-          error: result.message,
-        };
-      }
+      const result = await graphService.deleteMailPy(json_obj);
+      console.log("[GraphCtrl] IPC (deleteMailPy):", result);
+      return result;
     } catch (error) {
-      console.error("노드 라벨 수정 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
+      console.error("[GraphCtrl] Error (deleteMailPy):", error);
+      return { status: "fail", message: error.message, error: error.toString() };
     }
   });
 
-  // 키워드 검색 요청 처리
-  ipcMain.handle("graph:searchByKeyword", async (event, { keyword }) => {
+  ipcMain.handle("graph:moveMailPy", async (event, json_obj) => {
     try {
-      const result = await graphService.searchByKeyword(keyword);
-      console.log("키워드 검색 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return {
-          success: false,
-          message: result.message,
-          error: result.message,
-        };
-      }
+      const result = await graphService.moveMailPy(json_obj);
+      console.log("[GraphCtrl] IPC (moveMailPy):", result);
+      return result;
     } catch (error) {
-      console.error("키워드 검색 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
-    }
-  });
-
-  // 노드 병합 요청 처리
-  ipcMain.handle("graph:mergeNode", async (event, { from_C_ID, to_C_ID }) => {
-    try {
-      const result = await graphService.mergeNode(from_C_ID, to_C_ID);
-      console.log("노드 병합 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return {
-          success: false,
-          message: result.message,
-          error: result.message,
-        };
-      }
-    } catch (error) {
-      console.error("노드 병합 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
-    }
-  });
-
-  // LLM 태깅 요청 처리
-  ipcMain.handle("graph:llmTagNode", async (event, { C_ID, llm_tags }) => {
-    try {
-      const result = await graphService.llmTagNode(C_ID, llm_tags);
-      console.log("LLM 태깅 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return {
-          success: false,
-          message: result.message,
-          error: result.message,
-        };
-      }
-    } catch (error) {
-      console.error("LLM 태깅 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
-    }
-  });
-
-  ipcMain.handle("graph:initializeGraphFromSQLite", async () => {
-    try {
-      const result = await graphService.initializeGraphFromSQLite();
-      console.log("SQLite에서 그래프 초기화 결과:", result);
-      if (result.status === "success") {
-        return { success: true, message: result.message };
-      } else {
-        return {
-          success: false,
-          message: result.message,
-          error: result.message,
-        };
-      }
-    } catch (error) {
-      console.error("SQLite에서 그래프 초기화 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
-    }
-  });
-
-  ipcMain.handle("graph:getIncomingNodes", async (event, { node_name }) => {
-    try {
-      const result = await graphService.getIncomingNodes(node_name);
-      console.log("수신 노드 가져오기 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return {
-          success: false,
-          message: result.message,
-          error: result.message,
-        };
-      }
-    } catch (error) {
-      console.error("수신 노드 가져오기 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
-    }
-  });
-
-  ipcMain.handle("graph:getOutgoingNodes", async (event, { node_name }) => {
-    try {
-      const result = await graphService.getOutgoingNodes(node_name);
-      console.log("발신 노드 가져오기 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return {
-          success: false,
-          message: result.message,
-          error: result.message,
-        };
-      }
-    } catch (error) {
-      console.error("발신 노드 가져오기 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
-    }
-  });
-
-  ipcMain.handle("graph:deleteAllNodes", async () => {
-    try {
-      const result = await graphService.deleteAllNodes();
-      console.log("모든 노드 삭제 결과:", result);
-      if (result.status === "success") {
-        return { success: true, message: result.message };
-      } else {
-        return {
-          success: false,
-          message: result.message,
-          error: result.message,
-        };
-      }
-    } catch (error) {
-      console.error("모든 노드 삭제 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
-    }
-  });
-
-  ipcMain.handle(
-    "graph:moveComplexNode",
-    async (event, { a_id, b_id, c_id }) => {
-      try {
-        const result = await graphService.moveComplexNode(a_id, b_id, c_id);
-        console.log("복잡한 노드 이동 결과:", result);
-        if (result.status === "success") {
-          return { success: true, message: result.message }; // Assuming message contains relevant info
-        } else {
-          return {
-            success: false,
-            message: result.message,
-            error: result.message,
-          };
-        }
-      } catch (error) {
-        console.error("복잡한 노드 이동 컨트롤러 오류:", error);
-        return {
-          success: false,
-          message: error.message,
-          error: error.message,
-        };
-      }
-    }
-  );
-
-  ipcMain.handle(
-    "graph:moveEmail",
-    async (event, { from_id, to_id, email_uid }) => {
-      try {
-        const result = await graphService.moveEmail(from_id, to_id, email_uid);
-        console.log("이메일 이동 결과:", result);
-        if (result.status === "success") {
-          return { success: true, message: result.message };
-        } else {
-          return {
-            success: false,
-            message: result.message,
-            error: result.message,
-          };
-        }
-      } catch (error) {
-        console.error("이메일 이동 컨트롤러 오류:", error);
-        return {
-          success: false,
-          message: error.message,
-          error: error.message,
-        };
-      }
-    }
-  );
-
-  ipcMain.handle("graph:getNodeEmails", async (event, { node_name }) => {
-    try {
-      const result = await graphService.getNodeEmails(node_name);
-      console.log("노드 이메일 가져오기 결과:", result);
-      if (result.status === "success") {
-        return { success: true, data: result.result };
-      } else {
-        return {
-          success: false,
-          message: result.message,
-          error: result.message,
-        };
-      }
-    } catch (error) {
-      console.error("노드 이메일 가져오기 컨트롤러 오류:", error);
-      return {
-        success: false,
-        message: error.message,
-        error: error.message,
-      };
+      console.error("[GraphCtrl] Error (moveMailPy):", error);
+      return { status: "fail", message: error.message, error: error.toString() };
     }
   });
 };
