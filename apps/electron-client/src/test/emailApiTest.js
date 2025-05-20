@@ -73,6 +73,7 @@ class EmailApiTest {
         console.log(
           `     발신자: ${email.fromName || ""} <${email.fromEmail || ""}>`
         );
+        console.log(`     요약: ${email.summary || ""}`);
         console.log(`     날짜: ${email.sentAt || "알 수 없음"}`);
         console.log(`     읽음 여부: ${email.isRead ? "읽음" : "읽지 않음"}`);
       });
@@ -108,6 +109,8 @@ class EmailApiTest {
         console.log(
           `     발신자: ${email.fromName || ""} <${email.fromEmail || ""}>`
         );
+        
+        console.log(`     요약: ${email.summary || ""}`);
         console.log(`     날짜: ${email.sentAt || "알 수 없음"}`);
       });
 
@@ -247,6 +250,7 @@ class EmailApiTest {
           console.log(`  ${index + 1}. 제목: ${msg.subject || "(제목 없음)"}`);
           console.log(`     날짜: ${msg.sentAt || "알 수 없음"}`);
           console.log(`     스니펫: ${msg.snippet || "(미리보기 없음)"}`);
+          console.log(`     요약: ${msg.summary || ""}`);
 
           // HTML 본문 첫 10글자 추출해서 출력
           const htmlPreview = msg.bodyHtml
