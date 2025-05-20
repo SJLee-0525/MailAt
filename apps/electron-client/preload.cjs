@@ -187,29 +187,39 @@ try {
         console.log("[PRELOAD] graph.getNodeEmails 호출됨", nodeId);
         return ipcRenderer.invoke("graph:getNodeEmails", nodeId);
       },
-      createRelationship: (params) => { // Added
+      createRelationship: (params) => {
+        // Added
         console.log("[PRELOAD] graph.createRelationship 호출됨", params);
         return ipcRenderer.invoke("graph:createRelationship", params);
       },
-      deleteRelationship: (params) => { // Added
+      deleteRelationship: (params) => {
+        // Added
         console.log("[PRELOAD] graph.deleteRelationship 호출됨", params);
         return ipcRenderer.invoke("graph:deleteRelationship", params); // Intentional: This was a copy-paste error in the previous step, should be graph:deleteRelationship
-      }
+      },
     },
 
     // 개발용 테스트 API 추가
     dev: {
       callBackendMethod: (serviceName, methodName, args) => {
-        console.log(`[PRELOAD] dev.callBackendMethod 호출됨: ${serviceName}.${methodName}`, args);
-        return ipcRenderer.invoke("dev:callBackendMethod", { serviceName, methodName, args });
-      }
+        console.log(
+          `[PRELOAD] dev.callBackendMethod 호출됨: ${serviceName}.${methodName}`,
+          args
+        );
+        return ipcRenderer.invoke("dev:callBackendMethod", {
+          serviceName,
+          methodName,
+          args,
+        });
+      },
     },
 
     calendar: {
-      getEvents: (params) => { // params: { accountId, year, month }
+      getEvents: (params) => {
+        // params: { accountId, year, month }
         console.log("[PRELOAD] calendar.getEvents 호출됨", params);
         return ipcRenderer.invoke("calendar:getEvents", params);
-      }
+      },
     },
 
     // 첨부파일 관련 API
@@ -260,20 +270,19 @@ try {
         arch: process.arch,
       }),
     },
-    },
 
     // 창 제어 API 추가
     reloadWindow: () => ipcRenderer.send("window-reload"),
     minimizeWindow: () => ipcRenderer.send("window-minimize"),
     toggleMaximizeWindow: () => ipcRenderer.send("window-toggle-maximize"),
     closeWindow: () => ipcRenderer.send("window-close"),
-
-    // 기타 유틸리티 (필요시 추가)
-    // 예: 파일 시스템 접근, 환경 변수 읽기 등
   });
-  console.log("[PRELOAD] 🟢 electronAPI 노출 성공");
+  // 기타 유틸리티 (필요시 추가)
+  // 예: 파일 시스템 접근, 환경 변수 읽기 등
 } catch (error) {
   console.error("[PRELOAD] 🔴 electronAPI 노출 실패:", error);
 }
+
+console.log("[PRELOAD] 🟢 electronAPI 노출 성공");
 
 console.log("[PRELOAD] 🟢 preload.js 로드 완료");
