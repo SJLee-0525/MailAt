@@ -10,20 +10,14 @@ inout 타입 - 1 : in, 2 : out, 3 : in&out
 
 // 그래프 노드 목록 조회
 export const readGraphNode = async ({
-  c_id,
-  c_type,
-  io_type,
+  C_ID,
+  C_type,
+  IO_type,
 }: {
-  c_id: string; //  중심 노드 ID
-  c_type: number; // 중심 노드 타입,
-  io_type: number; //  inout 타입
-}): Promise<{
-  status: "success" | "fail";
-  message: string;
-  result: {
-    nodes: RawNode[];
-  };
-}> => {
+  C_ID: string; //  중심 노드 ID
+  C_type: number; // 중심 노드 타입,
+  IO_type: number; //  inout 타입
+}): Promise<RawNode[]> => {
   const { user } = useAuthenticateStore();
 
   if (!user) {
@@ -37,65 +31,17 @@ export const readGraphNode = async ({
   */
   try {
     const response = await window.electronAPI.graph.readNodePy({
-      C_ID: c_id,
-      C_type: c_type,
-      IO_type: io_type,
+      C_ID,
+      C_type,
+      IO_type,
     });
     if (response.status === "success") {
-      return response;
+      return response.result.nodes;
     } else {
       throw new Error(response.message);
     }
   } catch (error) {
     console.error("Error fetching graph nodes:", error);
-    throw error;
-  }
-};
-
-// 메일 목록 조회
-export const getGraphMessage = async ({
-  C_ID,
-  C_type,
-  IO_type,
-  In,
-}: {
-  C_ID: string; // 중심 노드 ID
-  C_type: number; // 중심 노드 타입
-  IO_type: number; // inout 타입
-  In: string[]; // 주변 노드 ID 리스트
-}): Promise<{
-  status: "success" | "fail";
-  message: string;
-  result: {
-    emails: GraphEmail[];
-  };
-}> => {
-  const { user } = useAuthenticateStore();
-
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
-  /*
-  "C_ID": 중심 노드 ID,
-  "C_type": 중심 노드 타입,
-  "IO_type": inout 타입 - 항싱 1
-  "In": [주변 노드 ID 리스트]
-  */
-  try {
-    const response = await window.electronAPI.graph.readMessagePy({
-      C_ID,
-      C_type,
-      IO_type,
-      In,
-    });
-    if (response.status === "success") {
-      return response;
-    } else {
-      throw new Error(response.message);
-    }
-  } catch (error) {
-    console.error("Error fetching graph messages:", error);
     throw error;
   }
 };

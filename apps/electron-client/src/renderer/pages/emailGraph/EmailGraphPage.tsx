@@ -50,11 +50,7 @@ const NetworkPage = () => {
   const handleNavigateBack = () => {
     console.log("Navigating back, simulating re-feed of graph data.");
     if (graphData) {
-      setGraphData({
-        ...graphData, // 다른 메타데이터 보존
-        nodes: [...graphData.nodes], // 새로운 참조 생성
-        emails: [...graphData.emails],
-      });
+      setGraphData(graphData);
     }
     setSelected(null);
   };
@@ -67,8 +63,7 @@ const NetworkPage = () => {
   return (
     <div className="flex w-full h-full justify-center items-center overflow-hidden">
       <EmailGraph
-        rawNodes={graphData?.nodes || []} // null 방지
-        rawEmails={graphData?.emails || []} // null 방지
+        rawNodes={graphData || []} // null 방지
         onSelect={(id) => {
           setSelected(id);
           console.log(
@@ -76,11 +71,7 @@ const NetworkPage = () => {
             id
           );
           if (graphData) {
-            setGraphData({
-              ...graphData,
-              nodes: [...graphData.nodes],
-              emails: [...graphData.emails],
-            });
+            setGraphData(graphData);
           }
         }}
         onMerge={handleMerge}

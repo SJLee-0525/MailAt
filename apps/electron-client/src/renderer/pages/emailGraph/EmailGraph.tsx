@@ -26,7 +26,6 @@ import { RawNode, RawEmail, GraphNode } from "@/types/graphType";
 // Props 인터페이스
 interface Props {
   rawNodes: RawNode[];
-  rawEmails: RawEmail[];
   onSelect?: (idx: number) => void;
   onMerge: (srcId: number, tgtId: number) => void;
   onNavigateBack?: () => void;
@@ -48,7 +47,7 @@ const ZOOM_DURATION = 2000;
 const FADE_DURATION = 2000;
 
 const EmailGraph = memo(
-  ({ rawNodes, rawEmails, onSelect, onMerge, onNavigateBack }: Props) => {
+  ({ rawNodes, onSelect, onMerge, onNavigateBack }: Props) => {
     // 우클릭 메뉴 상태 관리
     const [ctxMenu, setCtxMenu] = useState<CtxMenuState>({
       visible: false,
@@ -58,7 +57,7 @@ const EmailGraph = memo(
     });
 
     // rawNodes를 기반으로 그래프 객체 생성
-    const graph = useMemo(() => buildGraph(rawNodes), [rawNodes, rawEmails]);
+    const graph = useMemo(() => buildGraph(rawNodes), [rawNodes]);
 
     // 그래프 wrapper 크기 측정
     const wrapRef = useRef<HTMLDivElement>(null);

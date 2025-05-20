@@ -7,12 +7,12 @@ import {
   //   InfiniteData,
 } from "@tanstack/react-query";
 
-import { GraphData } from "@/types/graphType";
+import { RawNode } from "@/types/graphType";
 
 import useAuthenticateStore from "@stores/authenticateStore";
 import useConversationsStore from "@stores/conversationsStore";
 
-import { readNode } from "@apis/graphApi";
+import { readGraphNode } from "@apis/graphApi";
 
 // const PAGE_SIZE = 5;
 
@@ -23,7 +23,7 @@ export const useGetGraphNode = ({
   IO_type,
   enabled: hookEnabled = true, // Renamed to avoid conflict, defaults to true
 }: {
-  C_ID: number;
+  C_ID: string;
   C_type: number;
   IO_type: number;
   enabled?: boolean; // Make it optional
@@ -33,7 +33,7 @@ export const useGetGraphNode = ({
 
   const userId = user?.userId; // userId can be undefined if user is null
 
-  const query = useQuery<GraphData, Error>({
+  const query = useQuery<RawNode[], Error>({
     // Include C_ID, C_type, IO_type in the queryKey to refetch when they change
     queryKey: ["graph", userId, C_ID, C_type, IO_type],
     queryFn: () => {
@@ -43,7 +43,7 @@ export const useGetGraphNode = ({
           new Error("User ID is required for graph query.")
         );
       }
-      return readNode({ C_ID, C_type, IO_type });
+      return readGraphNode({ C_ID, C_type, IO_type });
     },
     // Query is enabled if userId exists AND hookEnabled is true
     enabled: !!userId && hookEnabled,

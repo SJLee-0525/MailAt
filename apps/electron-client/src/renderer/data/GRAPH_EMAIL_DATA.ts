@@ -10,6 +10,7 @@ export const GRAPH_EMAIL_DATA = {
         data: {
           label: "Me",
         },
+        count: 0,
       },
       {
         id: 1,
@@ -18,6 +19,7 @@ export const GRAPH_EMAIL_DATA = {
         data: {
           label: "LeetCode",
         },
+        count: 2,
       },
       {
         id: 2,
@@ -26,6 +28,7 @@ export const GRAPH_EMAIL_DATA = {
         data: {
           label: "Jiwoo Hong",
         },
+        count: 1,
       },
       {
         id: 3,
@@ -34,6 +37,7 @@ export const GRAPH_EMAIL_DATA = {
         data: {
           label: "Glasp",
         },
+        count: 4,
       },
       {
         id: 4,
@@ -42,6 +46,7 @@ export const GRAPH_EMAIL_DATA = {
         data: {
           label: "홍지우",
         },
+        count: 5,
       },
       {
         id: 5,
@@ -50,6 +55,7 @@ export const GRAPH_EMAIL_DATA = {
         data: {
           label: "원티드 추천 포지션",
         },
+        count: 3,
       },
       {
         id: 6,
@@ -58,6 +64,7 @@ export const GRAPH_EMAIL_DATA = {
         data: {
           label: "인프런 워밍업 클럽",
         },
+        count: 6,
       },
       {
         id: 7,
@@ -66,6 +73,7 @@ export const GRAPH_EMAIL_DATA = {
         data: {
           label: "LinkedIn",
         },
+        count: 2,
       },
     ],
     emails: [
