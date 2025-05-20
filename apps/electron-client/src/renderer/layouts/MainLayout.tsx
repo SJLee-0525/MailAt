@@ -1,13 +1,10 @@
 import clsx from "clsx";
-// import { useEffect } from "react";
+
 import { Outlet } from "react-router-dom";
 
 import useUserProgressStore from "@stores/userProgressStore";
-// import useAuthenticateStore from "@stores/authenticateStore";
 
-// import { useSyncEmail } from "@hooks/useGetConversations";
-
-// import { useGetAllEmails } from "@hooks/useGetConversations";
+import { useGetEmailFolders } from "@hooks/useGetConversations";
 
 import HoverZone from "@layouts/HoverZone";
 import SideNav from "@components/common/nav/SideNav";
@@ -37,6 +34,10 @@ const PopUpLayout = () => {
 
 const MainLayout = () => {
   const { inboxIsOpen } = useUserProgressStore();
+
+  // 폴더 목록 조회
+  useGetEmailFolders();
+
   // const { user } = useAuthenticateStore();
 
   // const { mutate: syncEmail } = useSyncEmail();

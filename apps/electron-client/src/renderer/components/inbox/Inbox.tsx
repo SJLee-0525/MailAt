@@ -1,17 +1,7 @@
 import "@components/inbox/Inbox.css";
 
-import { useEffect } from "react";
-
 import useAuthenticateStore from "@stores/authenticateStore";
 import useUserProgressStore from "@stores/userProgressStore";
-import useConversationsStore from "@stores/conversationsStore";
-
-// import { getEmailsData } from "@apis/emailApi";
-
-import {
-  useGetEmailFolders,
-  // useGetAllEmails,
-} from "@hooks/useGetConversations";
 
 import InboxHeader from "@components/inbox/components/InboxHeader";
 import InboxContents from "@components/inbox/components/InboxContents";
@@ -21,21 +11,8 @@ const Inbox = () => {
   const { user } = useAuthenticateStore();
   const { inboxIsClosing, selectedMail, chattingIsOpen } =
     useUserProgressStore();
-  const { selectedFolder, filters, setConversations } = useConversationsStore();
 
   if (!user) return null;
-
-  // 폴더 목록 조회
-  useGetEmailFolders();
-
-  // 이메일 목록 조회
-  // const { refetch: refetchEmails } = useGetAllEmails();
-
-  useEffect(() => {
-    if (!user) return;
-
-    // refetchEmails();
-  }, [user.userId, selectedFolder, filters, setConversations]);
 
   return (
     <div
