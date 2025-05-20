@@ -17,11 +17,11 @@ const FromChatContent = ({
 }) => {
   return (
     <div className="flex flex-col justify-start items-end w-full h-fit p-2 gap-1">
-      <span className="flex flex-col w-4/5 h-fit gap-1 bg-theme text-white rounded-b-2xl rounded-tl-2xl py-3 px-4">
+      <span className="flex flex-col w-4/5 h-fit gap-1 bg-accept text-[#fff] rounded-b-2xl rounded-tl-2xl py-3 px-4">
         <p className="text-sm font-pre-bold">{subject}</p>
         <p className="text-sm font-pre-regular">{body}</p>
       </span>
-      <p className="text-xs font-pre-regular pe-2">{date}</p>
+      <p className="text-xs font-pre-regular pe-2 text-icon">{date}</p>
     </div>
   );
 };
@@ -37,11 +37,11 @@ const ToChatContent = ({
 }) => {
   return (
     <div className="flex flex-col justify-start items-start w-full h-fit p-2 gap-1">
-      <span className="flex flex-col w-4/5 h-fit gap-1 bg-light1 rounded-b-2xl rounded-tr-2xl py-3 px-4">
+      <span className="flex flex-col w-4/5 h-fit gap-1 bg-light1 text-text rounded-b-2xl rounded-tr-2xl py-3 px-4">
         <p className="text-sm font-pre-bold">{subject}</p>
         <p className="text-sm font-pre-regular">{body}</p>
       </span>
-      <p className="text-xs font-pre-regular ps-2">{date}</p>
+      <p className="text-xs font-pre-regular ps-2 text-icon">{date}</p>
     </div>
   );
 };

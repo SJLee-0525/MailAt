@@ -3,9 +3,9 @@ import SettingsContent from "@pages/settings/components/SettingsContent";
 
 const Settings = () => {
   return (
-    <div className="relative flex flex-col w-full h-fit bg-light1 rounded-xl">
+    <div className="relative flex flex-col w-full h-fit bg-header rounded-xl text-text">
       <SettingsHeader />
-      <div className="w-full h-full px-1 pb-1 bg-light1 rounded-b-xl">
+      <div className="w-full h-full px-1 pb-1 bg-header rounded-b-xl">
         <SettingsContent />
       </div>
     </div>

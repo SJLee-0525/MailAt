@@ -1,6 +1,6 @@
 import { CreateAccountResponse } from "@/types/authType";
 
-import useAuthenticateStore from "@stores/authenticateStore";
+import useUserProgressStore from "@stores/userProgressStore";
 import useModalStore from "@stores/modalStore";
 
 import { useDeleteAccount } from "@hooks/useGetUser";
@@ -19,7 +19,8 @@ const InnerList = ({
   user: CreateAccountResponse;
   onEdit: (account: CreateAccountResponse | null) => void;
 }) => {
-  const { deleteAuthUser } = useAuthenticateStore();
+  const { setLoading, setLoadingMessage, setCloseLoadingMessage } =
+    useUserProgressStore();
   const { openAlertModal } = useModalStore();
 
   const { mutateAsync: deleteAccount } = useDeleteAccount();
@@ -29,6 +30,9 @@ const InnerList = ({
 
     if (!confirm(`${user.email}\n계정을 삭제하시겠습니까?`)) return;
 
+    setLoading(true);
+    setLoadingMessage("계정 삭제 중...");
+
     try {
       const data = await deleteAccount({ accountId: user.accountId });
 
@@ -37,15 +41,24 @@ const InnerList = ({
           title: "계정 삭제 성공",
           content: "계정이 삭제되었습니다.",
         });
-        deleteAuthUser(user); // 임시..
+
+        setLoading(false);
+        setLoadingMessage("계정 삭제 성공");
+        openAlertModal({
+          title: "계정 삭제 성공",
+          content: "계정이 삭제되었습니다.",
+        });
       }
     } catch (error) {
+      setLoading(false);
+      setLoadingMessage("계정 삭제 실패");
       openAlertModal({
         title: "계정 삭제 실패",
         content: "계정 삭제에 실패했습니다.",
       });
       console.error("Error deleting account:", error);
-      return;
+    } finally {
+      setCloseLoadingMessage();
     }
   }
 

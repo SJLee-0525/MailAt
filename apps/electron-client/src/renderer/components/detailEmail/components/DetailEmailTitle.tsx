@@ -123,11 +123,8 @@ const DetailEmailTitle = ({
               <ArrowDownIcon onClick={() => setIsExpanded(true)} />
             )}
             <div className="flex items-center justify-start gap-2">
-              <h3 className="font-pre-semi-bold font-sm whitespace-nowrap text-text">
-                보낸 사람
-              </h3>
               <span
-                className="flex items-center justify-center px-3 py-1 rounded-full bg-disable font-pre-medium text-sm"
+                className="flex items-center justify-center px-3 py-1 rounded-full bg-light3 text-white font-pre-medium text-sm"
                 onClick={openChat}
               >
                 {fromName}
@@ -139,7 +136,7 @@ const DetailEmailTitle = ({
 
         <div className="flex items-center gap-2">
           <button
-            className="font-pre-semi-bold px-1.5 py-0.5 rounded-full bg-content text-white text-xs whitespace-nowrap"
+            className="font-pre-semi-bold px-1.5 py-0.5 rounded-full bg-icon text-white text-xs whitespace-nowrap"
             onClick={handleChangeIsRead}
           >
             {isRead ? "읽음" : "읽지 않음"}

@@ -22,7 +22,7 @@ import Modal from "@components/common/modal/Modal";
 const queryClient = new QueryClient();
 
 const App = () => {
-  const { setUserName } = useAuthenticateStore();
+  const { setCurrentTheme, setUserName } = useAuthenticateStore();
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -36,6 +36,11 @@ const App = () => {
       async function getUserIdFromStorage(storedData: string) {
         const parsedData = JSON.parse(storedData);
         console.log(parsedData);
+
+        const theme = parsedData.state.currentTheme;
+        if (theme === "theme-night") {
+          setCurrentTheme("theme-night");
+        }
 
         const user = parsedData.state.user;
         setUserName(user);

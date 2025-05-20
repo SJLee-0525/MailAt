@@ -5,6 +5,9 @@ import {
   AUTO_COMPLETE_PROMPT_TEXT,
   AUTO_COMPLETE_ALL_PROMPT_TEXT,
 } from "@data/AI_AUTOFILL";
+
+import useUserProgressStore from "@stores/userProgressStore";
+
 import { generateEmailContent } from "@apis/emailApi";
 import { useDebounce } from "@hooks/useDebounceHook";
 
@@ -29,6 +32,12 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
     },
     titleRef
   ) => {
+    const {
+      setLoading: setApiLoading,
+      setLoadingMessage,
+      setCloseLoadingMessage,
+    } = useUserProgressStore();
+
     // UI 관련 상태
     const [isCcOpen, setIsCcOpen] = useState(false);
     const [isBccOpen, setIsBccOpen] = useState(false);
@@ -79,6 +88,9 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
       // full-email 모드에서 이미 생성됐고 재생성 비활성화 시 무시
       if (mode === "full-email" && emailGenerated && !regenerateEnabled) return;
 
+      setApiLoading(true);
+      setLoadingMessage("AI 제안 중...");
+
       try {
         setLoading(true);
 
@@ -118,6 +130,7 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
 
         if (mode === "autocomplete") {
           if (responseText.startsWith("[CORRECTION]")) {
+            setLoadingMessage("AI 맞춤법 제안 중...");
             setCorrectionMode(true);
             setCorrectionSuggestion(
               responseText.replace("[CORRECTION]", "").trim()
@@ -125,6 +138,8 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
             setSuggestion("");
           } else {
             const compText = responseText.replace("[COMPLETION]", "").trim();
+
+            setLoadingMessage("AI 자동완성 제안 중...");
             setCorrectionMode(false);
             setSuggestion(compText);
           }
@@ -132,16 +147,22 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
           setFullEmailSuggestion(
             responseText.replace("[FULL-EMAIL]", "").trim()
           );
+
+          setLoadingMessage("AI 전체메일 제안 중...");
           setCorrectionMode(false);
           setSuggestion("");
         }
       } catch (err) {
         console.error("AI 제안 오류", err);
+        setLoadingMessage("AI 제안 오류");
         setSuggestion("");
         setCorrectionMode(false);
         setFullEmailSuggestion("");
       } finally {
         setLoading(false);
+        setApiLoading(false);
+        setLoadingMessage("AI 제안 완료");
+        setCloseLoadingMessage();
       }
     }
 
@@ -269,7 +290,7 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
             name="sender"
             type="text"
             placeholder="받는 사람"
-            className="w-full h-9 text-sm focus:outline-none focus:bg-gray-100"
+            className="w-full h-9 px-1 text-sm focus:outline-none focus:bg-light"
           />
           <span className="flex items-center justify-between w-fit h-9 gap-2.5 text-sm">
             <button
@@ -300,7 +321,7 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
               name="cc"
               type="text"
               placeholder="참조"
-              className="w-full h-9 text-sm border-b-2 border-light1 bg-orange-50 focus:outline-none"
+              className="w-full h-9 px-1 text-sm border-b-2 border-light1 bg-light focus:outline-none"
             />
           </form>
         )}
@@ -312,7 +333,7 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
               name="bcc"
               type="text"
               placeholder="숨은 참조"
-              className="w-full h-9 text-sm border-b-2 border-light1 bg-red-50 focus:outline-none"
+              className="w-full h-9 px-1 text-sm border-b-2 border-light1 bg-light focus:outline-none"
             />
           </form>
         )}
@@ -324,13 +345,13 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
             name="title"
             type="text"
             placeholder="제목"
-            className="w-full h-9 text-sm border-b-2 border-light1 focus:outline-none focus:bg-gray-100"
+            className="w-full h-9 px-1 text-sm border-b-2 border-light1 focus:outline-none focus:bg-light"
           />
         </div>
 
         {/* 본문 */}
         <div className="flex flex-col w-full flex-1 overflow-y-hidden">
-          <div className="flex items-center justify-between w-full h-9 text-sm">
+          <div className="flex items-center justify-between w-full h-9 px-1 text-sm">
             본문
           </div>
 
@@ -338,10 +359,8 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
           <div className="relative flex items-center w-full h-10 gap-4">
             {/* AI 토글 스위치 */}
             <div
-              className={`flex items-center gap-3 px-3 py-1.5 rounded-full transition-all cursor-pointer ${
-                aiEnabled
-                  ? "bg-gradient-to-r from-theme/90 to-theme shadow-md"
-                  : "bg-gradient-to-r from-light2 to-light1"
+              className={`flex items-center gap-3 px-3 py-1 rounded-full transition-all cursor-pointer ${
+                aiEnabled ? "bg-accept shadow-md" : "bg-light"
               }`}
               onClick={toggleAI}
             >
@@ -370,7 +389,7 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
                 </svg>
                 <span
                   className={`ml-1 text-sm font-pre-medium transition-colors ${
-                    aiEnabled ? "text-white" : "text-title"
+                    aiEnabled ? "text-[#ffffff]" : "text-light3"
                   }`}
                 >
                   AI {aiEnabled ? "활성화" : "비활성화"}
@@ -396,8 +415,8 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
                   type="button"
                   className={`flex-1 text-xs px-4 py-1.5 transition-all duration-200 ${
                     mode === "autocomplete"
-                      ? "bg-theme text-white font-pre-semibold"
-                      : "bg-white text-content hover:bg-light1/50"
+                      ? "bg-accept text-[#ffffff] font-pre-semibold"
+                      : "bg-light text-light3 hover:bg-light1/50"
                   }`}
                   onClick={() => {
                     setMode("autocomplete");
@@ -413,8 +432,8 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
                   type="button"
                   className={`flex-1 text-xs px-4 py-1.5 transition-all duration-200 ${
                     mode === "full-email"
-                      ? "bg-theme text-white font-pre-semibold"
-                      : "bg-white text-content hover:bg-light1/50"
+                      ? "bg-accept text-[#ffffff] font-pre-semibold"
+                      : "bg-light text-light3 hover:bg-light1/50"
                   }`}
                   onClick={() => {
                     setMode("full-email");

@@ -18,21 +18,21 @@ const BottomNav = () => {
   return (
     <div className="flex justify-between items-center mb-10 w-fit gap-8">
       <BottomNavButton
-        icon={<SearchIcon />}
+        icon={<SearchIcon strokeColor="white" />}
         onClick={() => {
           console.log("Search");
           setBottomNavProgress("search");
         }}
       />
       <BottomNavButton
-        icon={<EditIcon />}
+        icon={<EditIcon strokeColor="white" />}
         onClick={() => {
           console.log("Edit");
           setMailFormIsOpen(true);
         }}
       />
       <BottomNavButton
-        icon={<InboxIcon />}
+        icon={<InboxIcon strokeColor="white" />}
         onClick={() => {
           console.log("Inbox");
           setCalendarIsOpen(false);

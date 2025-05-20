@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQuill } from "react-quilljs";
 import "quill/dist/quill.snow.css";
 
@@ -17,6 +17,20 @@ interface MailTextEditorProps {
   cursorBounds?: Bounds | null;
 }
 
+function useWindowSize() {
+  const [height, setHeight] = useState(() => window.innerHeight);
+
+  useEffect(() => {
+    const handleResize = () => setHeight(window.innerHeight);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return height;
+}
+
+const GAP_RATIO = 0.043;
+
 const MailTextEditor = ({
   initialHtml,
   setHtml,
@@ -24,6 +38,7 @@ const MailTextEditor = ({
   ghostText,
   cursorBounds,
 }: MailTextEditorProps) => {
+  const viewportHeight = useWindowSize();
   const { quill, quillRef } = useQuill({
     theme: "snow",
     placeholder: "",
@@ -101,7 +116,10 @@ const MailTextEditor = ({
           <span
             className="absolute w-full px-4 font-pre-regular text-sm opacity-70 select-none pointer-events-none"
             style={{
-              top: cursorBounds.top + cursorBounds.height + 47,
+              top:
+                cursorBounds.top +
+                cursorBounds.height +
+                viewportHeight * GAP_RATIO, // ← 창 높이에 비례
               left: 0,
               lineHeight: `${cursorBounds.height}px`,
             }}

@@ -1,10 +1,13 @@
 import useAuthenticateStore from "@stores/authenticateStore";
+import useUserProgressStore from "@stores/userProgressStore";
 import useModalStore from "@stores/modalStore";
 
 import { createUser } from "@apis/userApi";
 
 const SettingsName = () => {
   const { setUserName } = useAuthenticateStore();
+  const { setLoading, setLoadingMessage, setCloseLoadingMessage } =
+    useUserProgressStore();
   const { openAlertModal } = useModalStore();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -41,10 +44,15 @@ const SettingsName = () => {
       return;
     }
 
+    setLoading(true);
+    setLoadingMessage("사용자 등록 중...");
     // api 호출
     try {
       const response = await createUser(name);
       console.log(response);
+
+      setLoading(false);
+      setLoadingMessage("사용자 등록 성공");
       setUserName(response);
       openAlertModal({
         title: "사용자 등록 성공",
@@ -52,11 +60,15 @@ const SettingsName = () => {
       });
     } catch (error) {
       console.error("Error creating user:", error);
+
+      setLoading(false);
+      setLoadingMessage("사용자 등록 실패");
       openAlertModal({
         title: "사용자 등록 실패",
         content: "사용자 등록에 실패했습니다. 다시 시도해주세요.",
       });
-      return;
+    } finally {
+      setCloseLoadingMessage();
     }
   }
   return (

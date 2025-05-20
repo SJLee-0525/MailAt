@@ -5,6 +5,7 @@ const MinimizeIcon = ({
   height = 24,
   strokeColor = "white",
   strokeWidth = 2,
+  className,
   onClick,
 }: IconProps) => {
   return (
@@ -14,6 +15,7 @@ const MinimizeIcon = ({
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      className={className}
       onClick={onClick}
     >
       <path

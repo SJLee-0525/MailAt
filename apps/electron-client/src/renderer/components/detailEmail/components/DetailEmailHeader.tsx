@@ -9,7 +9,7 @@ const DetailEmailHeader = ({ onClose }: { onClose: () => void }) => {
   const { chattingIsOpen, setChattingIsOpen } = useUserProgressStore();
 
   return (
-    <div className="flex items-center justify-between w-full h-15 min-h-15 px-4 bg-light1">
+    <div className="flex items-center justify-between w-full h-15 min-h-15 px-4 bg-header">
       <IconButton
         type="button"
         icon={<CloseIcon width={20} height={20} />}

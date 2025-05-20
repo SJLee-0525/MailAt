@@ -271,8 +271,8 @@ async function createWindow() {
     frame: false, // 기본 프레임 및 메뉴 바 제거
 
     // 최소 크기 설정
-    minWidth: 800,
-    minHeight: 600,
+    minWidth: 1280,
+    minHeight: 720,
 
     webPreferences: {
       preload: preloadPath,

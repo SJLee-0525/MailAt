@@ -1,12 +1,19 @@
 import { IconProps } from "@/types/iconProps";
 
+import useAuthenticateStore from "@stores/authenticateStore";
+
 const ForwardIcon = ({
   width = 24,
   height = 24,
-  strokeColor = "#7D7983",
+  strokeColor,
   className,
   onClick,
 }: IconProps) => {
+  const { currentTheme } = useAuthenticateStore();
+
+  if (!strokeColor) {
+    strokeColor = currentTheme === "theme-night" ? "#e9e9e9" : "#7d7983";
+  }
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
