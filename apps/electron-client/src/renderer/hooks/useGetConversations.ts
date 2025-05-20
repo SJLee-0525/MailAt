@@ -19,6 +19,7 @@ import useAuthenticateStore from "@stores/authenticateStore";
 import useConversationsStore from "@stores/conversationsStore";
 
 import {
+  getSyncEmail,
   getFolders,
   getEmailsData,
   deleteEmail,
@@ -26,6 +27,36 @@ import {
 } from "@apis/emailApi";
 
 const PAGE_SIZE = 5; // 페이지당 이메일 수 (임시)
+
+// 이메일 동기화
+export const useSyncEmail = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuthenticateStore();
+
+  const mutation = useMutation<
+    { success: boolean; syncedCount: number },
+    Error,
+    { accountId: number; folderName?: string; limit?: number }
+  >({
+    mutationFn: (
+      { accountId: _inputAccountId, folderName, limit } // Destructure input.accountId but ignore it
+    ) =>
+      getSyncEmail({
+        accountId: user?.userId ? user.userId : null,
+        folderName: folderName || "INBOX",
+        limit: limit || 5,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      queryClient.invalidateQueries({ queryKey: ["folders"] });
+    },
+    onError: (error) => {
+      console.error("Error syncing email:", error);
+    },
+  });
+
+  return mutation;
+};
 
 // 폴더 목록 조회
 export const useGetEmailFolders = () => {
