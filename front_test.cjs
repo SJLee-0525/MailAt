@@ -1,162 +1,147 @@
 // // ---------------------------------------------------------------------------
-// // Test Snippets for graph_operations.py functions (running against MOCKED Python backend)
+// // Test Snippets for graph_operations.py functions (running against Python backend via Electron IPC)
 // // Run these in your Electron app's Developer Console.
 // // ---------------------------------------------------------------------------
 
-// // 1. Test Neo4j Connection
-async function testNeo4jConnection() {
+// // 2. Initialize Graph from SQLite
+async function testInitializeGraphFromSQLitePy() {
   try {
-    const result = await window.electronAPI.graph.testConnection();
-    console.log("Test Neo4j Connection Result:", result);
+    // Calls electronAPI.graph.initializeGraphFromSQLitePy()
+    const result = await window.electronAPI.graph.initializeGraphFromSQLitePy();
+    console.log("Initialize Graph (SQLite) Result:", result);
   } catch (error) {
-    console.error("Test Neo4j Connection Error:", error);
+    console.error("Initialize Graph (SQLite) Error:", error);
   }
 }
-testNeo4jConnection();
+testInitializeGraphFromSQLitePy(); // Call when needed
 
-// // 2. Initialize Graph from SQLite (tests mock response)
-async function testInitializeGraphFromSQLite() {
+// // 3. Process and Embed Messages
+async function testProcessAndEmbedMessagesPy() {
   try {
-    const result = await window.electronAPI.graph.initializeGraphFromSQLite();
-    console.log("Initialize Graph Result:", result);
-  } catch (error) {
-    console.error("Initialize Graph Error:", error);
-  }
-}
-testInitializeGraphFromSQLite();
-
-// // 6. Delete Node (tests mock response)
-async function testDeleteNode() {
-  try {
-    const nodeId = 4; // Example node ID
-    const result = await window.electronAPI.graph.deleteNode(nodeId);
-    console.log("Delete Node Result:", result);
-  } catch (error) {
-    console.error("Delete Node Error:", error);
-  }
-}
-testDeleteNode();
-
-// // 11. Update Label (tests mock response)
-async function testUpdateLabel() {
-  try {
-    const C_ID = "16"; // Example C_ID
-    const newLabel = "엄성수_mocked"; // Example new label
-    const result = await window.electronAPI.graph.updateLabel(C_ID, newLabel);
-    console.log("Update Label Result:", result);
-  } catch (error) {
-    console.error("Update Label Error:", error);
-  }
-}
-testUpdateLabel();
-
-// // 13. Merge Node (tests mock response)
-async function testMergeNode() {
-  try {
-    const from_C_ID = "node_id_source_mock"; // Example source node ID
-    const to_C_ID = "node_id_target_mock"; // Example target node ID
-    const result = await window.electronAPI.graph.mergeNode(from_C_ID, to_C_ID);
-    console.log("Merge Node Result:", result);
-  } catch (error) {
-    console.error("Merge Node Error:", error);
-  }
-}
-testMergeNode();
-
-// // 15. Get Incoming Nodes
-async function testGetIncomingNodes() {
-  try {
-    const node_name = "target_node_name_mock"; // Example node name
-    const result = await window.electronAPI.graph.getIncomingNodes(node_name);
-    console.log("Get Incoming Nodes Result:", result);
-  } catch (error) {
-    console.error("Get Incoming Nodes Error:", error);
-  }
-}
-testGetIncomingNodes();
-
-// // 17. Delete All Nodes
-async function testDeleteAllNodes() {
-  try {
-    // WARNING: This will call the deleteAllNodes function.
-    // With a mocked backend, it returns a success message without actual deletion.
-    const result = await window.electronAPI.graph.deleteAllNodes();
-    console.log("Delete All Nodes Result:", result);
-  } catch (error) {
-    console.error("Delete All Nodes Error:", error);
-  }
-}
-if (confirm("Are you sure you want to call deleteAllNodes? (Mocked backend will simulate success)")) {
-  testDeleteAllNodes();
-}
-
-// // 18. Move Complex Node (tests mock response)
-async function testMoveComplexNode() {
-  try {
-    const a_id = "id_a_mock"; // Example ID
-    const b_id = "id_b_mock"; // Example ID
-    const c_id = "id_c_mock"; // Example ID
-    const result = await window.electronAPI.graph.moveComplexNode(a_id, b_id, c_id);
-    console.log("Move Complex Node Result:", result);
-  } catch (error) {
-    console.error("Move Complex Node Error:", error);
-  }
-}
-testMoveComplexNode();
-
-// // 21. Process and Embed Messages (tests mock response)
-async function testProcessAndEmbedMessages() {
-  try {
-    const result = await window.electronAPI.graph.processAndEmbedMessages();
+    // Calls electronAPI.graph.processAndEmbedMessagesPy()
+    const result = await window.electronAPI.graph.processAndEmbedMessagesPy();
     console.log("Process and Embed Messages Result:", result);
   } catch (error) {
     console.error("Process and Embed Messages Error:", error);
   }
 }
-testProcessAndEmbedMessages();
+testProcessAndEmbedMessagesPy(); // Call when needed
 
-// // 22. Build Graph (tests mock response)
-async function testBuildGraph() {
+// // 4. Read Node (replaces testFetchNodes)
+async function testReadNodePy() {
   try {
-    // WARNING: This calls buildGraph.
-    // With a mocked backend, it returns a success message without actual graph building/clearing.
-    const result = await window.electronAPI.graph.buildGraph();
-    console.log("Build Graph Result:", result);
+    const params = {
+      "C_ID": "some_node_id_mock", // Example: contact_id or category_id
+      "C_type": 1, // Example: 0:Root, 1:Person, 2:Category, 3:Subcategory
+      "IO_type": 3 // Example: 1:in, 2:out, 3:in&out
+    };
+    const result = await window.electronAPI.graph.readNodePy(params);
+    console.log("Read Node Result:", result);
   } catch (error) {
-    console.error("Build Graph Error:", error);
+    console.error("Read Node Error:", error);
   }
 }
-if (confirm("Are you sure you want to call buildGraph? (Mocked backend will simulate success)")) {
- testBuildGraph();
-}
+testReadNodePy();
 
-// // 23. search_node
-async function testFetchNodes() {
+// // 5. Read Message (replaces testFetchEmails)
+async function testReadMessagePy() {
   try {
-    // C_type for V2: 0:Root, 1:Person, 2:Category, 3:Subcategory (based on LABEL_MAP_SN)
-    // IO_type: 1:incoming, 2:outgoing, 3:both
-    const C_ID = 0; // Example: outgoing from Root node (contact_id 0)
-    const C_type = 0;
-    const IO_type = 2;
-    const result = await window.electronAPI.graph.fetchNodes(C_ID, C_type, IO_type);
-    console.log("Fetch Nodes Result:", result);
+    const params = {
+      "C_ID": "some_node_id_mock",
+      "C_type": 2, // Example: Category
+      "IO_type": 1, // Always 1 for messages as per Python doc
+      "In": ["person_id_1_mock", "person_id_2_mock"] // Example: [Person ID] for Category
+    };
+    const result = await window.electronAPI.graph.readMessagePy(params);
+    console.log("Read Message Result:", result);
   } catch (error) {
-    console.error("Fetch Nodes Error:", error);
+    console.error("Read Message Error:", error);
   }
 }
-testFetchNodes();
+testReadMessagePy();
 
-// // 24. from search_mail
-async function testFetchEmails() {
+// // 6. Create Node
+async function testCreateNodePy() {
   try {
-    const basic_C_ID = 1; // Example Person contact_id
-    const C_type = 1;       // C_type 1 for Person
-    const IO_type = 3;      // Example: both directions
-    const in_data = null;    // Optional: { person_ids: [...], category_ids: [...] } depending on C_type
-    const result = await window.electronAPI.graph.fetchEmails(basic_C_ID, C_type, IO_type, in_data);
-    console.log("Fetch Emails Result:", result);
+    const params = { "C_name": "New Test Category Mock" };
+    const result = await window.electronAPI.graph.createNodePy(params);
+    console.log("Create Node Result:", result);
   } catch (error) {
-    console.error("Fetch Emails Error:", error);
+    console.error("Create Node Error:", error);
   }
 }
-testFetchEmails();
+testCreateNodePy();
+
+// // 7. Delete Node
+async function testDeleteNodePy() {
+  try {
+    const params = {
+      "C_ID": "node_id_to_delete_mock", // ID of the node to delete
+      "C_type": 2 // Type of the node to delete (e.g., 2 for Category)
+    };
+    const result = await window.electronAPI.graph.deleteNodePy(params);
+    console.log("Delete Node Result:", result);
+  } catch (error) {
+    console.error("Delete Node Error:", error);
+  }
+}
+testDeleteNodePy();
+
+// // 8. Rename Node (replaces testUpdateLabel)
+async function testRenameNodePy() {
+  try {
+    const params = {
+      "before_name": "Old Node Name Mock",
+      "after_name": "New Node Name Mocked"
+    };
+    const result = await window.electronAPI.graph.renameNodePy(params);
+    console.log("Rename Node Result:", result);
+  } catch (error) {
+    console.error("Rename Node Error:", error);
+  }
+}
+testRenameNodePy();
+
+// // 9. Merge Node
+async function testMergeNodePy() {
+  try {
+    const params = {
+      "before_name1": "Node Name 1 Mock",
+      "before_name2": "Node Name 2 Mock",
+      "after_name": "Merged Node Name Mock"
+    };
+    const result = await window.electronAPI.graph.mergeNodePy(params);
+    console.log("Merge Node Result:", result);
+  } catch (error) {
+    console.error("Merge Node Error:", error);
+  }
+}
+testMergeNodePy();
+
+// // 10. Delete Mail
+async function testDeleteMailPy() {
+  try {
+    const params = { "message_id": "message_id_to_delete_mock" };
+    const result = await window.electronAPI.graph.deleteMailPy(params);
+    console.log("Delete Mail Result:", result);
+  } catch (error) {
+    console.error("Delete Mail Error:", error);
+  }
+}
+testDeleteMailPy();
+
+// // 11. Move Mail
+async function testMoveMailPy() {
+  try {
+    const params = {
+      "message_id": "message_id_to_move_mock",
+      "category_id": "target_category_id_mock",
+      "sub_category_id": "target_sub_category_id_mock"
+    };
+    const result = await window.electronAPI.graph.moveMailPy(params);
+    console.log("Move Mail Result:", result);
+  } catch (error) {
+    console.error("Move Mail Error:", error);
+  }
+}
+testMoveMailPy();

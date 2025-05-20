@@ -18,15 +18,13 @@ const pythonExecutable = "python"; // 또는 "python3" 등 Python 실행 파일 
 function runPythonScript(scriptName, operation, args = {}) {
   return new Promise((resolve, reject) => {
     const scriptPath = path.join(pythonScriptsDir, scriptName);
-    let pythonProcess;
+    const command = pythonExecutable;
+    const commandArgs = [scriptPath, operation, JSON.stringify(args)];
 
-    if (scriptName.toLowerCase().endsWith(".exe")) {
-      pythonProcess = spawn(scriptPath, []); // .exe 파일 직접 실행
-    } else {
-      // .exe가 아닌 경우 기존 로직대로 Python 인터프리터 사용 (주로 .py 파일 대상)
-      pythonProcess = spawn(pythonExecutable, [scriptPath]);
-    }
-    
+    console.log(`[runPythonScript] Executing: ${command} ${commandArgs.join(" ")}`);
+
+    const pythonProcess = spawn(command, commandArgs);
+
     let stdoutData = "";
     let stderrData = "";
 
@@ -39,54 +37,33 @@ function runPythonScript(scriptName, operation, args = {}) {
     });
 
     pythonProcess.on("close", (code) => {
-      if (stderrData) {
-        // Log stderr regardless, for debugging purposes
-        console.error(`[neo4jAdapter] Python Script Info/Error Output (stderr) for ${scriptName} - ${operation}:\n${stderrData}`);
-        
-        // Only treat as an error if the exit code is non-zero
-        if (code !== 0) {
-          try {
-            // Attempt to parse stderr as JSON, in case Python sends a structured error
-            const errorResult = JSON.parse(stderrData);
-            return reject(new Error(errorResult.message || `Python script error (exit code ${code}): ${stderrData.trim()}`));
-          } catch (e) {
-            // If stderr is not JSON, use it as a plain text error message
-            return reject(new Error(`Python script error (exit code ${code}): ${stderrData.trim()}`));
-          }
+      console.log(`[runPythonScript] Python script stdout: ${stdoutData}`);
+      console.log(`[runPythonScript] Python script stderr: ${stderrData}`);
+      if (code === 0) {
+        try {
+          const result = JSON.parse(stdoutData);
+          resolve(result);
+        } catch (e) {
+          console.error("[runPythonScript] Failed to parse Python script output:", e);
+          reject(new Error("Failed to parse Python script output."));
         }
-        // If code is 0, stderrData is just informational, proceed to stdout processing
-      }
-      
-      // If there was no stderrData, but the code is non-zero, it's an error
-      if (code !== 0 && !stderrData) {
-        return reject(new Error(`Python script ${scriptName} (operation: ${operation}) exited with code ${code}.`));
-      }
-
-      // Successful stdout processing (only if code is 0 or stderr was informational)
-      try {
-        const result = JSON.parse(stdoutData);
-        resolve(result);
-      } catch (error) {
-        reject(new Error(`Failed to parse Python script output for ${scriptName} - ${operation}: ${error.message}. Output: ${stdoutData.substring(0, 500)}...`));
+      } else {
+        console.error(`[runPythonScript] Python script exited with code ${code}: ${stderrData}`);
+        reject(new Error(`Python script exited with code ${code}: ${stderrData}`));
       }
     });
 
-    pythonProcess.on("error", (error) => {
-      reject(new Error(`Failed to start Python script ${scriptName} for operation ${operation}: ${error.message}`));
+    pythonProcess.on("error", (err) => {
+      console.error("[runPythonScript] Failed to start Python script:", err);
+      reject(err);
     });
-
-    // Python 스크립트에 operation과 args를 JSON 형태로 전달
-    try {
-      const inputPayload = JSON.stringify({ operation, args });
-      pythonProcess.stdin.write(inputPayload);
-      pythonProcess.stdin.end();
-    } catch (error) {
-      reject(new Error(`Failed to serialize input for Python script ${scriptName} - ${operation}: ${error.message}`));
-    }
   });
 }
 
 // --- Public API 함수들 ---
+
+// 기존 함수 주석 처리
+/*
 export async function testConnection() {
   console.log("[neo4jAdapter] testConnection 호출됨");
   return runPythonScript("graph_operations.py", "test_connection");
@@ -202,8 +179,63 @@ export async function printTest() {
   console.log("[neo4jAdapter] printTest 호출됨");
   return runPythonScript("graph_operations.py", "print_test");
 }
+*/
+
+// --- New functions based on graph_operations.py ---
+export async function processAndEmbedMessagesPy() {
+  console.log("[neo4jAdapter] processAndEmbedMessagesPy 호출됨");
+  return runPythonScript("graph_operations.py", "process_and_embed_messages_py");
+}
+
+export async function initializeGraphFromSQLitePy() {
+  console.log("[neo4jAdapter] initializeGraphFromSQLitePy 호출됨");
+  return runPythonScript("graph_operations.py", "initialize_graph_from_sqlite_py");
+}
+
+export async function readNodePy(json_obj) {
+  console.log("[neo4jAdapter] readNodePy 호출됨", json_obj);
+  return runPythonScript("graph_operations.py", "read_node_py", json_obj);
+}
+
+export async function readMessagePy(json_obj) {
+  console.log("[neo4jAdapter] readMessagePy 호출됨", json_obj);
+  return runPythonScript("graph_operations.py", "read_message_py", json_obj);
+}
+
+export async function createNodePy(json_obj) {
+  console.log("[neo4jAdapter] createNodePy 호출됨", json_obj);
+  return runPythonScript("graph_operations.py", "create_node_py", json_obj);
+}
+
+export async function deleteNodePy(json_obj) {
+  console.log("[neo4jAdapter] deleteNodePy 호출됨", json_obj);
+  return runPythonScript("graph_operations.py", "delete_node_py", json_obj);
+}
+
+export async function renameNodePy(json_obj) {
+  console.log("[neo4jAdapter] renameNodePy 호출됨", json_obj);
+  return runPythonScript("graph_operations.py", "rename_node_py", json_obj);
+}
+
+export async function mergeNodePy(json_obj) {
+  console.log("[neo4jAdapter] mergeNodePy 호출됨", json_obj);
+  return runPythonScript("graph_operations.py", "merge_node_py", json_obj);
+}
+
+export async function deleteMailPy(json_obj) {
+  console.log("[neo4jAdapter] deleteMailPy 호출됨", json_obj);
+  return runPythonScript("graph_operations.py", "delete_mail_py", json_obj);
+}
+
+export async function moveMailPy(json_obj) {
+  console.log("[neo4jAdapter] moveMailPy 호출됨", json_obj);
+  return runPythonScript("graph_operations.py", "move_mail_py", json_obj);
+}
+
 
 export default {
+  // 기존 export 주석 처리
+  /*
   testConnection,
   initializeGraphFromSQLite,
   fetchNodes,
@@ -227,4 +259,16 @@ export default {
   moveEmail,
   getNodeEmails,
   printTest,
+  */
+  // 새로운 함수 export
+  processAndEmbedMessagesPy,
+  initializeGraphFromSQLitePy,
+  readNodePy,
+  readMessagePy,
+  createNodePy,
+  deleteNodePy,
+  renameNodePy,
+  mergeNodePy,
+  deleteMailPy,
+  moveMailPy,
 };
