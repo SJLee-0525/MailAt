@@ -78,6 +78,7 @@ export interface AllEmails {
   isFlagged: boolean; // 플래그 상태
   hasAttachments: boolean; // 첨부파일 여부
   attachmentCount: number; // 첨부파일 개수
+  summary?: string; // 요약 정보
 }
 
 export interface EmailSummary {
@@ -111,7 +112,7 @@ export interface EmailDetail {
   isRead: boolean; // 읽음 상태 (상세 조회 시 자동으로 true로 변경)
   isFlagged: boolean; // 플래그 상태
   hasAttachments: boolean; // 첨부파일 여부
-
+  summary?: string; // 요약 정보
   contacts?: Contact[]; // 연락처 정보 (선택적)
   attachments?: DetailAttachment[]; // 첨부파일 정보 (선택적)
 }

@@ -84,7 +84,7 @@ const InboxContent = ({
           {email.subject}
         </h3>
         <p className="m-0 font-pre-regular text-[14px] text-content whitespace-nowrap overflow-hidden text-ellipsis">
-          {email.snippet}
+          {email.summary ? email.summary : email.snippet}
         </p>
 
         {/* 첨부파일 관련해서 생각한 번 해야할 듯 */}

@@ -98,13 +98,13 @@ const ChatContents = ({
                 {isFromMe ? (
                   <ToChatContent
                     subject={chat.subject}
-                    body={chat.bodyText}
+                    body={chat.summary ? chat.summary : chat.bodyText}
                     date={formattedDate}
                   />
                 ) : (
                   <FromChatContent
                     subject={chat.subject}
-                    body={chat.bodyText}
+                    body={chat.summary ? chat.summary : chat.bodyText}
                     date={formattedDate}
                   />
                 )}
