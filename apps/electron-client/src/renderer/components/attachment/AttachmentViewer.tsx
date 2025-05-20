@@ -136,18 +136,28 @@ const AttachmentViewer: React.FC = () => {
       const frontendFiltered = searchAttachments(attachments, searchTerm);
 
       // 2. 백엔드 필터링 결과와 병합 (중복 제거)
-      const allResults = [...frontendFiltered];
+      // 고유 식별자를 사용하여 중복 제거 - 여러 속성 조합으로 확실하게 중복 제거
+      const uniqueMap = new Map<string, Attachment>();
 
+      // 먼저 프론트엔드 검색 결과 추가
+      frontendFiltered.forEach((item) => {
+        // 고유 키 생성: 파일명 + 메시지ID + 크기 조합으로 고유성 확보
+        const uniqueKey = `${item.filename}_${item.messageId}_${item.size}`;
+        uniqueMap.set(uniqueKey, item);
+      });
+
+      // 백엔드 검색 결과 추가 (중복은 덮어쓰기됨)
       if (backendSearchResults.length > 0) {
         backendSearchResults.forEach((item) => {
-          // ID로 중복 체크
-          if (!allResults.some((a) => a.id === item.id)) {
-            allResults.push(item);
+          const uniqueKey = `${item.filename}_${item.messageId}_${item.size}`;
+          if (!uniqueMap.has(uniqueKey)) {
+            uniqueMap.set(uniqueKey, item);
           }
         });
       }
 
-      filtered = allResults;
+      // Map의 값들을 배열로 변환
+      filtered = Array.from(uniqueMap.values());
     }
 
     setFilteredAttachments(filtered);
