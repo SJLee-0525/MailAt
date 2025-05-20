@@ -92,108 +92,107 @@ try {
       },
     },
 
-    // 그래프 관련 API 추가
+    // 그래프 관련 API 추가 - Python 기반 새 API
     graph: {
-      testConnection: () => {
-        console.log("[PRELOAD] graph.testConnection 호출됨");
-        return ipcRenderer.invoke("graph:testConnection");
+      // Python 기반 새 그래프 API
+      processAndEmbedMessagesPy: () => {
+        console.log("[PRELOAD] graph.processAndEmbedMessagesPy 호출됨");
+        return ipcRenderer.invoke("graph:processAndEmbedMessagesPy");
       },
-      initializeGraphFromSQLite: () => {
-        console.log("[PRELOAD] graph.initializeGraphFromSQLite 호출됨");
-        return ipcRenderer.invoke("graph:initializeGraphFromSQLite");
+      initializeGraphFromSQLitePy: () => {
+        console.log("[PRELOAD] graph.initializeGraphFromSQLitePy 호출됨");
+        return ipcRenderer.invoke("graph:initializeGraphFromSQLitePy");
       },
-      fetchNodes: (C_ID, C_type, IO_type) => {
-        console.log("[PRELOAD] graph.fetchNodes 호출됨");
-        return ipcRenderer.invoke("graph:fetchNodes", { C_ID, C_type, IO_type });
+      readNodePy: (json_obj) => {
+        console.log("[PRELOAD] graph.readNodePy 호출됨", json_obj);
+        return ipcRenderer.invoke("graph:readNodePy", json_obj);
       },
-      fetchEmails: (basic_C_ID, C_type, IO_type, in_data) => {
-        console.log("[PRELOAD] graph.fetchEmails 호출됨");
-        return ipcRenderer.invoke("graph:fetchEmails", { basic_C_ID, C_type, IO_type, in_data });
+      readMessagePy: (json_obj) => {
+        console.log("[PRELOAD] graph.readMessagePy 호출됨", json_obj);
+        return ipcRenderer.invoke("graph:readMessagePy", json_obj);
       },
-      deleteNode: (nodeId) => {
-        console.log("[PRELOAD] graph.deleteNode 호출됨");
-        return ipcRenderer.invoke("graph:deleteNode", { nodeId });
+      createNodePy: (json_obj) => {
+        console.log("[PRELOAD] graph.createNodePy 호출됨", json_obj);
+        return ipcRenderer.invoke("graph:createNodePy", json_obj);
       },
-      mergeNode: (from_C_ID, to_C_ID) => {
-        console.log("[PRELOAD] graph.mergeNode 호출됨");
-        return ipcRenderer.invoke("graph:mergeNode", { from_C_ID, to_C_ID });
+      deleteNodePy: (json_obj) => {
+        console.log("[PRELOAD] graph.deleteNodePy 호출됨", json_obj);
+        return ipcRenderer.invoke("graph:deleteNodePy", json_obj);
       },
-      updateLabel: (C_ID, newLabel) => {
-        console.log("[PRELOAD] graph.updateLabel 호출됨");
-        return ipcRenderer.invoke("graph:updateLabel", { C_ID, newLabel });
+      renameNodePy: (json_obj) => {
+        console.log("[PRELOAD] graph.renameNodePy 호출됨", json_obj);
+        return ipcRenderer.invoke("graph:renameNodePy", json_obj);
       },
-      getIncomingNodes: (node_name) => {
-        console.log("[PRELOAD] graph.getIncomingNodes 호출됨");
-        return ipcRenderer.invoke("graph:getIncomingNodes", { node_name });
+      mergeNodePy: (json_obj) => {
+        console.log("[PRELOAD] graph.mergeNodePy 호출됨", json_obj);
+        return ipcRenderer.invoke("graph:mergeNodePy", json_obj);
       },
-      deleteAllNodes: () => {
-        console.log("[PRELOAD] graph.deleteAllNodes 호출됨");
-        return ipcRenderer.invoke("graph:deleteAllNodes");
+      deleteMailPy: (json_obj) => {
+        console.log("[PRELOAD] graph.deleteMailPy 호출됨", json_obj);
+        return ipcRenderer.invoke("graph:deleteMailPy", json_obj);
       },
-      moveComplexNode: (a_id, b_id, c_id) => {
-        console.log("[PRELOAD] graph.moveComplexNode 호출됨");
-        return ipcRenderer.invoke("graph:moveComplexNode", { a_id, b_id, c_id });
-      },
-      buildGraph: () => {
-        console.log("[PRELOAD] graph.buildGraph 호출됨");
-        return ipcRenderer.invoke("graph:buildGraph");
-      },
-      processAndEmbedMessages: () => {
-        console.log("[PRELOAD] graph.processAndEmbedMessages 호출됨");
-        return ipcRenderer.invoke("graph:processAndEmbedMessages");
-      },
-      readGraphData: () => {
-        console.log("[PRELOAD] graph.readGraphData 호출됨");
-        return ipcRenderer.invoke("graph:readGraphData");
-      },
-      createNode: (nodeData) => {
-        console.log("[PRELOAD] graph.createNode 호출됨");
-        return ipcRenderer.invoke("graph:createNode", { nodeData });
-      },
-      updateNode: (nodeId, updateData) => {
-        console.log("[PRELOAD] graph.updateNode 호출됨");
-        return ipcRenderer.invoke("graph:updateNode", { nodeId, updateData });
-      },
-      createRelationship: (fromNodeId, toNodeId, relationshipType, properties) => {
-        console.log("[PRELOAD] graph.createRelationship 호출됨");
-        return ipcRenderer.invoke("graph:createRelationship", { fromNodeId, toNodeId, relationshipType, properties });
-      },
-      deleteRelationship: (relationshipId) => {
-        console.log("[PRELOAD] graph.deleteRelationship 호출됨");
-        return ipcRenderer.invoke("graph:deleteRelationship", { relationshipId });
-      },
-      searchByKeyword: (keyword) => {
-        console.log("[PRELOAD] graph.searchByKeyword 호출됨");
-        return ipcRenderer.invoke("graph:searchByKeyword", { keyword });
-      },
-      llmTagNode: (C_ID, llm_tags) => {
-        console.log("[PRELOAD] graph.llmTagNode 호출됨");
-        return ipcRenderer.invoke("graph:llmTagNode", { C_ID, llm_tags });
-      },
-      getOutgoingNodes: (node_name) => {
-        console.log("[PRELOAD] graph.getOutgoingNodes 호출됨");
-        return ipcRenderer.invoke("graph:getOutgoingNodes", { node_name });
-      },
-      moveEmail: (from_id, to_id, email_uid) => {
-        console.log("[PRELOAD] graph.moveEmail 호출됨");
-        return ipcRenderer.invoke("graph:moveEmail", { from_id, to_id, email_uid });
-      },
-      getNodeEmails: (node_name) => {
-        console.log("[PRELOAD] graph.getNodeEmails 호출됨");
-        return ipcRenderer.invoke("graph:getNodeEmails", { node_name });
-      },
-      printTest: () => {
-        console.log("[PRELOAD] graph.printTest 호출됨");
-        return ipcRenderer.invoke("graph:printTest");
+      moveMailPy: (json_obj) => {
+        console.log("[PRELOAD] graph.moveMailPy 호출됨", json_obj);
+        return ipcRenderer.invoke("graph:moveMailPy", json_obj);
       },
     },
 
     // 개발용 테스트 API 추가
     dev: {
       callBackendMethod: (serviceName, methodName, args) => {
-        console.log(`[PRELOAD] dev.callBackendMethod 호출됨: ${serviceName}.${methodName}`, args);
-        return ipcRenderer.invoke("dev:callBackendMethod", { serviceName, methodName, args });
-      }
+        console.log(
+          `[PRELOAD] dev.callBackendMethod 호출됨: ${serviceName}.${methodName}`,
+          args
+        );
+        return ipcRenderer.invoke("dev:callBackendMethod", {
+          serviceName,
+          methodName,
+          args,
+        });
+      },
+    },
+
+    calendar: {
+      getEvents: (params) => {
+        // params: { accountId, year, month }
+        console.log("[PRELOAD] calendar.getEvents 호출됨", params);
+        return ipcRenderer.invoke("calendar:getEvents", params);
+      },
+    },
+
+    // 첨부파일 관련 API
+    attachment: {
+      // 첨부파일 정보 조회
+      getInfo: (attachmentId) => {
+        console.log("[PRELOAD] attachment.getInfo 호출됨", attachmentId);
+        return ipcRenderer.invoke("attachment:getInfo", attachmentId);
+      },
+      // 첨부파일 내용 조회
+      getContent: (attachmentId) => {
+        console.log("[PRELOAD] attachment.getContent 호출됨", attachmentId);
+        return ipcRenderer.invoke("attachment:getContent", attachmentId);
+      },
+      // 메시지의 모든 첨부파일 목록 조회
+      getByMessage: (messageId) => {
+        console.log("[PRELOAD] attachment.getByMessage 호출됨", messageId);
+        return ipcRenderer.invoke("attachment:getByMessage", messageId);
+      },
+      // 첨부파일 다운로드
+      download: (attachmentId, savePath) => {
+        console.log("[PRELOAD] attachment.download 호출됨", {
+          attachmentId,
+          savePath,
+        });
+        return ipcRenderer.invoke(
+          "attachment:download",
+          attachmentId,
+          savePath
+        );
+      },
+      searchByContent: (params) => {
+        console.log("[PRELOAD] attachment.searchByContent 호출됨", params);
+        return ipcRenderer.invoke("attachment:searchByContent", params);
+      },
     },
 
     // 디버깅 도구
@@ -205,14 +204,21 @@ try {
         arch: process.arch,
       }),
     },
-  });
 
+    // 창 제어 API 추가
+    reloadWindow: () => ipcRenderer.send("window-reload"),
+    minimizeWindow: () => ipcRenderer.send("window-minimize"),
+    toggleMaximizeWindow: () => ipcRenderer.send("window-toggle-maximize"),
+    closeWindow: () => ipcRenderer.send("window-close"),
+  });
+  
   // 환경 정보 출력
   console.log("[PRELOAD] Node.js 버전:", process.versions.node);
   console.log("[PRELOAD] Electron 버전:", process.versions.electron);
   console.log("[PRELOAD] Chrome 버전:", process.versions.chrome);
 } catch (error) {
-  console.error("[PRELOAD] 🔴 contextBridge 오류:", error);
+  console.error("[PRELOAD] 🔴 electronAPI 노출 실패:", error);
 }
 
-console.log("[PRELOAD] ✅ electronAPI가 성공적으로 등록됨");
+console.log("[PRELOAD] 🟢 electronAPI 노출 성공");
+console.log("[PRELOAD] 🟢 preload.js 로드 완료");
