@@ -108,6 +108,9 @@ async function initializeControllers() {
     const graphControllerModule = await import(
       "./src/main/controllers/graphController.js"
     );
+    const calendarControllerModule = await import(
+      "./src/main/controllers/calendarController.js"
+    );
 
     // 컨트롤러 초기화 함수 실행
     userControllerModule.initUserController();
@@ -127,6 +130,9 @@ async function initializeControllers() {
 
     graphControllerModule.initGraphController();
     console.log("[MAIN] Graph 컨트롤러 초기화 완료");
+
+    calendarControllerModule.initCalendarController();
+    console.log("[MAIN] Calendar 컨트롤러 초기화 완료");
 
     // --- dev:callBackendMethod 핸들러 등록 ---
     console.log("[MAIN] Registering dev:callBackendMethod handler...");
@@ -162,6 +168,7 @@ async function initializeControllers() {
 
     controllersInitialized = true;
     console.log("[MAIN] 등록된 IPC 핸들러 (dev 포함 예상):", ipcMain.eventNames());
+    
 
     return true;
   } catch (error) {

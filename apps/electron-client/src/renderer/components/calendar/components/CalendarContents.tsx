@@ -1,5 +1,14 @@
 // import clsx from "clsx";
 
+interface Schedule {
+  id: string;
+  task: string;
+}
+
+interface Schedules {
+  [date: string]: Schedule[];
+}
+
 const WEEKDAYS = [
   ["SUN", "text-error"],
   ["MON", "text-content"],
@@ -12,7 +21,8 @@ const WEEKDAYS = [
 
 const CalendarContents = ({
   daysInMonth,
-  selectedDate: { date: selectedDate, selectDate },
+  selectedDate: { date: currentSelectedDate, selectDate },
+  schedules,
 }: {
   daysInMonth: {
     date: string;
@@ -25,8 +35,12 @@ const CalendarContents = ({
     date: string;
     selectDate: (date: string) => void;
   };
+  schedules: Schedules;
 }) => {
-  const month = daysInMonth[Math.floor(daysInMonth.length / 2)].month;
+  const month =
+    daysInMonth.length > 0
+      ? daysInMonth[Math.floor(daysInMonth.length / 2)].month
+      : "";
 
   return (
     <div className="flex flex-col w-full h-full bg-white rounded-lg overflow-y-auto hide-scrollbar">
@@ -37,7 +51,9 @@ const CalendarContents = ({
             {WEEKDAYS.map((d, i) => (
               <span
                 key={d[0]}
-                className={`py-1.5 ${d[1]} border-light border-b ${i > 0 ? "border-l " : ""}`}
+                className={`py-1.5 ${d[1]} border-light border-b ${
+                  i > 0 ? "border-l " : ""
+                }`}
               >
                 {d[0]}
               </span>
@@ -48,15 +64,21 @@ const CalendarContents = ({
         {/* 날짜 */}
         <div className="w-full h-full">
           <div className="grid grid-cols-7 w-full h-full overflow-hidden">
-            {daysInMonth.map((day, i) => {
-              const isCurrentMonth = day.month === month;
-              const isSelected = day.date === selectedDate;
+            {daysInMonth.map((dayObj, i) => {
+              const isCurrentMonth = dayObj.month === month;
+              const isSelected = dayObj.date === currentSelectedDate;
+              const daySchedules = schedules[dayObj.date] || [];
 
               let className = "font-pre-semi-bold text-sm ";
               if (isCurrentMonth) {
                 className += isSelected
                   ? "text-black bg-[#E7F0F6]"
                   : "text-black";
+                // 주말 색상 적용 (현재 달에만)
+                if (dayObj.dayIndexOfWeek === 0 && !isSelected)
+                  className += " text-error";
+                if (dayObj.dayIndexOfWeek === 6 && !isSelected)
+                  className += " text-success";
               } else {
                 className += "text-content bg-bg";
               }
@@ -67,18 +89,34 @@ const CalendarContents = ({
 
               return (
                 <button
-                  key={day.date}
-                  onClick={() => selectDate(day.date)}
-                  className={`w-full h-full p-1 flex flex-col items-start justify-between ${className} ${borderClassName}`}
+                  key={dayObj.date}
+                  onClick={() => selectDate(dayObj.date)}
+                  className={`w-full h-full p-1 flex flex-col items-start justify-start ${className} ${borderClassName} hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-theme focus:z-10`}
                 >
-                  <div>{Number(day.day)}</div>
-                  <div className="flex flex-col gap-0.5 w-full h-fit">
-                    {/* <span className="w-fit h-fitp p-1 text-xs bg-blue-300 text-white rounded-md">
-                      밥 먹기
-                    </span>
-                    <span className="w-fit h-fitp p-1 text-xs bg-blue-300 text-white rounded-md">
-                      밥 먹기
-                    </span> */}
+                  <div
+                    className={
+                      isSelected && isCurrentMonth
+                        ? "text-theme font-pre-bold"
+                        : ""
+                    }
+                  >
+                    {Number(dayObj.day)}
+                  </div>
+                  <div className="flex flex-col gap-0.5 w-full h-fit mt-1 overflow-y-auto scrollbar-hide">
+                    {daySchedules.slice(0, 2).map((scheduleItem) => (
+                      <span
+                        key={scheduleItem.id}
+                        className="w-full text-left text-xs bg-blue-400 text-white rounded-sm px-1 py-0.5 truncate"
+                        title={scheduleItem.task}
+                      >
+                        {scheduleItem.task}
+                      </span>
+                    ))}
+                    {daySchedules.length > 2 && (
+                      <span className="text-xs text-gray-500 mt-0.5 self-center">
+                        + {daySchedules.length - 2}
+                      </span>
+                    )}
                   </div>
                 </button>
               );

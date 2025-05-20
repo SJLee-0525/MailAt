@@ -203,6 +203,9 @@ def summarize_email():
                 logger.info(f"요청된 작업이 원하지 않는 작업 목록에 포함되어 있습니다: {task}")
                 scheduled_at = None
                 task = None
+            
+            if (scheduled_at is not None):
+                scheduled_at = parse_scheduled_at(scheduled_at)
 
 
     except Exception as e:
@@ -213,6 +216,18 @@ def summarize_email():
     logger.info(f"요약 요청 처리 완료. 소요 시간: {t_end - t_start:.2f}초")
 
     return jsonify({"summary": summary, "scheduled_at": scheduled_at, "task": task})
+
+def parse_scheduled_at(scheduled_at_str):
+    if scheduled_at_str is None:
+        return None
+    idx = scheduled_at_str.find('(')
+    if idx != -1:
+        date_str = scheduled_at_str[:idx]
+    else:
+        date_str = scheduled_at_str
+    date_str = date_str.strip()
+    # 밀리초 포함, Z(UTC) 붙이기
+    return f"{date_str}T00:00:00.000Z"
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
