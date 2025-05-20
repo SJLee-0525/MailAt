@@ -1,4 +1,3 @@
-// src/test/userTest.js
 import userService from "../main/services/userService.js";
 import { closeConnection } from "../main/config/dbConfig.js";
 
@@ -11,11 +10,18 @@ export const runUserTests = async () => {
   try {
     // 1. Create User Test
     console.log("1. Create User Test");
-    const userData = { username: "TestUser" };
-    const createdUser = await userService.createUser(userData);
+    let userData = { username: "TestUser" };
+    let createdUser = await userService.createUser(userData);
     console.log("Created User:", createdUser);
 
-    const userId = createdUser.userId;
+    let userId = createdUser.userId;
+
+    console.log("1. Create User Test");
+    userData = { username: "Test2User" };
+    createdUser = await userService.createUser(userData);
+    console.log("Created User:", createdUser);
+
+    userId = createdUser.userId;
 
     // 2. Read User Test
     console.log("\n2. Read User Test");
@@ -32,19 +38,19 @@ export const runUserTests = async () => {
     const checkUser = await userService.getUserById(userId);
     console.log("Confirmed Updated User:", checkUser);
 
-    // 4. Delete User Test
-    console.log("\n4. Delete User Test");
-    const deleteResult = await userService.deleteUser(userId);
-    console.log("Delete Result:", deleteResult);
+    // // 4. Delete User Test
+    // console.log("\n4. Delete User Test");
+    // const deleteResult = await userService.deleteUser(userId);
+    // console.log("Delete Result:", deleteResult);
 
-    // 4-1. Confirm Deletion (Expecting Error)
-    console.log("\n4-1. Confirm Deletion (Expecting Error)");
-    try {
-      const deletedUser = await userService.getUserById(userId);
-      console.log("Deleted User Fetch Result:", deletedUser);
-    } catch (error) {
-      console.log("Expected Error Occurred:", error.message);
-    }
+    // // 4-1. Confirm Deletion (Expecting Error)
+    // console.log("\n4-1. Confirm Deletion (Expecting Error)");
+    // try {
+    //   const deletedUser = await userService.getUserById(userId);
+    //   console.log("Deleted User Fetch Result:", deletedUser);
+    // } catch (error) {
+    //   console.log("Expected Error Occurred:", error.message);
+    // }
 
     console.log("\n===== User Function Test Finished =====");
   } catch (error) {

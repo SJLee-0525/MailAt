@@ -55,18 +55,18 @@ class UserRepository {
           .then(() => {
             const { username } = userData;
             const currentDate = new Date().toISOString();
-
+            
             db.run(
-              `INSERT INTO User (username, created_at) VALUES (?, ?)`,
+              `INSERT OR REPLACE INTO User (user_id, username, created_at) VALUES (1, ?, ?)`,
               [username, currentDate],
               function (err) {
                 if (err) {
                   reject(new Error(`사용자 생성 오류: ${err.message}`));
                   return;
                 }
-
+  
                 resolve({
-                  userId: this.lastID,
+                  userId: 1,
                   username,
                   createdAt: currentDate,
                 });
@@ -172,7 +172,7 @@ class UserRepository {
         try {
           // User 테이블 생성
           db.run(`CREATE TABLE IF NOT EXISTS User (
-            user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER PRIMARY KEY,
             username TEXT NOT NULL UNIQUE,
             created_at DATETIME NULL DEFAULT CURRENT_TIMESTAMP
           )`);
@@ -200,7 +200,7 @@ class UserRepository {
           )`);
 
           // Folder 테이블 생성
-          db.run(`CREATE TABLE Folder (
+          db.run(`CREATE TABLE IF NOT EXISTS Folder (
             folder_id INTEGER PRIMARY KEY AUTOINCREMENT,
             account_id INTEGER NOT NULL,
             name TEXT NOT NULL,
@@ -295,7 +295,7 @@ class UserRepository {
           )`);
 
           // Calender 테이블 생성
-          db.run(`CREATE TABLE Calendar (
+          db.run(`CREATE TABLE IF NOT EXISTS Calendar (
             message_id INTEGER PRIMARY KEY,
             account_id INTEGER NOT NULL,
             summary TEXT NULL,
