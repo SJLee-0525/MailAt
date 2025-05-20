@@ -4,7 +4,7 @@ import { Outlet } from "react-router-dom";
 
 import useUserProgressStore from "@stores/userProgressStore";
 
-// import { useGetAllEmails } from "@hooks/useGetConversations";
+import { useGetEmailFolders } from "@hooks/useGetConversations";
 
 import HoverZone from "@layouts/HoverZone";
 import SideNav from "@components/common/nav/SideNav";
@@ -33,9 +33,34 @@ const PopUpLayout = () => {
 };
 
 const MainLayout = () => {
-  // const { refetch } = useGetAllEmails();
-
   const { inboxIsOpen } = useUserProgressStore();
+
+  // 폴더 목록 조회
+  useGetEmailFolders();
+
+  // const { user } = useAuthenticateStore();
+
+  // const { mutate: syncEmail } = useSyncEmail();
+
+  // useEffect(() => {
+  //   if (user?.userId) {
+  //     syncEmail({ accountId: user.userId });
+  //   }
+
+  //   // 5분마다 이메일 동기화
+  //   const intervalId = setInterval(
+  //     () => {
+  //       if (user?.userId) {
+  //         console.log("Syncing email periodically...");
+  //         syncEmail({ accountId: user.userId }); // Assuming default folderName and limit are handled in useSyncEmail
+  //       }
+  //     },
+  //     5 * 60 * 1000
+  //   );
+
+  //   // 컴포넌트 언마운트 시 interval 정리
+  //   return () => clearInterval(intervalId);
+  // }, [syncEmail, user?.userId]);
 
   const sidePaneClass = clsx(
     "transition-[width,min-width] h-full duration-300 ease-in-out",

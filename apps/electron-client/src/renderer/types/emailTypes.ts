@@ -1,3 +1,15 @@
+export interface EmailSyncResponse {
+  success: boolean;
+  syncedCount: number; // 실제로 연동되어 DB저장에 성공한 동기화 이메일 수
+  totalAvailable: number;
+  processedCount: number; //처리를 시도한 동기화 이메일 수
+  skippedCount: number;
+  folderName: string;
+  folderId: number;
+  errors: undefined;
+  skippedMessages: undefined;
+}
+
 export interface FolderResponse {
   folderId: number; // 폴더 ID
   accountId: number; // 계정 ID
@@ -78,6 +90,7 @@ export interface AllEmails {
   isFlagged: boolean; // 플래그 상태
   hasAttachments: boolean; // 첨부파일 여부
   attachmentCount: number; // 첨부파일 개수
+  summary?: string; // 요약 정보
 }
 
 export interface EmailSummary {
@@ -111,7 +124,7 @@ export interface EmailDetail {
   isRead: boolean; // 읽음 상태 (상세 조회 시 자동으로 true로 변경)
   isFlagged: boolean; // 플래그 상태
   hasAttachments: boolean; // 첨부파일 여부
-
+  summary?: string; // 요약 정보
   contacts?: Contact[]; // 연락처 정보 (선택적)
   attachments?: DetailAttachment[]; // 첨부파일 정보 (선택적)
 }

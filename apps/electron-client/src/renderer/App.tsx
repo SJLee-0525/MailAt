@@ -103,7 +103,6 @@ const App = () => {
         <QueryClientProvider client={queryClient}>
           <TitleBar />
           <div style={{ height: "calc(100vh - 40px)" }}>
-            {" "}
             {/* 높이 조정 */}
             <Routes>
               <Route path="/renderer.html" element={<TutorialLayout />} />
@@ -120,7 +119,6 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <TitleBar />
         <div style={{ height: "calc(100vh - 40px)" }}>
-          {" "}
           {/* 높이 조정 */}
           <Routes>
             {/* 모든 페이지에 공통 레이아웃 적용 */}

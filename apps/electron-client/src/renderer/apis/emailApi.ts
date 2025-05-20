@@ -1,6 +1,7 @@
 import { aiInstance } from "@apis/instance";
 
 import {
+  EmailSyncResponse,
   FolderResponse,
   AllEmails,
   // EmailSummary,
@@ -22,6 +23,37 @@ import {
 const GEMINI_API_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 const GEMINI_API_KEY = "AIzaSyDwxwFfDd-Z4GQq5kfMDVa1GgUtDlUOOaA";
+
+export const getSyncEmail = async ({
+  accountId,
+  folderName,
+  limit,
+}: {
+  accountId: number | null;
+  folderName: string;
+  limit: number;
+}): Promise<{ success: boolean; data: EmailSyncResponse }> => {
+  if (!accountId) {
+    throw new Error("Account ID is required to sync email.");
+  }
+
+  const params = {
+    accountId,
+    folderName: folderName,
+    limit: limit,
+  };
+
+  try {
+    const response = await window.electronAPI.imap.syncFolder(params);
+    console.log(
+      `[POST] window.electronAPI.imap.syncFolder(${params})`,
+      response.data
+    );
+    return response;
+  } catch (error: unknown) {
+    throw new Error(error as string);
+  }
+};
 
 // 폴더 목록 조회
 export const getFolders = async ({
