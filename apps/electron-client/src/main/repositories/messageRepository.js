@@ -929,6 +929,74 @@ class MessageRepository {
       throw new Error(`메시지 읽음 상태 업데이트 실패: ${error.message}`);
     }
   }
+
+  /**
+   * 키워드로 첨부파일 검색
+   * @param {Number} accountId - 계정 ID
+   * @param {String} keyword - 검색 키워드
+   * @param {Object} options - 검색 옵션 (limit, offset 등)
+   * @returns {Promise<Array>} 첨부파일 목록
+   */
+  async searchAttachmentsByContent(accountId, keyword, options = {}) {
+    try {
+      const db = getConnection();
+      const { limit = 50, offset = 0 } = options;
+
+      // 검색 패턴 생성
+      const searchPattern = `%${keyword}%`;
+
+      return new Promise((resolve, reject) => {
+        db.all(
+          `SELECT 
+          a.attachment_id as id,
+          a.message_id as messageId,
+          a.filename,
+          a.mime_type as mimeType,
+          a.path,
+          a.size,
+          a.created_at as createdAt,
+          m.subject as messageSubject,
+          m.from_email as fromEmail,
+          m.from_name as fromName,
+          f.name as folderName,
+          ec.name as contactName,
+          ec.email as contactEmail
+        FROM Attachment a
+        JOIN Message m ON a.message_id = m.message_id
+        JOIN Folder f ON m.folder_id = f.folder_id
+        LEFT JOIN MessageContact mc ON m.message_id = mc.message_id AND mc.type = 'FROM'
+        LEFT JOIN EmailContact ec ON mc.contact_id = ec.contact_id
+        WHERE m.account_id = ? AND (
+          m.subject LIKE ? OR
+          m.body_text LIKE ? OR
+          m.body_html LIKE ?
+        )
+        GROUP BY a.attachment_id
+        ORDER BY a.created_at DESC
+        LIMIT ? OFFSET ?`,
+          [
+            accountId,
+            searchPattern,
+            searchPattern,
+            searchPattern,
+            limit,
+            offset,
+          ],
+          (err, rows) => {
+            if (err) {
+              reject(new Error(`첨부파일 검색 오류: ${err.message}`));
+              return;
+            }
+
+            resolve(rows);
+          }
+        );
+      });
+    } catch (error) {
+      console.error("첨부파일 검색 오류:", error);
+      throw new Error(`첨부파일 검색 실패: ${error.message}`);
+    }
+  }
 }
 
 export default new MessageRepository();

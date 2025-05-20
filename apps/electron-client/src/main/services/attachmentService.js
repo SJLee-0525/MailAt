@@ -1,5 +1,6 @@
 import { readAttachment } from "../utils/fileSystem.js";
 import { getConnection } from "../config/dbConfig.js";
+import messageRepository from "../repositories/messageRepository.js";
 
 class AttachmentService {
   /**
@@ -74,6 +75,46 @@ class AttachmentService {
     } catch (error) {
       console.error("첨부파일 내용 조회 오류:", error);
       throw new Error(`첨부파일 내용 조회 실패: ${error.message}`);
+    }
+  }
+
+  /**
+   * 본문 내용으로 첨부파일 검색
+   * @param {Number} accountId - 계정 ID
+   * @param {String} keyword - 검색 키워드
+   * @param {Object} options - 검색 옵션 (limit, offset 등)
+   * @returns {Promise<Object>} 검색 결과 객체
+   */
+  async searchAttachmentsByContent(accountId, keyword, options = {}) {
+    try {
+      if (!accountId) {
+        throw new Error("계정 ID는 필수입니다.");
+      }
+
+      if (!keyword || keyword.trim().length === 0) {
+        throw new Error("검색 키워드는 필수입니다.");
+      }
+
+      // 키워드가 2글자 미만인 경우 검색 제한 (성능 향상을 위해)
+      if (keyword.trim().length < 2) {
+        throw new Error("검색 키워드는 2글자 이상이어야 합니다.");
+      }
+
+      // 리포지토리 메소드 호출
+      const attachments = await messageRepository.searchAttachmentsByContent(
+        accountId,
+        keyword.trim(),
+        options
+      );
+
+      return {
+        keyword,
+        count: attachments.length,
+        attachments,
+      };
+    } catch (error) {
+      console.error("첨부파일 검색 서비스 오류:", error);
+      throw new Error(`첨부파일 검색 실패: ${error.message}`);
     }
   }
 }
