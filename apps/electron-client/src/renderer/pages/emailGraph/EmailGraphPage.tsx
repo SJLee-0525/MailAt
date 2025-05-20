@@ -50,7 +50,7 @@ const NetworkPage = () => {
   const handleNavigateBack = () => {
     console.log("Navigating back, simulating re-feed of graph data.");
     if (graphData) {
-      setGraphData(graphData);
+      setGraphData([...graphData]);
     }
     setSelected(null);
   };
@@ -59,6 +59,8 @@ const NetworkPage = () => {
   function handleMerge(srcId: number, tgtId: number) {
     console.log("Merge", srcId, tgtId);
   }
+
+  console.log("Graph data:", graphData);
 
   return (
     <div className="flex w-full h-full justify-center items-center overflow-hidden">
@@ -71,7 +73,7 @@ const NetworkPage = () => {
             id
           );
           if (graphData) {
-            setGraphData(graphData);
+            setGraphData([...graphData]);
           }
         }}
         onMerge={handleMerge}
