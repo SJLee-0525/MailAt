@@ -48,7 +48,7 @@ export const getSyncEmail = async ({
       `[POST] window.electronAPI.imap.syncFolder(${params})`,
       response
     );
-    return response.data;
+    return response;
   } catch (error: unknown) {
     throw new Error(error as string);
   }

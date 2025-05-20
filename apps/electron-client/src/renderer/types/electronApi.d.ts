@@ -198,6 +198,20 @@ interface ElectronAPI {
     }>;
   };
 
+  // 이메일 싱크
+  imap: {
+    // 이메일 싱크
+    syncFolder({
+      accountId,
+      folderName,
+      limit,
+    }: {
+      accountId: number;
+      folderName: string;
+      limit?: number;
+    }): Promise<{ success: boolean; syncedCount: number }>;
+  };
+
   // 이메일 전송
   sendEmail(emailData: EmailSendRequestData): Promise<{
     success: boolean;
