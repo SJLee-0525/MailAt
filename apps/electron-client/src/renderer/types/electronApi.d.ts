@@ -7,6 +7,7 @@ import {
 } from "@/types/user";
 
 import {
+  EmailSyncResponse,
   FolderResponse,
   EmailSearchFiltersParams,
   AllEmails,
@@ -15,6 +16,8 @@ import {
   EmailSearchFilters,
   EmailDetailByThreadId,
 } from "@/types/emailTypes";
+
+import { AttachmentInfo } from "@/types/attachmentTypes";
 
 // ① 전역으로 노출할 API 시그니처를 기술
 interface ElectronAPI {
@@ -86,6 +89,56 @@ interface ElectronAPI {
     }>;
   };
 
+  // 첨부파일 관련 API 추가
+  attachment: {
+    // 첨부파일 정보 조회
+    getInfo(attachmentId: number): Promise<{
+      success: boolean;
+      data: AttachmentInfo;
+    }>;
+
+    // 첨부파일 내용 조회
+    getContent(attachmentId: number): Promise<{
+      success: boolean;
+      data: AttachmentInfo & { content: Buffer };
+    }>;
+
+    // 메시지의 모든 첨부파일 목록 조회
+    getByMessage(messageId: number): Promise<{
+      success: boolean;
+      data: AttachmentInfo[];
+    }>;
+
+    // 첨부파일 다운로드
+    download(
+      attachmentId: number,
+      savePath: string
+    ): Promise<{
+      success: boolean;
+      data: {
+        filename: string;
+        size: number;
+        path: string;
+      };
+    }>;
+
+    // 본문 내용으로 첨부파일 검색
+    searchByContent(params: {
+      accountId: number;
+      keyword: string;
+      limit?: number;
+      offset?: number;
+    }): Promise<{
+      success: boolean;
+      data?: {
+        keyword: string;
+        count: number;
+        attachments: AttachmentInfo[];
+      };
+      message?: string;
+    }>;
+  };
+
   // 이메일 관련 API
   email: {
     // 폴더 목록 조회
@@ -146,11 +199,31 @@ interface ElectronAPI {
     }>;
   };
 
+  // 이메일 싱크
+  imap: {
+    // 이메일 싱크
+    syncFolder({
+      accountId,
+      folderName,
+      limit,
+    }: {
+      accountId: number;
+      folderName: string;
+      limit?: number;
+    }): Promise<{ success: boolean; data: EmailSyncResponse }>;
+  };
+
   // 이메일 전송
   sendEmail(emailData: EmailSendRequestData): Promise<{
     success: boolean;
     messageId: number;
   }>;
+
+  // 창 제어 API
+  reloadWindow(): void;
+  minimizeWindow(): void;
+  toggleMaximizeWindow(): void;
+  closeWindow(): void;
 }
 
 // ② Window 타입 보강

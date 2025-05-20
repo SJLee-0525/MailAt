@@ -5,24 +5,24 @@ const CloseIcon = ({
   height = 24,
   strokeColor = "white",
   strokeWidth = 2,
+  className,
   onClick,
 }: IconProps) => {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      x="0px"
-      y="0px"
       width={width}
       height={height}
-      viewBox="0 0 50 50"
+      viewBox="0 0 24 24"
       fill="none"
+      xmlns="http://www.w3.org/2000/svg"
       onClick={onClick}
+      className={className}
     >
       <path
-        d="M 9.15625 6.3125 L 6.3125 9.15625 L 22.15625 25 L 6.21875 40.96875 L 9.03125 43.78125 L 25 27.84375 L 40.9375 43.78125 L 43.78125 40.9375 L 27.84375 25 L 43.6875 9.15625 L 40.84375 6.3125 L 25 22.15625 Z"
+        d="M6.4 19L5 17.6L10.6 12L5 6.4L6.4 5L12 10.6L17.6 5L19 6.4L13.4 12L19 17.6L17.6 19L12 13.4L6.4 19Z"
         fill={strokeColor}
         strokeWidth={strokeWidth}
-      ></path>
+      />
     </svg>
   );
 };

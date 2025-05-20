@@ -1,6 +1,7 @@
 import { useState } from "react";
 
-import { useGetGraphNode } from "@hooks/useGraphHook";
+// import { resetGraph } from "@apis/graphApi";
+// import { useGetGraphNode } from "@hooks/useGraphHook";
 
 import useConversationsStore from "@stores/conversationsStore";
 
@@ -19,10 +20,18 @@ const NetworkPage = () => {
     IO_type: 0,
   });
 
+  // resetGraph(); // 그래프 초기화
   // const { refetch: refetchNode } = useGetGraphNode({
   //   ...queryParams,
   //   enabled: enableInitialFetch, // Controlled by state
   // });
+
+  // useEffect(() => {
+  //   // 최초 1회 fetch 시에만 refetchNode() 호출
+  //   if (enableInitialFetch) {
+  //     refetchNode();
+  //   }
+  // }, []);
 
   // 파라미터 기반으로 새로운 노드를 수동 요청
   async function fetchNodeWithNewParams(params: {

@@ -12,7 +12,12 @@ import MailFormHeader from "@components/mailForm/components/MailFormHeader";
 import MailFormWithAI from "@components/mailForm/MailFormWithAI";
 
 const MailCreateForm = () => {
-  const { setMailFormIsOpen } = useUserProgressStore();
+  const {
+    setLoading,
+    setLoadingMessage,
+    setCloseLoadingMessage,
+    setMailFormIsOpen,
+  } = useUserProgressStore();
   const { user } = useAuthenticateStore();
   const { openAlertModal } = useModalStore();
 
@@ -150,6 +155,10 @@ const MailCreateForm = () => {
       return;
     }
 
+    // 이메일 전송 요청
+    setLoading(true);
+    setLoadingMessage("이메일 전송 중...");
+
     const emailData = {
       accountId: user.userId,
       to: sender,
@@ -168,6 +177,10 @@ const MailCreateForm = () => {
 
       if (response.success) {
         console.log("이메일 전송 성공:", response.messageId);
+
+        setLoading(false);
+        setLoadingMessage("이메일 전송 성공");
+
         setSender([]); // 보낸 사람 초기화
         titleRef.current!.value = ""; // 제목 초기화
         setHtml(""); // HTML 초기화
@@ -178,7 +191,13 @@ const MailCreateForm = () => {
         title: "이메일 전송 오류",
         content: "이메일 전송에 실패했습니다.",
       });
+
+      setLoading(false);
+      setLoadingMessage("이메일 전송 실패");
+
       console.error("Error sending email:", error);
+    } finally {
+      setCloseLoadingMessage();
     }
   }
 

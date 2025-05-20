@@ -9,7 +9,7 @@ const BottomNavButton = ({
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center justify-center p-4 rounded-full transition-all duration-300 bg-theme hover:bg-theme-dark hover:-translate-y-1.5"
+      className="flex items-center justify-center p-4 rounded-full transition-all duration-300 bg-bg hover:bg-bg-dark hover:-translate-y-1.5"
     >
       {icon}
     </button>

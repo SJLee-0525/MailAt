@@ -1,13 +1,15 @@
 // src/utils/emailParser.js
 import { simpleParser } from "mailparser";
+import { getAttachmentDir, saveAttachment } from "./fileSystem.js";
 
 /**
  * 원시 이메일 메시지 파싱 (mailparser 사용)
  * @param {String} rawMessage - 원시 이메일 메시지
  * @returns {Promise<Object>} 파싱된 이메일 데이터
  */
-export const parseRawEmail = async (rawMessage) => {
+export const parseRawEmail = async (rawMessage, options = {}) => {
   try {
+    const accountId = options.accountId;
     const parsed = await simpleParser(rawMessage, {
       skipHtmlToText: false,
       skipTextContent: false,
@@ -16,6 +18,13 @@ export const parseRawEmail = async (rawMessage) => {
 
     // 모든 이메일 참여자(contacts) 파싱
     const contacts = parseAllContacts(parsed);
+    const externalMessageId = parsed.messageId || generateMessageId();
+
+    // 첨부파일 파싱 및 저장 (accountId와 externalMessageId 전달)
+    const attachments = await parseAttachments(parsed.attachments, {
+      accountId,
+      externalMessageId,
+    });
 
     const emailData = {
       externalMessageId: parsed.messageId || generateMessageId(),
@@ -33,10 +42,10 @@ export const parseRawEmail = async (rawMessage) => {
       replyTo: parsed.replyTo?.value[0]?.address || null,
       inReplyTo: parsed.inReplyTo || null,
       referenceIds: extractReferenceIds(parsed),
-      hasAttachments: (parsed.attachments || []).length > 0,
+      hasAttachments: attachments.length > 0,
       contacts: contacts, // recipients 대신 contacts 사용
       headers: parseHeaders(parsed.headers),
-      attachments: parseAttachments(parsed.attachments),
+      attachments: attachments,
     };
 
     return emailData;
@@ -203,16 +212,68 @@ function parseHeaders(headers) {
 
 /**
  * 첨부파일 정보 파싱
+ * @param {Array} attachments - 첨부파일 목록
+ * @param {Object} options - 옵션 (accountId, externalMessageId)
+ * @returns {Promise<Array>} 첨부파일 정보 배열
  */
-function parseAttachments(attachments) {
+function parseAttachments(attachments, options = {}) {
   if (!attachments || attachments.length === 0) return [];
 
-  return attachments.map((att) => ({
-    filename: att.filename || "unnamed",
-    mimeType: att.contentType || "application/octet-stream",
-    size: att.size || 0,
-    // content는 실제 파일 내용이므로 일단 제외 (너무 큼)
-  }));
+  const { accountId, externalMessageId } = options;
+  const savedAttachments = [];
+
+  // accountId 또는 externalMessageId가 없으면 메타데이터만 반환
+  if (!accountId || !externalMessageId) {
+    console.warn(
+      "parseAttachments: accountId 또는 externalMessageId가 없습니다. 첨부파일을 저장하지 않습니다."
+    );
+    return attachments.map((att) => ({
+      filename: att.filename || "unnamed",
+      mimeType: att.contentType || "application/octet-stream",
+      size: att.size || 0,
+      path: null,
+    }));
+  }
+
+  // 첨부파일 저장 디렉토리 경로
+  const saveDir = getAttachmentDir(accountId, externalMessageId);
+
+  for (const att of attachments) {
+    try {
+      const filename = att.filename || `unnamed_${Date.now()}.bin`;
+      const mimeType = att.contentType || "application/octet-stream";
+      const size = att.size || 0;
+
+      // 첨부파일 실제 내용
+      const content = att.content || Buffer.from([]);
+
+      // 파일시스템에 저장
+      const filePath = saveAttachment(content, saveDir, filename);
+
+      savedAttachments.push({
+        filename,
+        mimeType,
+        size,
+        path: filePath, // 실제 파일 경로 저장
+      });
+
+      console.log(
+        `첨부파일 저장 성공: ${filename} (${size} bytes) -> ${filePath}`
+      );
+    } catch (error) {
+      onsole.error(`첨부파일 저장 오류 (${att.filename}):`, error);
+
+      // 에러가 발생해도 메타데이터는 저장
+      savedAttachments.push({
+        filename: att.filename || "unnamed",
+        mimeType: att.contentType || "application/octet-stream",
+        size: att.size || 0,
+        path: null,
+      });
+    }
+  }
+
+  return savedAttachments;
 }
 
 /**

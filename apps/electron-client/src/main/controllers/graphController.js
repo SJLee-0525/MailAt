@@ -105,7 +105,7 @@ export const initGraphController = () => {
       console.error("[GraphCtrl] Error (renameNodePy):", error);
       return { status: "fail", message: error.message, error: error.toString() };
     }
-  });
+  );
 
   ipcMain.handle("graph:mergeNodePy", async (event, json_obj) => {
     try {
@@ -116,7 +116,7 @@ export const initGraphController = () => {
       console.error("[GraphCtrl] Error (mergeNodePy):", error);
       return { status: "fail", message: error.message, error: error.toString() };
     }
-  });
+  );
 
   ipcMain.handle("graph:deleteMailPy", async (event, json_obj) => {
     try {

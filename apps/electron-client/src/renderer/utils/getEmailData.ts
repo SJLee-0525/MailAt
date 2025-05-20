@@ -431,33 +431,56 @@ export function getEmailParams({
   return params;
 }
 
-export function base64ToUtf16(base64: string): string {
+/**
+ * IMAP Modified UTF-7 형식으로 인코딩된 문자열 조각을 디코딩합니다.
+ * @param encodedNamePart "&...-" 형태의 IMAP Modified UTF-7 인코딩된 문자열 조각
+ * @returns 디코딩된 문자열 (예: 폴더 이름 등)
+ */
+export function decodeImapModifiedUtf7Segment(encodedNamePart: string): string {
   try {
-    // Base64 문자열을 디코딩하여 바이너리 문자열을 얻기
-    const binaryString = atob(base64);
+    // 인코딩된 문자열은 항상 &로 시작하고 -로 끝나야 함
+    if (!encodedNamePart.startsWith("&") || !encodedNamePart.endsWith("-")) {
+      // 이 형식이 아니면 평문 ASCII일 수 있음
+      // 또는 전체 IMAP UTF-7 문자열의 일부일 수 있음
+      // 이 함수는 단일 인코딩 블록(&...-)만 처리하므로, 다른 경우는 그대로 반환
+      return encodedNamePart;
+    }
 
-    // ArrayBuffer로 변환
+    // 특수한 경우: "&-" 자체는 빈 문자열을 의미
+    if (encodedNamePart === "&-") {
+      return "";
+    }
+
+    // &...- 중 실제 base64 인코딩 부분만 추출 (앞의 &, 뒤의 - 제외)
+    const base64Part = encodedNamePart.slice(1, -1);
+
+    // IMAP UTF-7에서는 base64 패딩 문자("=")를 생략함 → 수동으로 패딩 추가
+    const paddedBase64 = base64Part.padEnd(
+      base64Part.length + ((4 - (base64Part.length % 4)) % 4),
+      "="
+    );
+
+    // base64 문자열을 바이너리 문자열로 디코딩
+    const binaryString = atob(paddedBase64);
+
+    // 바이너리 문자열을 ArrayBuffer로 변환 (TextDecoder에 전달하기 위함)
     const buffer = new ArrayBuffer(binaryString.length);
     const bufferView = new Uint8Array(buffer);
-
-    // 바이너리 문자열을 Uint8Array에 채우기
     for (let i = 0; i < binaryString.length; i++) {
       bufferView[i] = binaryString.charCodeAt(i);
     }
 
-    console.log("디코딩된 버퍼:", buffer);
+    // UTF-16BE 형식으로 디코딩 (IMAP Modified UTF-7은 UTF-16 Big Endian 사용)
+    const decoder = new TextDecoder("utf-16be");
+    const decodedString = decoder.decode(bufferView);
 
-    // UTF-16 디코딩
-    const decoder = new TextDecoder("utf-8");
-    const decodedString = decoder.decode(buffer);
-
-    console.log("디코딩된 문자열:", decodedString);
     return decodedString;
   } catch (error) {
+    // 오류 발생 시 원본 문자열 그대로 반환 (또는 빈 문자열 반환 가능)
     console.error(
-      "Error decoding base64 to UTF-16:",
+      `Error decoding IMAP Modified UTF-7 segment "${encodedNamePart}":`,
       error instanceof Error ? error.message : String(error)
     );
-    return ""; // Return empty string or handle error as appropriate
+    return encodedNamePart; // 실패 시 fallback
   }
 }

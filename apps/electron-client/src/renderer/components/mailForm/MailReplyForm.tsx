@@ -20,7 +20,12 @@ const MailReplyForm = ({
   threadId: string;
   replyId: number;
 }) => {
-  const { setIsReplying } = useUserProgressStore();
+  const {
+    setLoading,
+    setLoadingMessage,
+    setCloseLoadingMessage,
+    setIsReplying,
+  } = useUserProgressStore();
   const { user } = useAuthenticateStore();
   const { openAlertModal } = useModalStore();
 
@@ -170,6 +175,10 @@ const MailReplyForm = ({
       return;
     }
 
+    // 이메일 전송 요청
+    setLoading(true);
+    setLoadingMessage("이메일 전송 중...");
+
     const emailData = {
       accountId: user.userId,
       to: sender,
@@ -188,6 +197,10 @@ const MailReplyForm = ({
 
       if (response.success) {
         console.log("이메일 전송 성공:", response.messageId);
+
+        setLoading(false);
+        setLoadingMessage("이메일 전송 완료");
+
         setSender([]); // 보낸 사람 초기화
         titleRef.current!.value = ""; // 제목 초기화
         setHtml(""); // HTML 초기화
@@ -198,14 +211,20 @@ const MailReplyForm = ({
         title: "이메일 전송 실패",
         content: "이메일 전송에 실패했습니다.",
       });
+
+      setLoading(false);
+      setLoadingMessage("이메일 전송 실패");
+
       console.error("Error sending email:", error);
+    } finally {
+      setCloseLoadingMessage();
     }
   }
 
   return (
-    <div className="flex flex-col w-full h-full bg-light1 rounded-xl pointer-events-auto">
+    <div className="flex flex-col w-full max-w-1/2 h-full bg-header shadow-md pointer-events-auto">
       <MailFormHeader closeForm={setIsReplying} handleSubmit={handleSubmit} />
-      <div className="w-full h-full px-1 pb-1 bg-light1 rounded-b-xl overflow-y-auto">
+      <div className="w-full h-full px-1 pb-1 bg-white overflow-y-auto">
         <MailFormWithAI
           ref={titleRef}
           sender={sender}

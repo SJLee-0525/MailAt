@@ -4,6 +4,7 @@ const ReadIcon = ({
   width = 22,
   height = 22,
   strokeColor = "#7D7983",
+  className,
   onClick,
 }: IconProps) => {
   return (
@@ -13,6 +14,7 @@ const ReadIcon = ({
       viewBox="0 0 48 48"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      className={className}
       onClick={onClick}
     >
       <path

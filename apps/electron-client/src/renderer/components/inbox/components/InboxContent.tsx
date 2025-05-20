@@ -19,12 +19,12 @@ const FromName = ({
   return (
     <>
       <h2
-        className={`m-0 font-pre-bold text-[16px] ${isRead ? "text-icon" : "text-black"}`}
+        className={`m-0 font-pre-semi-bold text-[15px] ${isRead ? "text-icon" : "text-text"}`}
       >
         {fromName}
       </h2>
       <div className="absolute top-0 left-0 w-full h-full opacity-0 hover:opacity-100 transition-opacity duration-200">
-        <div className="absolute top-6 left-0 bg-black text-white text-[14px] rounded py-1 px-2 whitespace-nowrap">
+        <div className="absolute top-6 left-0 bg-black text-white font-pre-regular text-[14px] rounded py-1 px-2 whitespace-nowrap">
           {fromEmail}
         </div>
       </div>
@@ -56,10 +56,10 @@ const InboxContent = ({
 
   return (
     <div
-      className={`flex justify-between p-2.5 gap-1.5 w-full h-fit rounded-lg ${isSelected ? "bg-light1" : "transition-all duration-300 hover:bg-light1"}`}
+      className={`flex justify-between p-2.5 gap-1.5 w-full h-fit rounded-lg ${isSelected ? "bg-light1" : "transition-all duration-300 hover:bg-light"}`}
       onClick={onClick}
     >
-      <div className="flex flex-col justify-start items-center w-fit py-1.5">
+      <div className="flex flex-col justify-start items-center w-fit py-2">
         <img
           src={defaultProfile}
           alt="Sender Profile"
@@ -68,21 +68,23 @@ const InboxContent = ({
       </div>
 
       <div className="flex flex-col max-w-[85%] w-[85%] h-fit max-h-30">
-        <div className="relative flex justify-between items-center w-full h-fit">
+        <div className="relative flex justify-between items-start w-full h-fit">
           <FromName
             isRead={email.isRead}
             fromName={email.fromName}
             fromEmail={email.fromEmail}
           />
           {formattedDate && (
-            <p className="m-0 font-pre-regular text-[12px]">{formattedDate}</p>
+            <p className="m-0 font-pre-medium text-[12px] text-content">
+              {formattedDate}
+            </p>
           )}
         </div>
-        <h3 className="m-0 font-pre-regular text-[14px] whitespace-nowrap overflow-hidden text-ellipsis">
+        <h3 className="m-0 font-pre-regular text-[14px] text-content whitespace-nowrap overflow-hidden text-ellipsis">
           {email.subject}
         </h3>
         <p className="m-0 font-pre-regular text-[14px] text-content whitespace-nowrap overflow-hidden text-ellipsis">
-          {email.snippet}
+          {email.summary ? email.summary : email.snippet}
         </p>
 
         {/* 첨부파일 관련해서 생각한 번 해야할 듯 */}

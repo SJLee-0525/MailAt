@@ -1,7 +1,21 @@
-// 노드 생성 요청
-export const createNode = (nodeData) => {
+// 그래프 초기화 요청
+export const resetGraph = async () => {
   try {
-    const response = window.electronAPI.graph.createNode(nodeData);
+    const response = await window.electronAPI.graph.testGraph();
+    console.log(`[DELETE] window.electronAPI.graph.resetGraph()`, response);
+
+    const response2 = await window.electronAPI.graph.readData();
+    console.log(`[GET] window.electronAPI.graph.readData()`, response2);
+    return response.data;
+  } catch (error: unknown) {
+    throw new Error(error as string);
+  }
+};
+
+// 노드 생성 요청
+export const createNode = async (nodeData) => {
+  try {
+    const response = await window.electronAPI.graph.createNode(nodeData);
     console.log(`[POST] window.electronAPI.graph.createNode()`, response);
     return response.data;
   } catch (error: unknown) {
@@ -10,9 +24,9 @@ export const createNode = (nodeData) => {
 };
 
 // 노드 업데이트 요청
-export const updateNode = ({ nodeId, updateData }) => {
+export const updateNode = async ({ nodeId, updateData }) => {
   try {
-    const response = window.electronAPI.graph.updateNode({
+    const response = await window.electronAPI.graph.updateNode({
       nodeId,
       updateData,
     });
@@ -41,7 +55,7 @@ export const deleteNode = ({ nodeId }) => {
 };
 
 // 노드 조회 요청
-export const readNode = ({
+export const readNode = async ({
   C_ID,
   C_type,
   IO_type,
@@ -51,25 +65,33 @@ export const readNode = ({
   IO_type: number;
 }) => {
   try {
-    const response = window.electronAPI.graph.readNode({
+    const response = await window.electronAPI.graph.readNode({
       C_ID,
       C_type,
       IO_type,
     });
     console.log(
-      `[GET] window.electronAPI.graph.readNode(${C_ID}, ${C_type}, ${IO_type})`,
+      `[GE1111T] window.electronAPI.graph.readNode(${C_ID}, ${C_type}, ${IO_type})`,
       response
     );
-    return response.data;
+    return response.data; // Assuming the resolved response object has a 'data' property
   } catch (error: unknown) {
     throw new Error(error as string);
   }
 };
 
 // 노드 메시지 읽기 요청
-export const readNodeMessage = ({ basic_C_ID, C_type, filter }) => {
+export const readNodeMessage = async ({
+  basic_C_ID,
+  C_type,
+  filter,
+}: {
+  basic_C_ID: any;
+  C_type: any;
+  filter: any;
+}) => {
   try {
-    const response = window.electronAPI.graph.readMessage({
+    const response = await window.electronAPI.graph.readMessage({
       basic_C_ID,
       C_type,
       filter,
@@ -85,9 +107,9 @@ export const readNodeMessage = ({ basic_C_ID, C_type, filter }) => {
 };
 
 // 노드 메시지 삭제 요청
-export const deleteNodeMessage = ({ message_C_ID, except_C_ID }) => {
+export const deleteNodeMessage = async ({ message_C_ID, except_C_ID }) => {
   try {
-    const response = window.electronAPI.graph.deleteMessage({
+    const response = await window.electronAPI.graph.deleteMessage({
       message_C_ID,
       except_C_ID,
     });
@@ -102,9 +124,9 @@ export const deleteNodeMessage = ({ message_C_ID, except_C_ID }) => {
 };
 
 // 노드 라벨 수정 요청
-export const updateNodeLabel = ({ C_ID, newLabel }) => {
+export const updateNodeLabel = async ({ C_ID, newLabel }) => {
   try {
-    const response = window.electronAPI.graph.updateLabel({
+    const response = await window.electronAPI.graph.updateLabel({
       C_ID,
       newLabel,
     });
@@ -119,9 +141,11 @@ export const updateNodeLabel = ({ C_ID, newLabel }) => {
 };
 
 // 키워드 검색 요청 처리
-export const searchByKeyword = ({ keyword }) => {
+export const searchByKeyword = async ({ keyword }) => {
   try {
-    const response = window.electronAPI.graph.searchByKeyword({ keyword });
+    const response = await window.electronAPI.graph.searchByKeyword({
+      keyword,
+    });
     console.log(
       `[GET] window.electronAPI.graph.searchByKeyword(${keyword})`,
       response
@@ -133,9 +157,9 @@ export const searchByKeyword = ({ keyword }) => {
 };
 
 // 노드 병합 요청
-export const mergeNodes = ({ from_C_ID, to_C_ID }) => {
+export const mergeNodes = async ({ from_C_ID, to_C_ID }) => {
   try {
-    const response = window.electronAPI.graph.mergeNode({
+    const response = await window.electronAPI.graph.mergeNode({
       from_C_ID,
       to_C_ID,
     });

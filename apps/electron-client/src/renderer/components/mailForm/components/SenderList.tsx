@@ -21,15 +21,15 @@ const ExpandedSenderList = ({
   deleteBcc,
 }: SenderListProps) => {
   return (
-    <div className="absolute flex flex-col gap-2 top-10 left-0 z-50 w-full max-h-40 p-2 mb-1 overflow-y-auto hide-scrollbar bg-white rounded-b-lg shadow-lg">
+    <div className="absolute flex flex-col gap-2 top-10 left-0 z-50 w-full max-h-40 p-2 mb-1 overflow-y-auto hide-scrollbar bg-white shadow-lg">
       {sender.length > 0 && (
         <>
-          <p className="font-pre-bold text-xs">수신자</p>{" "}
+          <p className="font-pre-bold text-xs">수신자</p>
           <span className="flex flex-wrap gap-2 w-full h-fit">
             {sender.map((person) => (
               <span
                 key={person}
-                className="flex items-center justify-center px-2.5 py-0.5 gap-2 rounded-full bg-blue-200 text-sm whitespace-nowrap"
+                className="flex items-center justify-center px-2.5 py-0.5 gap-2 rounded-full bg-blue-200 text-sm text-black whitespace-nowrap"
               >
                 <p>{person}</p>
                 <CloseIcon
@@ -53,7 +53,7 @@ const ExpandedSenderList = ({
             {cc.map((person) => (
               <span
                 key={person}
-                className="flex items-center justify-center px-2.5 py-0.5 gap-2 rounded-full bg-orange-200 text-sm whitespace-nowrap"
+                className="flex items-center justify-center px-2.5 py-0.5 gap-2 rounded-full bg-orange-200 text-sm text-black whitespace-nowrap"
               >
                 <p>{person}</p>
                 <CloseIcon
@@ -77,7 +77,7 @@ const ExpandedSenderList = ({
             {bcc.map((person) => (
               <span
                 key={person}
-                className="flex items-center justify-center px-2.5 py-0.5 gap-2 rounded-full bg-red-200 text-sm whitespace-nowrap"
+                className="flex items-center justify-center px-2.5 py-0.5 gap-2 rounded-full bg-red-200 text-sm text-black whitespace-nowrap"
               >
                 <p>{person}</p>
                 <CloseIcon
@@ -111,13 +111,16 @@ const SenderList = ({
     setIsOpen((prev) => !prev);
   }
 
+  /* 요소 검사기에서는 나타나고 사라지는 것이 확인되지만 화면에는 보이지 않는다면, 
+  부모 요소의 overflow 속성 때문에 잘리고 있을 가능성이 매우 큽니다.*/
   return (
-    <div className="flex w-full h-8 py-0.5 gap-2 overflow-x-auto hide-scrollbar">
+    <div className="relative flex w-full h-8 py-0.5 gap-2 hide-scrollbar">
+      {/* overflow-x-auto 제거 */}
       <span className="flex w-full h-full gap-2 overflow-x-auto hide-scrollbar">
         {sender.map((person) => (
           <span
             key={person}
-            className="flex items-center justify-center px-2.5 py-0.5 gap-2 rounded-full bg-blue-200 text-sm"
+            className="flex items-center justify-center px-2.5 py-0.5 gap-2 rounded-full bg-blue-200 text-black text-sm whitespace-nowrap"
           >
             <p>{person}</p>
             <CloseIcon
@@ -134,7 +137,7 @@ const SenderList = ({
         {cc.map((person) => (
           <span
             key={person}
-            className="flex items-center justify-center px-2.5 py-0.5 gap-2 rounded-full bg-orange-200 text-sm"
+            className="flex items-center justify-center px-2.5 py-0.5 gap-2 rounded-full bg-orange-200 text-black text-sm whitespace-nowrap"
           >
             <p className="whitespace-nowrap">참조: {person}</p>
             <CloseIcon
@@ -151,7 +154,7 @@ const SenderList = ({
         {bcc.map((person) => (
           <span
             key={person}
-            className="flex items-center justify-center px-2.5 py-0.5 gap-2 rounded-full bg-red-200 text-sm"
+            className="flex items-center justify-center px-2.5 py-0.5 gap-2 rounded-full bg-red-200 text-black text-sm whitespace-nowrap"
           >
             <p className="whitespace-nowrap">숨은 참조: {person}</p>
             <CloseIcon

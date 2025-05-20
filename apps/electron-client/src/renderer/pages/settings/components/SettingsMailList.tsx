@@ -1,6 +1,6 @@
 import { CreateAccountResponse } from "@/types/authType";
 
-import useAuthenticateStore from "@stores/authenticateStore";
+import useUserProgressStore from "@stores/userProgressStore";
 import useModalStore from "@stores/modalStore";
 
 import { useDeleteAccount } from "@hooks/useGetUser";
@@ -19,7 +19,8 @@ const InnerList = ({
   user: CreateAccountResponse;
   onEdit: (account: CreateAccountResponse | null) => void;
 }) => {
-  const { deleteAuthUser } = useAuthenticateStore();
+  const { setLoading, setLoadingMessage, setCloseLoadingMessage } =
+    useUserProgressStore();
   const { openAlertModal } = useModalStore();
 
   const { mutateAsync: deleteAccount } = useDeleteAccount();
@@ -29,6 +30,9 @@ const InnerList = ({
 
     if (!confirm(`${user.email}\n계정을 삭제하시겠습니까?`)) return;
 
+    setLoading(true);
+    setLoadingMessage("계정 삭제 중...");
+
     try {
       const data = await deleteAccount({ accountId: user.accountId });
 
@@ -37,15 +41,24 @@ const InnerList = ({
           title: "계정 삭제 성공",
           content: "계정이 삭제되었습니다.",
         });
-        deleteAuthUser(user); // 임시..
+
+        setLoading(false);
+        setLoadingMessage("계정 삭제 성공");
+        openAlertModal({
+          title: "계정 삭제 성공",
+          content: "계정이 삭제되었습니다.",
+        });
       }
     } catch (error) {
+      setLoading(false);
+      setLoadingMessage("계정 삭제 실패");
       openAlertModal({
         title: "계정 삭제 실패",
         content: "계정 삭제에 실패했습니다.",
       });
       console.error("Error deleting account:", error);
-      return;
+    } finally {
+      setCloseLoadingMessage();
     }
   }
 
@@ -66,7 +79,7 @@ const InnerList = ({
   return (
     <div className="flex items-center justify-between p-2 w-full">
       <div className="flex justify-center items-center px-1 gap-3 w-fit h-fit">
-        <span className="bg-blue-700 rounded-full p-2">
+        <span className="bg-theme rounded-full p-2">
           {domain === "Gmail" ? (
             <GoogleIcon />
           ) : (
@@ -108,7 +121,7 @@ const SettingsMailList = ({
   onEdit: (account: CreateAccountResponse | null) => void;
 }) => {
   return (
-    <div className="flex flex-col justify-center items-center p-1 gap-1 rounded-2xl bg-white">
+    <div className="flex flex-col justify-center items-center p-1 gap-1 rounded-2xl border border-disable bg-white">
       {users.map((user, index) => (
         <span key={user.accountId} className="w-full h-fit">
           <InnerList user={user} onEdit={onEdit} />
