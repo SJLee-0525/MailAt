@@ -49,5 +49,4 @@ export interface GraphLink {
 
 export interface GraphIpcResponse {
   status: "success" | "fail";
-  message: string;
 }
