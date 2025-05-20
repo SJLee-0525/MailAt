@@ -1,28 +1,35 @@
-// import { useId } from "react";
-
 import { AllEmails } from "@/types/emailTypes";
 
 import defaultProfile from "@assets/images/defaultProfile.png";
+import ClipIcon from "@assets/icons/ClipIcon";
 
-// import { parseEmailFromName } from "@utils/getEmailData";
 import { formatDate } from "@utils/getFormattedDate";
 
 const FromName = ({
   isRead,
   fromName,
   fromEmail,
+  hasAttachments,
 }: {
   isRead: boolean;
   fromName: string;
   fromEmail: string;
+  hasAttachments: boolean;
 }) => {
   return (
     <>
-      <h2
-        className={`m-0 font-pre-semi-bold text-[15px] ${isRead ? "text-icon" : "text-text"}`}
-      >
-        {fromName}
-      </h2>
+      <div className="flex justify-start items-center gap-1 w-3/5 max-w-3/5 h-6">
+        <h2
+          className={`w-fit m-0 font-pre-semi-bold text-[15px] whitespace-nowrap overflow-hidden text-ellipsis ${isRead ? "text-icon" : "text-text"}`}
+        >
+          {fromName}
+        </h2>
+        {hasAttachments && (
+          <div className="flex items-center h-full aspect-[1/1]">
+            <ClipIcon width={18} height={18} />
+          </div>
+        )}
+      </div>
       <div className="absolute top-0 left-0 w-full h-full opacity-0 hover:opacity-100 transition-opacity duration-200">
         <div className="absolute top-6 left-0 bg-black text-white font-pre-regular text-[14px] rounded py-1 px-2 whitespace-nowrap">
           {fromEmail}
@@ -31,14 +38,6 @@ const FromName = ({
     </>
   );
 };
-
-// const Attachment = ({ fileName }: { fileName: string }) => {
-//   return (
-//     <span className="flex items-center justify-center px-3 py-1 rounded-full bg-disable">
-//       <p className="font-pre-medium text-sm m-0 line-clamp-1">{fileName}</p>
-//     </span>
-//   );
-// };
 
 const InboxContent = ({
   email,
@@ -73,7 +72,9 @@ const InboxContent = ({
             isRead={email.isRead}
             fromName={email.fromName}
             fromEmail={email.fromEmail}
+            hasAttachments={email.hasAttachments}
           />
+
           {formattedDate && (
             <p className="m-0 font-pre-medium text-[12px] text-content">
               {formattedDate}
@@ -86,18 +87,6 @@ const InboxContent = ({
         <p className="m-0 font-pre-regular text-[14px] text-content whitespace-nowrap overflow-hidden text-ellipsis">
           {email.summary ? email.summary : email.snippet}
         </p>
-
-        {/* 첨부파일 관련해서 생각한 번 해야할 듯 */}
-        {/* {email.attachments && email.attachments.length > 0 && (
-          <div className="flex w-full py-1 mb-1 gap-2 overflow-x-auto hide-scrollbar">
-            {email.attachments.map((attachment, index) => (
-              <Attachment
-                key={`${idBase}-${index}`}
-                fileName={attachment.filename}
-              />
-            ))}
-          </div>
-        )} */}
       </div>
     </div>
   );
