@@ -193,7 +193,7 @@ export const syncFolder = async (
             continue;
           }
 
-          const parsedEmail = await parseRawEmail(rawMessage);
+          const parsedEmail = await parseRawEmail(rawMessage, { accountId });
           parsedEmail.uid = uid.toString();
 
           // 메시지 저장
