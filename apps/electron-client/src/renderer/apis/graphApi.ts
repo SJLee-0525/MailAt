@@ -1,5 +1,7 @@
 import useAuthenticateStore from "@stores/authenticateStore";
 
+import { RawNode, GraphEmail, GraphIpcResponse } from "@/types/graphType";
+
 /*
 중심 노드 타입 - 0 : Root, 1 : Person, 2 : Category, 3 : Subcategory
 중심 노드 ID - Root, Person : contact_id, Category, Subcategory : category_id
@@ -19,17 +21,7 @@ export const readGraphNode = async ({
   status: "success" | "fail";
   message: string;
   result: {
-    nodes: [
-      {
-        id: number;
-        C_ID: number;
-        C_type: number;
-        data: {
-          label: string;
-        };
-        count: number;
-      },
-    ];
+    nodes: RawNode[];
   };
 }> => {
   const { user } = useAuthenticateStore();
@@ -70,18 +62,7 @@ export const getGraphMessage = async ({
   status: "success" | "fail";
   message: string;
   result: {
-    emails: [
-      {
-        message_id: string;
-        threadId: string;
-        fromEmail: string;
-        fromName: string;
-        subject: string;
-        snippet: string;
-        sentAt: string;
-        isRead: boolean;
-      },
-    ];
+    emails: GraphEmail[];
   };
 }> => {
   const { user } = useAuthenticateStore();
@@ -113,10 +94,7 @@ export const createGraphNode = async ({
   c_name,
 }: {
   c_name: string; // 새로운 카테고리 이름
-}): Promise<{
-  status: "success" | "fail";
-  message: string;
-}> => {
+}): Promise<GraphIpcResponse> => {
   const { user } = useAuthenticateStore();
 
   if (!user) {
@@ -138,39 +116,6 @@ export const createGraphNode = async ({
   }
 };
 
-// 노드 삭제
-export const deleteGraphNode = async ({
-  c_id,
-  c_type,
-}: {
-  c_id: string; // 삭제할 노드 ID
-  c_type: number; // 삭제할 노드 타입
-}): Promise<{
-  status: "success" | "fail";
-  message: string;
-}> => {
-  const { user } = useAuthenticateStore();
-
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
-  try {
-    const response = await window.electronAPI.graph.deleteNodePy({
-      C_ID: c_id,
-      C_type: c_type,
-    });
-    if (response.status === "success") {
-      return response;
-    } else {
-      throw new Error(response.message);
-    }
-  } catch (error) {
-    console.error("Error deleting graph node:", error);
-    throw error;
-  }
-};
-
 // 노드 이름 변경
 export const renameGraphNode = async ({
   before_name,
@@ -178,10 +123,7 @@ export const renameGraphNode = async ({
 }: {
   before_name: string; // 노드 이전 이름
   after_name: string; // 노드 새 이름
-}): Promise<{
-  status: "success" | "fail";
-  message: string;
-}> => {
+}): Promise<GraphIpcResponse> => {
   const { user } = useAuthenticateStore();
 
   if (!user) {
@@ -213,10 +155,7 @@ export const mergeGraphNode = async ({
   before_name1: string; // 노드 이전 이름1
   before_name2: string; // 노드 이전 이름2
   after_name: string; // 노드 새 이름
-}): Promise<{
-  status: "success" | "fail";
-  message: string;
-}> => {
+}): Promise<GraphIpcResponse> => {
   const { user } = useAuthenticateStore();
 
   if (!user) {
@@ -245,10 +184,7 @@ export const deleteGraphMessage = async ({
   message_id,
 }: {
   message_id: number; // 삭제할 메일의 ID
-}): Promise<{
-  status: "success" | "fail";
-  message: string;
-}> => {
+}): Promise<GraphIpcResponse> => {
   const { user } = useAuthenticateStore();
 
   if (!user) {
@@ -279,10 +215,7 @@ export const moveGraphMessage = async ({
   message_id: number; // 이동할 메일의 ID
   category_id: number; // 카테고리 ID
   sub_category_id: number; // 서브카테고리 ID
-}): Promise<{
-  status: "success" | "fail";
-  message: string;
-}> => {
+}): Promise<GraphIpcResponse> => {
   const { user } = useAuthenticateStore();
 
   if (!user) {

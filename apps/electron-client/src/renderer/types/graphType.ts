@@ -3,6 +3,18 @@ export interface RawNode {
   C_ID: number;
   C_type: number;
   data: { label: string };
+  count: number;
+}
+
+export interface GraphEmail {
+  message_id: string;
+  threadId: string;
+  fromEmail: string;
+  fromName: string;
+  subject: string;
+  snippet: string;
+  sentAt: string;
+  isRead: boolean;
 }
 
 export interface RawEmail {
@@ -33,4 +45,9 @@ export interface GraphNode extends RawNode {
 export interface GraphLink {
   source: number;
   target: number;
+}
+
+export interface GraphIpcResponse {
+  status: "success" | "fail";
+  message: string;
 }
