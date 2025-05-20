@@ -1,5 +1,5 @@
 // src/components/attachment/AttachmentViewer.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FileText,
   Paperclip,
@@ -10,6 +10,7 @@ import {
   File,
   Users,
 } from "lucide-react";
+import { ContentSearchResult } from "../../apis/attachmentApi";
 import "./AttachmentViewer.css";
 
 // 타입 및 유틸리티 함수 가져오기
@@ -27,7 +28,10 @@ import {
   formatDate,
 } from "../../utils/attachmentUtils";
 import { searchAttachments } from "../../utils/getAttachmentData";
-import { useAllAttachments } from "../../hooks/useAttachments";
+import {
+  useAllAttachments,
+  useSearchAttachmentsByContent,
+} from "../../hooks/useAttachments";
 import useAuthenticateStore from "@/stores/authenticateStore";
 
 // 컴포넌트 가져오기
@@ -69,7 +73,50 @@ const AttachmentViewer: React.FC = () => {
   );
   const [selectedContact, setSelectedContact] = useState<string | null>(null);
 
-  // 첫 번째 useEffect: 필터링 데이터만 처리
+  // 본문 검색 관련 코드
+  const contentSearchMutation = useSearchAttachmentsByContent();
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [backendSearchResults, setBackendSearchResults] = useState<
+    Attachment[]
+  >([]);
+
+  // 검색어 입력 핸들러
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    // 이전 타이머 제거
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // 검색어가 2글자 이상일 때만 백엔드 검색 실행
+    if (value.trim().length >= 2) {
+      searchTimeoutRef.current = setTimeout(() => {
+        // 백엔드 API 호출 실행
+        contentSearchMutation.mutate({
+          accountId,
+          keyword: value.trim(),
+          limit: 50,
+          offset: 0,
+        });
+      }, 500); // 타이핑 후 500ms 지연
+    } else {
+      // 검색어가 짧으면 백엔드 검색 결과 초기화
+      setBackendSearchResults([]);
+    }
+  };
+
+  // 백엔드 검색 결과 처리
+  useEffect(() => {
+    if (contentSearchMutation.data) {
+      // data가 ContentSearchResult 타입임을 확신
+      const searchResult = contentSearchMutation.data as ContentSearchResult;
+      setBackendSearchResults(searchResult.attachments);
+    }
+  }, [contentSearchMutation.data, contentSearchMutation.isSuccess]);
+
+  // 첫 번째 useEffect: 필터링 데이터 처리
   useEffect(() => {
     if (!attachments || !Array.isArray(attachments)) {
       setFilteredAttachments([]);
@@ -79,18 +126,37 @@ const AttachmentViewer: React.FC = () => {
       return;
     }
 
-    const filtered = searchAttachments(attachments, searchTerm);
+    let filtered: Attachment[] = [];
+
+    if (searchTerm.trim() === "") {
+      // 검색어가 없을 때는 기본 첨부파일 목록 사용
+      filtered = attachments;
+    } else {
+      // 1. 프론트엔드 필터링 (파일명, 발신자, 확장자)
+      const frontendFiltered = searchAttachments(attachments, searchTerm);
+
+      // 2. 백엔드 필터링 결과와 병합 (중복 제거)
+      const allResults = [...frontendFiltered];
+
+      if (backendSearchResults.length > 0) {
+        backendSearchResults.forEach((item) => {
+          // ID로 중복 체크
+          if (!allResults.some((a) => a.id === item.id)) {
+            allResults.push(item);
+          }
+        });
+      }
+
+      filtered = allResults;
+    }
+
     setFilteredAttachments(filtered);
 
     // 날짜별, 연락처별, 파일 타입별 그룹화
-    const dates = groupByDate(filtered);
-    const contacts = groupByContact(filtered);
-    const fileTypes = groupByFileType(filtered);
-
-    setDateGroups(dates);
-    setContactGroups(contacts);
-    setFileTypeGroups(fileTypes);
-  }, [attachments, searchTerm]);
+    setDateGroups(groupByDate(filtered));
+    setContactGroups(groupByContact(filtered));
+    setFileTypeGroups(groupByFileType(filtered));
+  }, [attachments, searchTerm, backendSearchResults]);
 
   // 두 번째 useEffect: 그룹 데이터가 변경될 때만 expandedGroups 업데이트
   useEffect(() => {
@@ -524,12 +590,19 @@ const AttachmentViewer: React.FC = () => {
             <div className="flex items-center justify-between px-1.5 w-full h-12 bg-light1 text-gray-700 rounded-full">
               <input
                 type="text"
-                placeholder="파일명, 발신자 또는 제목 검색..."
+                placeholder="파일명, 발신자, 이메일 내용 검색..."
                 className="font-pre-regular w-full h-full px-4 py-auto border-none rounded-full focus:outline-none bg-transparent"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={handleSearchChange}
               />
               <div className="flex items-center">
+                {/* 검색 중 로딩 표시 */}
+                {contentSearchMutation.isPending &&
+                  searchTerm.trim().length >= 2 && (
+                    <div className="mr-2">
+                      <div className="spinner-small"></div>
+                    </div>
+                  )}
                 <button
                   type="button"
                   className="p-2 rounded-full bg-theme text-white hover:bg-theme-dark transition-all duration-300"
@@ -540,6 +613,7 @@ const AttachmentViewer: React.FC = () => {
             </div>
           </div>
         </div>
+
         {/* 파일 목록 */}
         {renderContent()}
       </div>

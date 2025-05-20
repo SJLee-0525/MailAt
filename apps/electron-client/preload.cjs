@@ -230,6 +230,11 @@ try {
           savePath
         );
       },
+
+      searchByContent: (params) => {
+        console.log("[PRELOAD] attachment.searchByContent 호출됨", params);
+        return ipcRenderer.invoke("attachment:searchByContent", params);
+      },
     },
 
     // 디버깅 도구

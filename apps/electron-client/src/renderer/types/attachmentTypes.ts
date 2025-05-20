@@ -4,8 +4,15 @@ export interface AttachmentInfo {
   messageId: number;
   filename: string;
   mimeType: string;
-  path: string | null;
+  path: string;
   size: number;
+  createdAt?: string;
+  messageSubject?: string;
+  fromEmail?: string;
+  fromName?: string;
+  contactName?: string;
+  contactEmail?: string;
+  folderName?: string;
 }
 
 export interface Attachment {

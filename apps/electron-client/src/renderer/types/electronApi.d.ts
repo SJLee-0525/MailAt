@@ -120,6 +120,22 @@ interface ElectronAPI {
         path: string;
       };
     }>;
+
+    // 본문 내용으로 첨부파일 검색
+    searchByContent(params: {
+      accountId: number;
+      keyword: string;
+      limit?: number;
+      offset?: number;
+    }): Promise<{
+      success: boolean;
+      data?: {
+        keyword: string;
+        count: number;
+        attachments: AttachmentInfo[];
+      };
+      message?: string;
+    }>;
   };
 
   // 이메일 관련 API

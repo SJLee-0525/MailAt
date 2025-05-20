@@ -1,11 +1,20 @@
 // src/hooks/useAttachments.ts
-import { useQuery, useMutation } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  UseMutationResult,
+} from "@tanstack/react-query";
 import {
   getAllAttachments,
   getMessageAttachments,
   downloadAttachment,
   getAttachmentPreview,
 } from "../utils/getAttachmentData";
+import {
+  ContentSearchParams,
+  ContentSearchResult,
+  searchAttachmentsByContent,
+} from "../apis/attachmentApi";
 
 // 다운로드 매개변수 타입 정의
 export interface DownloadParams {
@@ -60,5 +69,18 @@ export function useDownloadAttachment() {
 export function useAttachmentPreview() {
   return useMutation({
     mutationFn: (attachmentId: number) => getAttachmentPreview(attachmentId),
+  });
+}
+
+/**
+ * 이메일 본문 내용으로 첨부파일 검색 훅
+ */
+export function useSearchAttachmentsByContent(): UseMutationResult<
+  ContentSearchResult,
+  Error,
+  ContentSearchParams
+> {
+  return useMutation<ContentSearchResult, Error, ContentSearchParams>({
+    mutationFn: (params) => searchAttachmentsByContent(params),
   });
 }

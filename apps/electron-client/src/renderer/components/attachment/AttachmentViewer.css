@@ -929,3 +929,13 @@
   height: auto;
   margin: 1rem 0;
 }
+
+/* 검색 로딩 인디케이터 */
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-left-color: var(--color-theme, #022d48);
+  animation: spin 1s linear infinite;
+}
