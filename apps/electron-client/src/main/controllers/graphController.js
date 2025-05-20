@@ -37,7 +37,11 @@ export const initGraphController = () => {
       return result; // Python 스크립트의 반환 값을 그대로 전달
     } catch (error) {
       console.error("[GraphCtrl] Error (processAndEmbedMessagesPy):", error);
-      return { status: "fail", message: error.message, error: error.toString() };
+      return {
+        status: "fail",
+        message: error.message,
+        error: error.toString(),
+      };
     }
   });
 
@@ -48,7 +52,11 @@ export const initGraphController = () => {
       return result;
     } catch (error) {
       console.error("[GraphCtrl] Error (initializeGraphFromSQLitePy):", error);
-      return { status: "fail", message: error.message, error: error.toString() };
+      return {
+        status: "fail",
+        message: error.message,
+        error: error.toString(),
+      };
     }
   });
 
@@ -59,7 +67,11 @@ export const initGraphController = () => {
       return result;
     } catch (error) {
       console.error("[GraphCtrl] Error (readNodePy):", error);
-      return { status: "fail", message: error.message, error: error.toString() };
+      return {
+        status: "fail",
+        message: error.message,
+        error: error.toString(),
+      };
     }
   });
 
@@ -70,7 +82,11 @@ export const initGraphController = () => {
       return result;
     } catch (error) {
       console.error("[GraphCtrl] Error (readMessagePy):", error);
-      return { status: "fail", message: error.message, error: error.toString() };
+      return {
+        status: "fail",
+        message: error.message,
+        error: error.toString(),
+      };
     }
   });
 
@@ -81,7 +97,11 @@ export const initGraphController = () => {
       return result;
     } catch (error) {
       console.error("[GraphCtrl] Error (createNodePy):", error);
-      return { status: "fail", message: error.message, error: error.toString() };
+      return {
+        status: "fail",
+        message: error.message,
+        error: error.toString(),
+      };
     }
   });
 
@@ -92,7 +112,11 @@ export const initGraphController = () => {
       return result;
     } catch (error) {
       console.error("[GraphCtrl] Error (deleteNodePy):", error);
-      return { status: "fail", message: error.message, error: error.toString() };
+      return {
+        status: "fail",
+        message: error.message,
+        error: error.toString(),
+      };
     }
   });
 
@@ -103,9 +127,13 @@ export const initGraphController = () => {
       return result;
     } catch (error) {
       console.error("[GraphCtrl] Error (renameNodePy):", error);
-      return { status: "fail", message: error.message, error: error.toString() };
+      return {
+        status: "fail",
+        message: error.message,
+        error: error.toString(),
+      };
     }
-  );
+  });
 
   ipcMain.handle("graph:mergeNodePy", async (event, json_obj) => {
     try {
@@ -114,9 +142,13 @@ export const initGraphController = () => {
       return result;
     } catch (error) {
       console.error("[GraphCtrl] Error (mergeNodePy):", error);
-      return { status: "fail", message: error.message, error: error.toString() };
+      return {
+        status: "fail",
+        message: error.message,
+        error: error.toString(),
+      };
     }
-  );
+  });
 
   ipcMain.handle("graph:deleteMailPy", async (event, json_obj) => {
     try {
@@ -125,7 +157,11 @@ export const initGraphController = () => {
       return result;
     } catch (error) {
       console.error("[GraphCtrl] Error (deleteMailPy):", error);
-      return { status: "fail", message: error.message, error: error.toString() };
+      return {
+        status: "fail",
+        message: error.message,
+        error: error.toString(),
+      };
     }
   });
 
@@ -136,7 +172,11 @@ export const initGraphController = () => {
       return result;
     } catch (error) {
       console.error("[GraphCtrl] Error (moveMailPy):", error);
-      return { status: "fail", message: error.message, error: error.toString() };
+      return {
+        status: "fail",
+        message: error.message,
+        error: error.toString(),
+      };
     }
   });
 };
