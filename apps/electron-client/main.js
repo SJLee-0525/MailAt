@@ -98,7 +98,8 @@ async function initializeControllers() {
       "graph:renameNodePy",
       "graph:mergeNodePy", 
       "graph:deleteMailPy", 
-      "graph:moveMailPy"
+      "graph:moveMailPy",
+      "graph:searchByKeywordPy"
     ].forEach((channel) => {
       try {
         ipcMain.removeHandler(channel);

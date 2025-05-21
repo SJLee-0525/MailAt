@@ -179,6 +179,21 @@ export const initGraphController = () => {
       };
     }
   });
+
+  ipcMain.handle("graph:searchByKeywordPy", async (event, json_obj) => {
+    try {
+      const result = await graphService.searchByKeywordPy(json_obj);
+      console.log("[GraphCtrl] IPC (searchByKeywordPy):", result);
+      return result;
+    } catch (error) {
+      console.error("[GraphCtrl] Error (searchByKeywordPy):", error);
+      return {
+        status: "fail",
+        message: error.message,
+        error: error.toString(),
+      };
+    }
+  });
 };
 
 export default { initGraphController };
