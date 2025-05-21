@@ -6,7 +6,7 @@ import site
 # --- 전역 변수 ---
 # 스크립트가 위치한 디렉토리를 기준으로 경로 설정
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SERVER_PY_PATH = os.path.join(BASE_DIR, 'server.py')
+SERVER_PY_PATH = os.path.join(BASE_DIR, 'server_hybrid.py')
 MODELS_DIR_PATH = os.path.join(BASE_DIR, 'models')
 APP_NAME = 'EmailSummaryServer' # 빌드될 애플리케이션 이름 (spec 파일과 동일하게)
 
@@ -78,7 +78,17 @@ def create_and_run_spec_file():
     escaped_models_dir_path = MODELS_DIR_PATH.replace('\\', '\\\\')
     datas_list_for_spec.append(f"(r'{escaped_models_dir_path}', 'models')")
     
-    # 2. llama_cpp/lib 경로 (동적으로 찾은 경로 사용)
+    # 2. .env 파일 추가
+    env_file_path = os.path.join(BASE_DIR, '.env')
+    if os.path.isfile(env_file_path):
+        escaped_env_file_path = env_file_path.replace('\\', '\\\\')
+        # .env 파일을 실행 파일과 동일한 디렉토리('.')에 위치시킴
+        datas_list_for_spec.append(f"(r'{escaped_env_file_path}', '.')") 
+        print(f".env 파일 추가: {env_file_path} -> (실행파일과 동일한 위치)")
+    else:
+        print("경고: .env 파일이 존재하지 않아 빌드에 포함되지 않습니다.")
+
+    # 3. llama_cpp/lib 경로 (동적으로 찾은 경로 사용)
     llama_lib_data_tuple = get_llama_cpp_lib_path_tuple()
     
     if llama_lib_data_tuple:
@@ -209,6 +219,23 @@ if __name__ == "__main__":
         print("사전 요구 사항을 만족하지 못해 빌드를 중단합니다.")
         sys.exit(1)
     
+    # .env 파일 존재 여부 추가 확인 (선택 사항, 빌드 스크립트 사용자에게 명시적 알림)
+    env_file_path_check = os.path.join(BASE_DIR, '.env')
+    if not os.path.isfile(env_file_path_check):
+        print("--------------------------------------------------------------------")
+        print("경고: '.env' 파일이 프로젝트 루트에 존재하지 않습니다.")
+        print("      OpenAI API 키 등의 환경 변수를 사용한다면, 빌드된 실행 파일이")
+        print("      정상적으로 동작하지 않거나 로컬 Gemma 모델로만 작동할 수 있습니다.")
+        print("      빌드 후 실행 파일과 동일한 위치에 .env 파일을 수동으로")
+        print("      배치하거나, 애플리케이션이 환경 변수를 다른 방식으로")
+        print("      읽도록 설정해야 합니다.")
+        print("--------------------------------------------------------------------")
+        # 필요하다면 여기서 빌드를 중단할 수도 있습니다.
+        # user_choice = input(".env 파일 없이 빌드를 계속하시겠습니까? (y/n): ")
+        # if user_choice.lower() != 'y':
+        #     print("빌드를 중단합니다.")
+        #     sys.exit(1)
+
     if not create_and_run_spec_file():
         print("빌드에 실패했습니다.")
         sys.exit(1)
