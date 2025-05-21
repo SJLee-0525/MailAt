@@ -1,5 +1,5 @@
 import { useInView } from "react-intersection-observer";
-import { useId, useEffect } from "react";
+import { useId, useEffect, useState } from "react";
 
 import { AllEmails } from "@/types/emailTypes";
 
@@ -8,10 +8,12 @@ import { decodeImapModifiedUtf7Segment } from "@utils/getEmailData";
 import {
   useInfiniteEmails,
   useMarkEmailAsRead,
+  useSyncEmail,
 } from "@hooks/useGetConversations";
 
 import useConservationsStore from "@stores/conversationsStore";
 import userProgressStore from "@stores/userProgressStore";
+import useAuthenticateStore from "@stores/authenticateStore";
 
 import InboxContent from "@components/inbox/components/InboxContent";
 
@@ -48,17 +50,65 @@ const InboxFolders = ({ folders }: { folders: Record<string, string[]> }) => {
 };
 
 const InboxContents = () => {
-  const { folders, conversations } = useConservationsStore();
+  const { folders, conversations, selectedFolder } = useConservationsStore();
   const { selectedMail, setSelectedMail } = userProgressStore();
+  const { selectedUser } = useAuthenticateStore(); 
+  const [isSyncing, setIsSyncing] = useState(false); 
 
-  const { fetchNextPage, hasNextPage, isFetchingNextPage } =
+  const { fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
     useInfiniteEmails();
   const { mutateAsync: markEmailAsRead } = useMarkEmailAsRead();
+  
+  // 동기화 훅
+  const syncEmailMutation = useSyncEmail();
+
+  // 계정 ID
+  const accountId = selectedUser?.accountId ?? null;
 
   // 바닥 감시용 sentinel
   const { ref: bottomRef, inView } = useInView({
     rootMargin: "200px", // 200px 전에 미리 로드
   });
+
+  // 동기화 실행 함수
+  const syncEmails = async () => {
+    // 계정 ID 또는 선택된 폴더가 없거나 이미 동기화 중인 경우 실행하지 않음
+    if (!accountId || !selectedFolder || isSyncing) return;
+    
+    try {
+      setIsSyncing(true);
+      console.log(`[InboxContents] 폴더 동기화 시작: ${selectedFolder}, 계정 ID: ${accountId}`);
+      
+      await syncEmailMutation.mutateAsync({
+        accountId,
+        folderName: selectedFolder,
+        limit: 20
+      });
+      
+      // 동기화 후 이메일 목록 리프레시
+      await refetch();
+      console.log(`[InboxContents] 동기화 및 데이터 갱신 완료`);
+    } catch (error) {
+      console.error("[InboxContents] 동기화 오류:", error);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  // 5초마다 동기화 및 데이터 갱신
+  useEffect(() => {
+    if (!accountId || !selectedFolder) return;
+    
+    // 초기 동기화
+    syncEmails();
+    
+    // 5초마다 동기화
+    const intervalId = setInterval(() => {
+      syncEmails();
+    }, 5000);
+    
+    return () => clearInterval(intervalId);
+  }, [accountId, selectedFolder]);
 
   // sentinel 이 화면에 들어오면 다음 페이지 요청
   useEffect(() => {
@@ -96,6 +146,13 @@ const InboxContents = () => {
 
   return (
     <div className="flex flex-col items-center justify-between w-full h-full pb-1.5 gap-1 bg-white rounded-lg">
+      {/* 동기화 상태 표시 (옵션) */}
+      {isSyncing && (
+        <div className="w-full px-2 py-0.5 text-xs text-gray-500 text-center bg-gray-100 rounded">
+          동기화 중...
+        </div>
+      )}
+
       {folders && <InboxFolders folders={folders} />}
 
       {conversations && (
