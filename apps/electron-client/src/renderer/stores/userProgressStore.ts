@@ -20,7 +20,7 @@ interface UserProgressStore {
   chattingIsOpen: boolean;
   chattingIsClosing: boolean;
   setLoading: (isLoading: boolean) => void;
-  setLoadingMessage: (loadingMessage: string) => void;
+  setLoadingMessage: (loadingMessage: string | null) => void;
   setCloseLoadingMessage: () => void;
   setBottomNavProgress: (progress: "search" | null) => void;
   setMailFormIsOpen: (isOpen: boolean) => void;
@@ -35,7 +35,7 @@ interface UserProgressStore {
   setChattingIsOpen: (isOpen: boolean) => void;
 }
 
-const useUserProgressStore = create<UserProgressStore>((set) => ({
+const useUserProgressStore = create<UserProgressStore>((set, get) => ({
   isLoading: false,
   loadingMessage: null,
   bottomNavProgress: null,
@@ -58,7 +58,9 @@ const useUserProgressStore = create<UserProgressStore>((set) => ({
   setLoadingMessage: (loadingMessage) => set({ loadingMessage }),
   setCloseLoadingMessage: () => {
     setTimeout(() => {
-      set({ loadingMessage: null });
+      if (!get().isLoading) {
+        set({ loadingMessage: null });
+      }
     }, 3000);
   },
   setBottomNavProgress: (progress) => set({ bottomNavProgress: progress }),
