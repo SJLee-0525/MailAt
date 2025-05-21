@@ -6,9 +6,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const pythonScriptsDir = path.join(__dirname, "neo4jPythonModule");
-const pythonExecutable = "python"; 
-
-console.log("Python Scripts Directory:", pythonScriptsDir); 
+const pythonExecutable = "python";
 
 /**
  * Python 스크립트를 실행하고 결과를 반환하는 내부 함수
@@ -56,18 +54,52 @@ function runPythonScript(scriptName, operation, args = {}) {
       
       if (code === 0) {
         try {
-          // JSON 부분만 추출하기 위한 처리
-          let jsonOutput = stdoutData.trim();
-          // JSON 시작 위치 찾기
-          const jsonStart = jsonOutput.indexOf('{');
-          if (jsonStart >= 0) {
-            jsonOutput = jsonOutput.substring(jsonStart);
+          let cleanedOutput = stdoutData.trim();
+          
+          // 출력의 첫 번째 { 부터 마지막 } 까지의 내용으로 추출
+          const startIndex = cleanedOutput.indexOf('{');
+          const endIndex = cleanedOutput.lastIndexOf('}');
+          
+          if (startIndex >= 0 && endIndex > startIndex) {
+            const jsonStr = cleanedOutput.substring(startIndex, endIndex + 1);
+            
+            try {
+              const result = JSON.parse(jsonStr);
+              resolve(result);
+              return;
+            } catch (innerError) {
+              console.log(`[runPythonScript] JSON parsing with simple extraction failed: ${innerError.message}`);
+            }
           }
           
-          const result = JSON.parse(jsonOutput);
-          resolve(result);
+          // 위 방법이 실패하면, 중첩된 JSON 구조를 처리하는 더 정교한 방법을 시도
+          let depth = 0;
+          let start = -1;
+          
+          for (let i = 0; i < cleanedOutput.length; i++) {
+            if (cleanedOutput[i] === '{') {
+              if (depth === 0) start = i;
+              depth++;
+            } else if (cleanedOutput[i] === '}') {
+              depth--;
+              if (depth === 0 && start !== -1) {
+                // 균형잡힌 JSON 객체를 찾았을 때
+                const candidateJson = cleanedOutput.substring(start, i + 1);
+                try {
+                  const result = JSON.parse(candidateJson);
+                  resolve(result);
+                  return;
+                } catch (e) {
+                  // 이 객체는 유효한 JSON이 아님, 계속 진행
+                  console.log(`[runPythonScript] Found invalid JSON object, continuing search...`);
+                }
+              }
+            }
+          }
+          
+          throw new Error("No valid JSON found in output");
         } catch (e) {
-          console.log(`[runPythonScript] Failed to parse Python output: ${e.message}`);
+          console.log(`[runPythonScript] All JSON parsing attempts failed: ${e.message}`);
           console.log(`[runPythonScript] Raw output: ${stdoutData}`);
           
           // 모의 성공 응답 반환
@@ -134,7 +166,9 @@ export async function initializeGraphFromSQLitePy() {
 
 export async function readNodePy(json_obj) {
   console.log("[neo4jAdapter] readNodePy 호출됨", json_obj);
-  return runPythonScript("graph_operations", "read_node_py", json_obj);
+  const a = await runPythonScript("graph_operations", "read_node_py", json_obj);
+  console.log('aaaaaaaaaaaaaaaaaaaaaaa', a);
+  return a;
 }
 
 export async function readMessagePy(json_obj) {
