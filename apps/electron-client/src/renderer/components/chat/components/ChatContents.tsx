@@ -6,21 +6,32 @@ import { useMarkEmailAsRead } from "@hooks/useGetConversations";
 
 import userProgressStore from "@stores/userProgressStore";
 
+import ClipIcon from "@assets/icons/ClipIcon";
+
 const FromChatContent = ({
   subject,
   body,
   date,
+  hasAttachments,
 }: {
   subject: string;
   body: string;
   date: string;
+  hasAttachments?: boolean;
 }) => {
   return (
     <div className="flex flex-col justify-start items-end w-full h-fit p-2 gap-1">
-      <span className="flex flex-col w-4/5 h-fit gap-1 bg-accept text-[#fff] rounded-b-2xl rounded-tl-2xl py-3 px-4">
-        <p className="text-sm font-pre-bold">{subject}</p>
+      <div className="flex items-center justify-start w-full h-6 gap-1">
+        <p className="w-fit text-sm font-pre-bold whitespace-nowrap overflow-hidden text-ellipsis">
+          {subject}
+        </p>
+        {hasAttachments && (
+          <div className="flex items-center h-full aspect-[1/1]">
+            <ClipIcon width={18} height={18} />
+          </div>
+        )}
         <p className="text-sm font-pre-regular">{body}</p>
-      </span>
+      </div>
       <p className="text-xs font-pre-regular pe-2 text-icon">{date}</p>
     </div>
   );
@@ -30,16 +41,27 @@ const ToChatContent = ({
   subject,
   body,
   date,
+  hasAttachments,
 }: {
   subject: string;
   body: string;
   date: string;
+  hasAttachments?: boolean;
 }) => {
   return (
     <div className="flex flex-col justify-start items-start w-full h-fit p-2 gap-1">
       <span className="flex flex-col w-4/5 h-fit gap-1 bg-light1 text-text rounded-b-2xl rounded-tr-2xl py-3 px-4">
-        <p className="text-sm font-pre-bold">{subject}</p>
-        <p className="text-sm font-pre-regular">{body}</p>
+        <div className="flex items-center justify-start w-full h-6 gap-1">
+          <p className="w-fit text-sm font-pre-bold whitespace-nowrap overflow-hidden text-ellipsis">
+            {subject}
+          </p>
+          {hasAttachments && (
+            <div className="flex items-center h-full aspect-[1/1]">
+              <ClipIcon width={18} height={18} />
+            </div>
+          )}
+          <p className="text-sm font-pre-regular">{body}</p>
+        </div>
       </span>
       <p className="text-xs font-pre-regular ps-2 text-icon">{date}</p>
     </div>
@@ -100,12 +122,14 @@ const ChatContents = ({
                     subject={chat.subject}
                     body={chat.summary ? chat.summary : chat.bodyText}
                     date={formattedDate}
+                    hasAttachments={chat.hasAttachments}
                   />
                 ) : (
                   <FromChatContent
                     subject={chat.subject}
                     body={chat.summary ? chat.summary : chat.bodyText}
                     date={formattedDate}
+                    hasAttachments={chat.hasAttachments}
                   />
                 )}
               </div>

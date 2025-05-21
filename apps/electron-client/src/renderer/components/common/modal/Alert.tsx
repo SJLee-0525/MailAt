@@ -39,6 +39,7 @@ const Alert = () => {
       id="alert"
       ref={dialog}
       onClick={handleBackdropClick}
+      onClose={closeAlertModal}
       className={`left-1/2 -translate-x-1/2 -translate-y-1/2 m-0 w-[480px] h-fit rounded-b-xl bg-transparent ${alertIsClosing ? "alert-is-closing" : ""}`}
     >
       <div className="flex flex-col items-start justify-center w-full h-full gap-4 p-6 bg-white rounded-lg shadow-lg text-text">

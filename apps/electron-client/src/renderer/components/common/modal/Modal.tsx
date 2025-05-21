@@ -34,6 +34,7 @@ const Modal = () => {
     <dialog
       ref={dialog}
       onClick={handleBackdropClick}
+      onClose={closeModal}
       className={`fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-1/4 min-w-[480px] h-fit max-h-full rounded-b-xl bg-transparent ${isClosing ? "is-closing" : ""}`}
     >
       {modalContent}

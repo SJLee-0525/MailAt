@@ -1,13 +1,20 @@
 import { IconProps } from "@/types/iconProps";
 
+import useAuthenticateStore from "@stores/authenticateStore";
+
 const NightIcon = ({
   width = 24,
   height = 24,
-  strokeColor = "white",
+  strokeColor,
   strokeWidth = 2,
   className,
   onClick,
 }: IconProps) => {
+  const { currentTheme } = useAuthenticateStore();
+
+  if (!strokeColor) {
+    strokeColor = currentTheme === "theme-night" ? "#ffffff" : "#000000";
+  }
   return (
     <svg
       width={width}

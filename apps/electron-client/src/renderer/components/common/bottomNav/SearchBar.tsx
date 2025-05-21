@@ -54,11 +54,11 @@ const SearchBar = () => {
         name="searchQuery"
         type="text"
         placeholder="검색어를 입력하세요."
-        className="font-pre-regular w-full h-12 px-5 py-auto bg-white text-gray-700 border-none rounded-full focus:outline-none"
+        className="font-pre-regular w-full h-12 px-5 py-auto bg-header text-text border-none rounded-full focus:outline-none"
       />
       <IconButton
         type="submit"
-        icon={<SearchIcon />}
+        icon={<SearchIcon strokeColor="#fff" />}
         className="p-2.5 bg-bg hover:bg-warning"
       />
     </form>

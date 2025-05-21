@@ -31,7 +31,7 @@ const FromName = ({
         )}
       </div>
       <div className="absolute top-0 left-0 w-full h-full opacity-0 hover:opacity-100 transition-opacity duration-200">
-        <div className="absolute top-6 left-0 bg-black text-white font-pre-regular text-[14px] rounded py-1 px-2 whitespace-nowrap">
+        <div className="absolute top-6 left-0 bg-text text-white font-pre-regular text-[14px] rounded py-1 px-2 whitespace-nowrap">
           {fromEmail}
         </div>
       </div>
