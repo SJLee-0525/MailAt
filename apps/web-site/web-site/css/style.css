@@ -1,0 +1,268 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; /* Apple 스타일 폰트 스택 */
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f7; /* Apple 스타일 배경색 */
+    color: #1d1d1f; /* Apple 스타일 기본 텍스트 색상 */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    line-height: 1.6; /* 기본 줄 간격 설정 */
+    -webkit-font-smoothing: antialiased; /* 폰트 부드럽게 */
+    -moz-osx-font-smoothing: grayscale; /* 폰트 부드럽게 */
+}
+
+header {
+    background: rgba(255, 255, 255, 0.8); /* 반투명 흰색 배경 */
+    backdrop-filter: blur(20px); /* 배경 블러 효과 */
+    -webkit-backdrop-filter: blur(20px); /* Safari 지원 */
+    color: #1d1d1f; /* 어두운 텍스트 색상 */
+    padding: 25px 20px; /* 패딩 조정 */
+    text-align: center;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08); /* 미세한 하단 경계선 */
+    position: sticky; /* 스크롤 시 상단 고정 */
+    top: 0;
+    z-index: 1000;
+}
+
+header .logo {
+    /* font-size: 2.5em; */ /* 아이콘 크기 조정 불필요 */
+    margin-bottom: 8px;
+    /* color: #0071e3; */ /* 이미지 사용으로 색상 불필요 */
+}
+
+#header-logo-img {
+    height: 50px; /* 로고 이미지 높이 설정 */
+    width: auto; /* 가로 세로 비율 유지 */
+}
+
+header h1 {
+    margin: 0 0 5px 0; /* 마진 조정 */
+    font-size: 2.8em; /* 제목 크기 조정 */
+    font-weight: 600; /* 제목 굵기 조정 */
+}
+
+header p {
+    font-size: 1.1em; /* 부제목 크기 조정 */
+    margin-top: 0;
+    color: #6e6e73; /* Apple 스타일 보조 텍스트 색상 */
+}
+
+main {
+    flex: 1;
+    padding: 60px 20px; /* 메인 콘텐츠 패딩 증가 */
+    max-width: 980px; /* Apple 스타일 최대 너비 */
+    margin: 40px auto; /* 상하 마진 증가 */
+    background-color: transparent; /* 배경 투명하게 */
+    border-radius: 0; /* 모서리 각지게 */
+    box-shadow: none; /* 그림자 제거 */
+}
+
+section {
+    margin-bottom: 70px; /* 섹션 간 간격 증가 */
+    padding-bottom: 40px; /* 섹션 하단 패딩 증가 */
+    border-bottom: 1px solid #d2d2d7; /* Apple 스타일 구분선 */
+    text-align: center; /* 섹션 내용 가운데 정렬 */
+}
+
+section:last-child {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+h2 {
+    color: #1d1d1f; /* 기본 텍스트 색상 */
+    font-size: 2.5em; /* 섹션 제목 크기 조정 */
+    margin-bottom: 30px; /* 제목 아래 마진 증가 */
+    font-weight: 600;
+}
+
+/* 특징 섹션 스타일 */
+#features .feature-list {
+    display: flex;
+    justify-content: space-between; /* 아이템 간격 균등하게 */
+    flex-wrap: wrap; /* 화면 작아지면 줄 바꿈 */
+    gap: 30px; /* 아이템 간 간격 증가 */
+    margin-top: 40px;
+}
+
+#features .feature-item {
+    flex-basis: calc(33.333% - 20px); /* 3열 레이아웃, 간격 고려 */
+    min-width: 280px; /* 최소 너비 조정 */
+    background-color: #ffffff; /* 흰색 배경 */
+    padding: 30px; /* 패딩 증가 */
+    border-radius: 18px; /* Apple 스타일 둥근 모서리 */
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1); /* 부드러운 그림자 */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: left; /* 텍스트 왼쪽 정렬 */
+}
+
+#features .feature-item:hover {
+    transform: translateY(-8px); /* 호버 시 약간 위로 이동 */
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12); /* 호버 시 그림자 강조 */
+}
+
+#features .feature-item i {
+    font-size: 2.2em; /* 아이콘 크기 조정 */
+    color: #0071e3; /* Apple 블루 */
+    margin-bottom: 20px;
+    display: block; /* 아이콘을 블록 요소로 만들어 왼쪽 정렬 */
+}
+
+#features .feature-item h3 {
+    font-size: 1.4em; /* 제목 크기 조정 */
+    color: #1d1d1f;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+#features .feature-item p {
+    font-size: 1em; /* 본문 텍스트 크기 조정 */
+    color: #6e6e73; /* Apple 스타일 보조 텍스트 */
+    line-height: 1.5;
+}
+
+/* 다운로드 섹션 스타일 */
+#download h2 {
+    margin-bottom: 20px; /* 제목 아래 마진 조정 */
+}
+
+#download p {
+    margin-bottom: 30px; /* 버튼 위 텍스트 마진 증가 */
+    font-size: 1.2em; /* 텍스트 크기 조정 */
+    color: #6e6e73;
+}
+
+.download-button {
+    display: inline-block;
+    background-color: #0071e3; /* Apple 블루 */
+    color: #ffffff;
+    padding: 16px 32px; /* 패딩 조정 */
+    border: none;
+    border-radius: 30px; /* 둥근 버튼 */
+    font-size: 1.1em; /* 버튼 텍스트 크기 조정 */
+    font-weight: 500; /* 버튼 텍스트 굵기 조정 */
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s ease, transform 0.2s ease; /* 부드러운 전환 효과 */
+    box-shadow: 0 2px 8px rgba(0, 113, 227, 0.3); /* 버튼 그림자 */
+}
+
+.download-button i {
+    margin-right: 10px; /* 아이콘과 텍스트 간격 */
+}
+
+.download-button:hover {
+    background-color: #0077ed; /* 호버 시 약간 밝은 파란색 */
+    transform: scale(1.05); /* 호버 시 약간 확대 */
+    box-shadow: 0 4px 12px rgba(0, 113, 227, 0.4); /* 호버 시 그림자 강조 */
+}
+
+/* 프로젝트 구조 섹션 스타일 */
+#project-structure h2 {
+    margin-bottom: 20px;
+}
+
+#project-structure .structure-list {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    text-align: left;
+}
+
+#project-structure .structure-list ul {
+    list-style-type: none; /* 기본 목록 스타일 제거 */
+    padding-left: 0;
+}
+
+#project-structure .structure-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+#project-structure .structure-list li:last-child {
+    border-bottom: none;
+}
+
+#project-structure .structure-list code {
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace; /* 고정폭 폰트 */
+    background-color: #f0f0f5;
+    padding: 3px 6px;
+    border-radius: 4px;
+    color: #1d1d1f;
+}
+
+#project-structure .structure-list ul ul {
+    padding-left: 20px; /* 중첩 목록 들여쓰기 */
+    margin-top: 5px;
+}
+
+footer {
+    background: #1d1d1f; /* 어두운 배경 */
+    color: #a1a1a6; /* 밝은 회색 텍스트 */
+    text-align: center;
+    padding: 30px 0; /* 푸터 패딩 증가 */
+    margin-top: auto;
+    width: 100%;
+}
+
+footer p {
+    margin: 0;
+    font-size: 0.9em;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 992px) {
+    #features .feature-item {
+        flex-basis: calc(50% - 15px); /* 중간 화면 크기에서 2열, 간격 조정 */
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        padding: 20px 15px;
+    }
+    header h1 {
+        font-size: 2.2em;
+    }
+    header p {
+        font-size: 1em;
+    }
+    main {
+        padding: 40px 15px;
+        margin: 20px auto;
+    }
+    h2 {
+        font-size: 2em;
+    }
+    #features .feature-list {
+        flex-direction: column;
+        align-items: stretch; /* 아이템을 가로로 꽉 채움 */
+    }
+    #features .feature-item {
+        flex-basis: auto; /* 너비 자동 조정 */
+        min-width: unset;
+        margin-bottom: 25px; /* 아이템 간 세로 간격 */
+        padding: 25px;
+    }
+    .download-button {
+        padding: 14px 28px;
+        font-size: 1em;
+    }
+}
+
+@media (max-width: 480px) {
+    header h1 {
+        font-size: 1.8em;
+    }
+    header p {
+        font-size: 0.9em;
+    }
+    h2 {
+        font-size: 1.8em;
+    }
+    #features .feature-item {
+        padding: 20px;
+    }
+}
