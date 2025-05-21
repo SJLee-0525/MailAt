@@ -100,7 +100,7 @@ const TitleBar = () => {
             />
           </div>
           {loadingMessage && (
-            <span className="text-xs text-[#ffffff] font-pre-regular">
+            <span className="flex justify-center items-center text-xs text-[#ffffff] font-pre-regular">
               {loadingMessage}
             </span>
           )}

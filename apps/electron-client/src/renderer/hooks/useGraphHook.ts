@@ -46,7 +46,7 @@ export const useGetGraphNode = ({
           new Error("User ID is required for graph query.")
         );
       }
-      console.log("Graph Node Params111111111111111:");
+
       return readGraphNode({ C_ID, C_type, IO_type });
     },
     enabled: !!userId && enabled, // userId가 있고, enabled 플래그가 true일 때만 fetch
@@ -54,14 +54,14 @@ export const useGetGraphNode = ({
   });
 
   useEffect(() => {
-    console.log("Graph data u1111111111111pdated:", query.data);
     if (query.isSuccess && query.data) {
       setGraphData(query.data);
     }
-  }, [query.data, setGraphData]);
+  }, [query.data, query.isSuccess, setGraphData]); // Added query.isSuccess to the dependency array
 
   return query;
 };
+
 export const useCreateGraphNode = () => {
   const queryClient = useQueryClient();
   const { user, authUsers } = useAuthenticateStore(); // authUsers is already here

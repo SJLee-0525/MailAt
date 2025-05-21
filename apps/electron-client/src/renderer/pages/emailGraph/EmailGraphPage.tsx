@@ -35,26 +35,17 @@ const NetworkPage = () => {
     []
   );
 
-  const { refetch: refetchGraphNode } = useGetGraphNode({
-    ...queryParams,
-    enabled: enableInitialFetch, // 최초 1회만 fetch하도록 제어
-  });
+  const { refetch: refetchGraphNode, isLoading: getGraphLoading } =
+    useGetGraphNode({
+      ...queryParams,
+      enabled: enableInitialFetch, // 최초 1회만 fetch하도록 제어
+    });
   const { mutateAsync: mergeGraphNode } = useMergeGraphNode();
 
   useEffect(() => {
     if (!enableInitialFetch) {
-      // If enableInitialFetch is false, this block was intended to run.
-      // The original code called refetchGraphNode() and then setEnableInitialFetch(false) again in a finally block.
-      // This caused a loop if enableInitialFetch was already false.
-      // By removing the problematic setEnableInitialFetch(false) call, the loop is broken.
       refetchGraphNode();
     }
-
-    setLoading(false);
-    setLoadingMessage("메일 목록 불러오기 완료");
-    setCloseLoadingMessage();
-    // Added refetchGraphNode and store setters to the dependency array for correctness,
-    // assuming they are stable references from hooks.
   }, [
     enableInitialFetch,
     refetchGraphNode,
@@ -62,6 +53,17 @@ const NetworkPage = () => {
     setLoadingMessage,
     setCloseLoadingMessage,
   ]);
+
+  useEffect(() => {
+    if (getGraphLoading) {
+      setLoading(true);
+      setLoadingMessage("그래프를 불러오는 중입니다.");
+    } else {
+      setLoading(false);
+      setLoadingMessage("그래프 불러오기 완료");
+      setCloseLoadingMessage();
+    }
+  }, [getGraphLoading, setLoading, setLoadingMessage, setCloseLoadingMessage]);
 
   // 뒤로가기 처리: 현재 그래프를 재설정 (새 ref로 전달)
   async function handleNavigateBack() {
@@ -176,6 +178,7 @@ const NetworkPage = () => {
       ) : (
         <EmailGraph
           rawNodes={graphData || []} // null 방지
+          graphLoading={getGraphLoading}
           onSelect={handleNodeSelect}
           onDoubleClick={handleNodeDoubleClick}
           onInitialScreen={handleInitialScreen}

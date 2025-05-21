@@ -13,7 +13,7 @@ import ForceGraph2D, { ForceGraphMethods } from "react-force-graph-2d";
 
 import { buildGraph } from "@utils/getBuildGraph";
 
-import useUserProgressStore from "@stores/userProgressStore";
+// import useUserProgressStore from "@stores/userProgressStore";
 import useAuthenticateStore from "@stores/authenticateStore";
 import useModalStore from "@stores/modalStore";
 
@@ -32,6 +32,7 @@ import { RawNode, SelectedGraph, GraphNode } from "@/types/graphType";
 
 interface Props {
   rawNodes: RawNode[];
+  graphLoading: boolean;
   onSelect: ({ C_ID, C_type, IO_type, In }: SelectedGraph) => void;
   onDoubleClick: (node: GraphNode) => void; // Changed from (idx: number) to (node: GraphNode)
   onInitialScreen: () => void;
@@ -76,13 +77,14 @@ const ME_LINK_MAX_DISTANCE_CAP = 45; // "me" 노드와의 최대 거리 (val이 
 const EmailGraph = memo(
   ({
     rawNodes,
+    graphLoading,
     onSelect,
     onDoubleClick,
     onInitialScreen,
     onMerge,
     onNavigateBack,
   }: Props) => {
-    const { setLoading, setLoadingMessage } = useUserProgressStore();
+    // const { setLoading, setLoadingMessage } = useUserProgressStore();
     const { currentTheme } = useAuthenticateStore();
     const { openAlertModal } = useModalStore();
 
@@ -405,9 +407,6 @@ const EmailGraph = memo(
 
           // 페이드 아웃 후 API 호출
           animateGraphOpacity(0, FADE_DURATION, () => {
-            setLoading(true);
-            setLoadingMessage("그래프 정보를 불러오는 중.");
-
             onDoubleClick(node); // Changed from onSelect?.(node.id)
           });
           return;
@@ -706,7 +705,7 @@ const EmailGraph = memo(
         ref={wrapRef}
         className="relative w-full h-full overflow-hidden flex justify-center items-center"
       >
-        {w > 0 && h > 0 && (
+        {w > 0 && h > 0 && !graphLoading && (
           <ForceGraph2D
             ref={fgRef}
             width={w}
