@@ -263,9 +263,11 @@ interface ElectronAPI {
 
     // 그래프 노드 병합
     mergeNodePy(json_obj: {
-      before_name1: string; // 노드 이전 이름1
-      before_name2: string; // 노드 이전 이름2
-      after_name: string; // 노드 새 이름
+      C_ID1: number;
+      C_type1: number;
+      C_ID2: number;
+      C_type2: number;
+      after_name: string;
     }): Promise<GraphIpcResponse>;
 
     // 그래프 메일 삭제

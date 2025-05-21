@@ -31,7 +31,7 @@ const PopUpLayout = () => {
 
   if (calendarIsOpen) {
     return (
-      <div className="absolute top-0 right-0 flex flex-row-reverse p-1 w-full h-full pointer-events-none">
+      <div className="absolute top-0 right-0 flex flex-row-reverse w-full h-full pointer-events-none">
         <Calendar />
       </div>
     );
@@ -49,8 +49,8 @@ const PopUpLayout = () => {
 
   if (graphInboxIsOpen) {
     return (
-      <div className="absolute top-0 right-0 flex flex-row-reverse p-1 w-full h-full pointer-events-none">
-        <GraphInbox />
+      <div className="absolute top-0 right-0 flex flex-row-reverse w-full h-full pointer-events-none">
+        {!isReplying && <GraphInbox />}
         {selectedMail !== null && <DetailEmail />}
       </div>
     );

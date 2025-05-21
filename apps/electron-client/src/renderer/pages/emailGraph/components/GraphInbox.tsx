@@ -10,7 +10,8 @@ import CloseIcon from "@assets/icons/CloseIcon";
 
 const GraphInbox = () => {
   const { user, authUsers } = useAuthenticateStore();
-  const { graphInboxIsClosing, setGraphInboxIsOpen } = useUserProgressStore();
+  const { graphInboxIsClosing, setGraphInboxIsOpen, setSelectedMail } =
+    useUserProgressStore();
 
   if (!user || authUsers.length === 0) return null;
 
@@ -26,7 +27,10 @@ const GraphInbox = () => {
               type="button"
               icon={<CloseIcon strokeColor="white" width={20} height={20} />}
               className="p-2 bg-theme hover:bg-warning"
-              onClick={() => setGraphInboxIsOpen(false)}
+              onClick={() => {
+                setGraphInboxIsOpen(false);
+                setSelectedMail(null);
+              }}
             />
           </nav>
         </div>

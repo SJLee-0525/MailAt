@@ -5,6 +5,7 @@ import { GraphNode, SelectedGraph } from "@/types/graphType"; // Assuming GraphN
 import useAuthenticateStore from "@stores/authenticateStore";
 import useConversationsStore from "@stores/conversationsStore";
 import useUserProgressStore from "@stores/userProgressStore";
+import useModalStore from "@stores/modalStore";
 
 import { useGetGraphNode, useMergeGraphNode } from "@hooks/useGraphHook";
 
@@ -14,7 +15,13 @@ const NetworkPage = () => {
   const { user, authUsers } = useAuthenticateStore();
   const { graphData, setSelectedGraph, setGraphConversations } =
     useConversationsStore();
-  const { setGraphInboxIsOpen } = useUserProgressStore();
+  const {
+    setGraphInboxIsOpen,
+    setLoading,
+    setLoadingMessage,
+    setCloseLoadingMessage,
+  } = useUserProgressStore();
+  const { openAlertModal } = useModalStore();
 
   // 최초 1회 fetch 여부 제어용 state
   const [enableInitialFetch, setEnableInitialFetch] = useState(true);
@@ -36,9 +43,25 @@ const NetworkPage = () => {
 
   useEffect(() => {
     if (!enableInitialFetch) {
-      refetchGraphNode().finally(() => setEnableInitialFetch(false));
+      // If enableInitialFetch is false, this block was intended to run.
+      // The original code called refetchGraphNode() and then setEnableInitialFetch(false) again in a finally block.
+      // This caused a loop if enableInitialFetch was already false.
+      // By removing the problematic setEnableInitialFetch(false) call, the loop is broken.
+      refetchGraphNode();
     }
-  }, [enableInitialFetch]);
+
+    setLoading(false);
+    setLoadingMessage("메일 목록 불러오기 완료");
+    setCloseLoadingMessage();
+    // Added refetchGraphNode and store setters to the dependency array for correctness,
+    // assuming they are stable references from hooks.
+  }, [
+    enableInitialFetch,
+    refetchGraphNode,
+    setLoading,
+    setLoadingMessage,
+    setCloseLoadingMessage,
+  ]);
 
   // 뒤로가기 처리: 현재 그래프를 재설정 (새 ref로 전달)
   async function handleNavigateBack() {
@@ -88,15 +111,51 @@ const NetworkPage = () => {
   }
 
   // 병합 이벤트 핸들러
-  function handleMerge(srcName: string, tgtName: string) {
-    console.log("Merge", srcName, tgtName);
+  async function handleMerge({
+    C_ID1,
+    C_type1,
+    C_ID2,
+    C_type2,
+    after_name,
+  }: {
+    C_ID1: number;
+    C_type1: number;
+    C_ID2: number;
+    C_type2: number;
+    after_name: string;
+  }) {
+    console.log("Merge", C_ID1, C_type1, C_ID2, C_type2);
+
+    if (C_type1 < 2 || C_type2 < 2) {
+      openAlertModal({
+        title: "병합 실패",
+        content: "카테고리 노드만 병합할 수 있습니다.",
+      });
+      return;
+    } else if (C_type1 !== C_type2) {
+      openAlertModal({
+        title: "병합 실패",
+        content: "같은 타입의 노드만 병합할 수 있습니다.",
+      });
+    }
 
     try {
-      const response = mergeGraphNode({
-        before_name1: srcName,
-        before_name2: tgtName,
-        after_name: srcName + tgtName,
+      const response = await mergeGraphNode({
+        C_ID1,
+        C_type1,
+        C_ID2,
+        C_type2,
+        after_name,
       });
+
+      if (response.status !== "success") {
+        openAlertModal({
+          title: "병합 실패",
+          content: "노드 병합에 실패했습니다.",
+        });
+        return;
+      }
+
       console.log("Merge response:", response);
     } catch (error) {
       console.error("Error merging nodes:", error);

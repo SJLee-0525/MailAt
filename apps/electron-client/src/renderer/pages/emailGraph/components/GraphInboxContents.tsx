@@ -15,14 +15,19 @@ import GraphInboxContent from "@pages/emailGraph/components/GraphInboxContent";
 const GraphInboxContents = () => {
   const { selectedGraph, graphConversations, setGraphConversations } =
     useConservationsStore();
-  const { selectedMail, setSelectedMail } = userProgressStore();
+  const {
+    selectedMail,
+    setSelectedMail,
+    setLoading,
+    setLoadingMessage,
+    setCloseLoadingMessage,
+  } = userProgressStore();
   const { user } = useAuthenticateStore();
 
   const { mutateAsync: markEmailAsRead } = useMarkEmailAsRead();
 
   useEffect(() => {
     async function fetchGraphMessages() {
-      console.log(selectedGraph, 1);
       if (!user || !selectedGraph) {
         // accountId 또는 selectedGraph가 없으면 API 호출을 하지 않고,
         // graphConversations를 빈 배열로 설정하여 이전 데이터를 지웁니다.
@@ -30,22 +35,34 @@ const GraphInboxContents = () => {
         return;
       }
 
-      console.log(selectedGraph, 2);
+      setLoading(true);
+      setLoadingMessage("메일 목록을 불러오는 중입니다.");
       try {
         const response = await readGraphMessage(selectedGraph);
         if (!response) {
           // 응답이 없는 경우에도 graphConversations를 빈 배열로 설정합니다.
           setGraphConversations([]);
+
+          setLoading(false);
+          setLoadingMessage("메일 목록 불러오기 실패");
+          setCloseLoadingMessage();
           return;
         }
 
         // Graph API에서 가져온 메시지 목록을 상태에 저장
         setGraphConversations(response);
+
+        setLoading(false);
+        setLoadingMessage("메일 목록 불러오기 완료");
         // setSelectedMail(null); // 이메일 목록이 변경되면 선택된 이메일 초기화 (선택 사항)
       } catch (error) {
         console.error("Error fetching graph messages:", error);
         // 에러 발생 시 graphConversations를 빈 배열로 설정합니다.
         setGraphConversations([]);
+        setLoading(false);
+        setLoadingMessage("메일 목록 불러오기 실패");
+      } finally {
+        setCloseLoadingMessage();
       }
     }
 

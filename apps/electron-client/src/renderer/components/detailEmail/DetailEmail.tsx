@@ -21,6 +21,9 @@ const DetailEmail = () => {
     selectedMailIsClosing,
     isReplying,
     chattingIsOpen,
+    setLoading,
+    setLoadingMessage,
+    setCloseLoadingMessage,
     setSelectedMail,
     setIsReplying,
     setChattingIsOpen,
@@ -35,11 +38,21 @@ const DetailEmail = () => {
     if (selectedMail === null) return;
 
     async function fetchDetailEmail(emailId: number) {
+      setLoading(true);
+      setLoadingMessage("이메일을 불러오는 중입니다.");
+
       try {
         const response = await getDetailEmail(emailId);
+
         setDetailEmail(response);
+        setLoading(false);
+        setLoadingMessage("이메일 불러오기 완료");
       } catch (error) {
         console.error("Error fetching detail email:", error);
+        setLoading(false);
+        setLoadingMessage("이메일 불러오기 실패");
+      } finally {
+        setCloseLoadingMessage();
       }
     }
 

@@ -180,27 +180,24 @@ export const renameGraphNode = async ({
 
 // 노드 병합
 export const mergeGraphNode = async ({
-  before_name1,
-  before_name2,
+  C_ID1,
+  C_type1,
+  C_ID2,
+  C_type2,
   after_name,
-  user, // Add user as a parameter
 }: {
-  before_name1: string; // 노드 이전 이름1
-  before_name2: string; // 노드 이전 이름2
-  after_name: string; // 노드 새 이름
-  user: any; // Define a more specific type
+  C_ID1: number;
+  C_type1: number;
+  C_ID2: number;
+  C_type2: number;
+  after_name: string;
 }): Promise<GraphIpcResponse> => {
-  // const { user } = useAuthenticateStore(); // Remove hook call
-
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
-  // {"before_name1": "노드 이전 이름1", "before_name2": "노드 이전 이름2", "after_name": "노드 새 이름"}
   try {
     const response = await window.electronAPI.graph.mergeNodePy({
-      before_name1,
-      before_name2,
+      C_ID1,
+      C_type1,
+      C_ID2,
+      C_type2,
       after_name,
     });
     if (response.status === "success") {

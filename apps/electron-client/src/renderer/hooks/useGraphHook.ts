@@ -187,7 +187,13 @@ export const useMergeGraphNode = () => {
   const mutation = useMutation<
     GraphIpcResponse,
     Error,
-    { before_name1: string; before_name2: string; after_name: string }
+    {
+      C_ID1: number;
+      C_type1: number;
+      C_ID2: number;
+      C_type2: number;
+      after_name: string;
+    }
   >({
     mutationFn: (variables) => {
       // Pass user to mergeGraphNode
@@ -196,7 +202,7 @@ export const useMergeGraphNode = () => {
           new Error("User not authenticated for merging node.")
         );
       }
-      return mergeGraphNode({ ...variables, user });
+      return mergeGraphNode({ ...variables });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["graph", userId] });
