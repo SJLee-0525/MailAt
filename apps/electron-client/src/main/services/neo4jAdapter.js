@@ -6,7 +6,10 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const pythonScriptsDir = path.join(__dirname, "neo4jPythonModule");
-const pythonExecutable = "python"; // 또는 "python3" 등 Python 실행 파일 경로
+console.log(`[neo4jAdapter] Python scripts directory: ${pythonScriptsDir}`);
+
+const pythonExecutable = process.platform === 'win32' ? "python" : "python3";
+console.log(`[neo4jAdapter] Using Python executable: ${pythonExecutable}`);
 
 /**
  * Python 스크립트 또는 실행 파일을 실행하고 결과를 반환하는 내부 함수
@@ -19,11 +22,16 @@ function runPythonScript(scriptName, operation, args = {}) {
   return new Promise((resolve, reject) => {
     const scriptPath = path.join(pythonScriptsDir, scriptName);
     const command = pythonExecutable;
-    const commandArgs = [scriptPath, operation, JSON.stringify(args)];
+    const commandArgs = [scriptPath];
 
     console.log(`[runPythonScript] Executing: ${command} ${commandArgs.join(" ")}`);
 
     const pythonProcess = spawn(command, commandArgs);
+    const inputData = JSON.stringify({ operation, args });
+
+    // stdin으로 데이터 전달
+    pythonProcess.stdin.write(inputData);
+    pythonProcess.stdin.end();
 
     let stdoutData = "";
     let stderrData = "";
@@ -38,13 +46,15 @@ function runPythonScript(scriptName, operation, args = {}) {
 
     pythonProcess.on("close", (code) => {
       console.log(`[runPythonScript] Python script stdout: ${stdoutData}`);
-      console.log(`[runPythonScript] Python script stderr: ${stderrData}`);
+      if (stderrData) console.error(`[runPythonScript] Python script stderr: ${stderrData}`);
+      
       if (code === 0) {
         try {
           const result = JSON.parse(stdoutData);
           resolve(result);
         } catch (e) {
           console.error("[runPythonScript] Failed to parse Python script output:", e);
+          console.error("Raw output:", stdoutData);
           reject(new Error("Failed to parse Python script output."));
         }
       } else {

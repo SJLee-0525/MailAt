@@ -1069,24 +1069,28 @@ def search_by_keyword_py(json_obj, SQLITE_DB_PATH: str = SQLITE_DB_PATH) -> dict
     result = read_node_py(query_json)
     return result
 
-
 if __name__ == "__main__":
     raw_input_data = ""
     try:
+        print("Python script starting...", file=sys.stderr)
+        sys.stderr.flush()
+
         raw_input_data = sys.stdin.read()
         if not raw_input_data:
             print(json.dumps({"status": "error", "message": "Python: No input received"}), file=sys.stderr)
+            sys.stderr.flush()
             sys.exit(1)
-
+        print(f"Python received data: {raw_input_data[:100]}...", file=sys.stderr)
+        sys.stderr.flush()
         input_data = json.loads(raw_input_data)
         operation = input_data.get("operation")
         args = input_data.get("args", {})
         result = None
 
-        if operation == "createNode":
-            create_node_py(args)
-        elif operation == "deleteNode":
-            result = delete_node_py(args)
+        if operation == "process_and_embed_messages_py":
+            process_and_embed_messages_py()
+        elif operation == "initialize_graph_from_sqlite_py":
+            initialize_graph_from_sqlite_py()
         elif operation == "readNode":
             result = read_node_py(args)
         elif operation == "readMessage":

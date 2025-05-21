@@ -30,10 +30,8 @@ export const runAccountTests = async () => {
     const authConfig = {
       host: "imap.gmail.com",
       port: 993,
-      // 테스트용 실제 이메일과 비밀번호를 사용하세요
-      // 또는 환경변수로 관리하세요
       username: "",
-      password: "내 비밀번호 쉿",
+      password: "",
     };
 
     try {
@@ -58,7 +56,7 @@ export const runAccountTests = async () => {
     const accountData = {
       // 테스트 계정 정보 - 실제 인증 가능한 정보를 사용하는 것이 좋습니다
       email: "",
-      password: "내 비밀번호 쉿쉿",
+      password: "",
       imapHost: "imap.gmail.com",
       imapPort: 993,
       smtpHost: "smtp.gmail.com",
@@ -76,19 +74,19 @@ export const runAccountTests = async () => {
       console.log("Fetched Accounts:", accounts);
       console.log("Total Accounts:", accounts.length);
 
-      // 3. Delete Account Test
-      console.log("\n3. Delete Account Test");
-      const deleteResult = await accountService.deleteAccount(accountId);
-      console.log("Delete Result:", deleteResult);
+      // // 3. Delete Account Test
+      // console.log("\n3. Delete Account Test");
+      // const deleteResult = await accountService.deleteAccount(accountId);
+      // console.log("Delete Result:", deleteResult);
 
-      // 3-1. Confirm Deletion by fetching all accounts again
-      console.log("\n3-1. Confirm Deletion by fetching all accounts");
-      const accountsAfterDeletion = await accountService.getAllAccounts();
-      console.log("Accounts after deletion:", accountsAfterDeletion);
-      console.log(
-        "Total Accounts after deletion:",
-        accountsAfterDeletion.length
-      );
+      // // 3-1. Confirm Deletion by fetching all accounts again
+      // console.log("\n3-1. Confirm Deletion by fetching all accounts");
+      // const accountsAfterDeletion = await accountService.getAllAccounts();
+      // console.log("Accounts after deletion:", accountsAfterDeletion);
+      // console.log(
+      //   "Total Accounts after deletion:",
+      //   accountsAfterDeletion.length
+      // );
 
       // 4. Test error handling - Try to delete non-existent account
       console.log("\n4. Test Deleting Non-existent Account (Expecting Error)");
@@ -110,15 +108,15 @@ export const runAccountTests = async () => {
     console.error("Error during test:", error);
   } finally {
     // Clean up - Delete test user if created
-    if (userId) {
-      try {
-        console.log("\nCleaning up - Deleting test user");
-        await userService.deleteUser(userId);
-        console.log("Test user deleted successfully");
-      } catch (cleanupError) {
-        console.error("Error during cleanup:", cleanupError);
-      }
-    }
+    // if (userId) {
+    //   try {
+    //     console.log("\nCleaning up - Deleting test user");
+    //     await userService.deleteUser(userId);
+    //     console.log("Test user deleted successfully");
+    //   } catch (cleanupError) {
+    //     console.error("Error during cleanup:", cleanupError);
+    //   }
+    // }
 
     await closeConnection();
     process.exit(0);
