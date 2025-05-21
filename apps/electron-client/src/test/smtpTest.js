@@ -33,7 +33,7 @@ export const runSmtpTests = async () => {
     const accountData = {
       // 테스트 계정 정보 - 실제 사용 가능한 정보로 변경해야 합니다
       email: "",
-      password: "내 비번 쉿쉿", // 앱 비밀번호나 실제 비밀번호 사용
+      password: "", // 앱 비밀번호나 실제 비밀번호 사용
       imapHost: "imap.gmail.com",
       imapPort: 993,
       smtpHost: "smtp.gmail.com",
