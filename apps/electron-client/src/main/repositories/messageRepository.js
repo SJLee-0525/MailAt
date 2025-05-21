@@ -379,9 +379,10 @@ class MessageRepository {
 
       return new Promise((resolve, reject) => {
         db.all(
-          `SELECT DISTINCT m.*
+          `SELECT DISTINCT m.*, c.summary as summary
          FROM Message m
          JOIN MessageContact mc ON m.message_id = mc.message_id
+         LEFT JOIN Calendar c ON m.message_id = c.message_id
          WHERE mc.contact_id = ?
          ORDER BY m.sent_at DESC
          LIMIT ? OFFSET ?`,
@@ -638,8 +639,10 @@ class MessageRepository {
       let query = `
       SELECT m.*, 
         f.name as folder_name, 
-        (SELECT COUNT(*) FROM Attachment WHERE message_id = m.message_id) as attachment_count
+        (SELECT COUNT(*) FROM Attachment WHERE message_id = m.message_id) as attachment_count,
+        c.summary as summary
       FROM Message m
+      LEFT JOIN Calendar c ON m.message_id = c.message_id
       JOIN Folder f ON m.folder_id = f.folder_id
     `;
 
@@ -759,6 +762,7 @@ class MessageRepository {
       isFlagged: Boolean(row.is_flagged),
       hasAttachments: Boolean(row.has_attachments),
       attachmentCount: row.attachment_count || 0,
+      summary: row.summary || null,
     };
   }
 
@@ -773,9 +777,10 @@ class MessageRepository {
 
       return new Promise((resolve, reject) => {
         db.get(
-          `SELECT m.*, f.name as folder_name 
+          `SELECT m.*, f.name as folder_name, c.summary as calendar_summary
          FROM Message m
          JOIN Folder f ON m.folder_id = f.folder_id
+         LEFT JOIN Calendar c ON m.message_id = c.message_id
          WHERE m.message_id = ?`,
           [messageId],
           (err, row) => {

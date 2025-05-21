@@ -1,6 +1,7 @@
 // src/services/accountService.js
 import accountRepository from "../repositories/accountRepository.js";
 import { testImapAuthentication } from "./imapService.js";
+import { initializeGraphDBAfterAccountSetup } from "../utils/graphUtills.js";
 
 /**
  * 계정 서비스 클래스
@@ -73,7 +74,20 @@ class AccountService {
       const userId = await accountRepository.getFirstUserId();
 
       // 계정 생성
-      await accountRepository.createAccount(userId, enrichedAccountData);
+      const accountResult = await accountRepository.createAccount(userId, enrichedAccountData);
+      const accountId = accountResult.accountId;
+
+      console.log(`[AccountService] 계정 ${accountId} 생성 완료, 초기 동기화 시작`);
+      
+      // 초기 이메일 동기화 및 그래프 DB 초기화 (백그라운드로 실행)
+      initializeGraphDBAfterAccountSetup(accountId, 20)
+      .then(result => {
+        console.log(`[AccountService] 계정 ${accountId} 초기화 결과:`, result);
+      })
+      .catch(error => {
+        console.error(`[AccountService] 계정 ${accountId} 초기화 오류:`, error);
+      });
+
 
       // 모든 계정 목록 조회하여 반환 (일관된 응답 형식을 위해)
       return await accountRepository.getAllAccounts();

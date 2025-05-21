@@ -6,6 +6,7 @@ import folderRepository from "../repositories/folderRepository.js";
 import { parseRawEmail } from "../utils/emailParser.js";
 import calendarService from "./calendarService.js";
 import syncManager from "../utils/syncManager.js";
+import { updateGraphDBInBackground } from "../utils/graphUtills.js";
 
 /**
  * IMAP 서버 인증 테스트
@@ -66,6 +67,9 @@ export const syncLatestEmails = async (accountId) => {
       messageLimit: 10,
       skipEmpty: true,
     });
+
+    const totalSyncedCount = result.totalMessages || 0;
+    updateGraphDBInBackground(totalSyncedCount);
 
     return result;
   } catch (error) {
@@ -252,6 +256,10 @@ export const syncFolder = async (
           });
         }
       }
+
+      if (syncedCount > 0) {
+      updateGraphDBInBackground(syncedCount);
+    }
 
       return {
         success: true,
@@ -554,7 +562,7 @@ const shouldSyncFolder = (folder) => {
 export const syncAllFolders = async (accountId, options = {}) => {
   const {
     folderTypes = ["inbox", "sent", "drafts"], // 기본적으로 동기화할 폴더 타입
-    messageLimit = 50, // 폴더당 가져올 메시지 수
+    messageLimit = 10, // 폴더당 가져올 메시지 수
     skipEmpty = true, // 빈 폴더 건너뛰기
   } = options;
 
@@ -618,6 +626,10 @@ export const syncAllFolders = async (accountId, options = {}) => {
           error: error.message,
         });
       }
+    }
+
+    if (results.totalMessages > 0) {
+      updateGraphDBInBackground(results.totalMessages);
     }
 
     results.message = `${results.folderCount}개 폴더에서 ${results.totalMessages}개 메시지 동기화`;
