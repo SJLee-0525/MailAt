@@ -58,10 +58,14 @@ export const createRawEmail = (emailData) => {
   // 제목에 한글이 포함될 수 있으므로 Base64 인코딩 적용
   const encodedSubject = `=?UTF-8?B?${Buffer.from(title).toString("base64")}?=`;
 
+  const encodedName = accountInfo.username ? 
+  `=?UTF-8?B?${Buffer.from(accountInfo.username).toString('base64')}?=` : 
+  accountInfo.email.split('@')[0];
+
   // 헤더 생성
   let headers = [
-    `From: ${accountInfo.username} <${accountInfo.email}>`,
-    `To: ${to.join(", ")}`,
+    `From: ${encodedName} <${accountInfo.email}>`,
+    `To: ${to.map(email => `<${email}>`).join(", ")}`,
     `Subject: ${encodedSubject}`,
     `Date: ${new Date().toUTCString()}`,
     `MIME-Version: 1.0`,
@@ -69,6 +73,8 @@ export const createRawEmail = (emailData) => {
     `Message-ID: <${Date.now()}.${Math.random().toString(36).substring(2)}@${accountInfo.email.split("@")[1]}>`,
     `X-Mailer: Electron Mail Client`,
   ];
+
+  console.log("생성된 이메일 헤더", headers);
 
   // CC가 있는 경우 추가
   if (cc && cc.length > 0) {

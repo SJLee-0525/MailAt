@@ -31,6 +31,13 @@ class SmtpService {
         password: accountInfo.password ? "********" : "missing",
       });
 
+      console.log("생성된 이메일 데이터:", {
+      accountId: emailData.accountId,
+      to: emailData.to,
+      cc: emailData.cc,
+      title: emailData.title,
+    });
+
       // 계정 정보 필수 필드 확인
       if (!accountInfo.smtpHost || !accountInfo.smtpPort) {
         throw new Error("SMTP 서버 정보가 없습니다");
