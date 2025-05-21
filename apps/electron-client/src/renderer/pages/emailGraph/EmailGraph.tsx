@@ -23,6 +23,8 @@ import {
   useCreateGraphNode,
 } from "@hooks/useGraphHook";
 
+import GraphSpinner from "@pages/emailGraph/components/GraphSpinner";
+
 import PersonIcon from "@assets/icons/PersonIcon";
 import CategoryIcon from "@assets/icons/CategoryIcon";
 import FolderIcon from "@assets/icons/FolderIcon";
@@ -69,7 +71,7 @@ const INITIAL_ZOOM_LEVEL = 6.5;
 const NODE_DETAIL_ZOOM_LEVEL = 10;
 // const NEW_GRAPH_APPEAR_ZOOM_LEVEL = INITIAL_ZOOM_LEVEL / 2.5; // 새 그래프가 나타날 때 초기 줌 레벨
 const ZOOM_DURATION = 500;
-const FADE_DURATION = 800;
+const FADE_DURATION = 1000;
 
 // "me" 노드 관련 링크 거리 상수
 const ME_NODE_ID = 0;
@@ -106,7 +108,10 @@ const EmailGraph = memo(
     } | null>(null);
 
     const [renameNode, setRenameNode] = useState(false);
-    const [renameData, setRenameData] = useState<string | null>(null);
+    const [renameData, setRenameData] = useState<{
+      C_ID: number;
+      C_type: number;
+    } | null>(null);
 
     const [createNode, setCreateNode] = useState(false);
 
@@ -646,7 +651,8 @@ const EmailGraph = memo(
       if (!renameData) return;
 
       const payload = {
-        before_name: renameData,
+        C_ID: renameData.C_ID,
+        C_type: renameData.C_type,
         after_name,
       };
 
@@ -845,6 +851,11 @@ const EmailGraph = memo(
             cooldownTicks={300}
           />
         )}
+        {graphLoading && (
+          <div className="flex w-full h-full items-center justify-center">
+            <GraphSpinner theme={currentTheme} size={40} />
+          </div>
+        )}
         {createNode && (
           <div className="absolute top-0 left-0 w-full h-full z-10">
             <form
@@ -963,7 +974,10 @@ const EmailGraph = memo(
               }
 
               setRenameNode(true);
-              setRenameData(ctxMenu.node?.name);
+              setRenameData({
+                C_ID: ctxMenu.node?.C_ID,
+                C_type: ctxMenu.node?.C_type,
+              });
             }}
             onGoBack={handleGoBackFromMenu}
             onDelete={() =>

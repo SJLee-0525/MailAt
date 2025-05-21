@@ -183,3 +183,19 @@
     transform: translateX(-3px) translateY(3px) rotate(8deg);
   }
 }
+
+@keyframes dot-bounce-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-60%);
+  }
+}
+
+.dot-bounce {
+  display: inline-block;
+  border-radius: 9999px; /* tailwind의 rounded-full */
+  animation: dot-bounce-y 1s ease-in-out infinite;
+}

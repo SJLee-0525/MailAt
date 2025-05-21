@@ -8,10 +8,17 @@ import GraphInboxContents from "@pages/emailGraph/components/GraphInboxContents"
 import IconButton from "@components/common/button/IconButton";
 import CloseIcon from "@assets/icons/CloseIcon";
 
+import Chat from "@components/chat/Chat";
+
 const GraphInbox = () => {
   const { user, authUsers } = useAuthenticateStore();
-  const { graphInboxIsClosing, setGraphInboxIsOpen, setSelectedMail } =
-    useUserProgressStore();
+  const {
+    graphInboxIsClosing,
+    selectedMail,
+    chattingIsOpen,
+    setGraphInboxIsOpen,
+    setSelectedMail,
+  } = useUserProgressStore();
 
   if (!user || authUsers.length === 0) return null;
 
@@ -38,6 +45,8 @@ const GraphInbox = () => {
           <GraphInboxContents />
         </div>
       </div>
+
+      {chattingIsOpen && <Chat selectedMail={selectedMail} />}
     </div>
   );
 };

@@ -147,11 +147,13 @@ export const deleteGraphNode = async ({
 
 // 노드 이름 변경
 export const renameGraphNode = async ({
-  before_name,
+  C_ID,
+  C_type,
   after_name,
   user, // Add user as a parameter
 }: {
-  before_name: string; // 노드 이전 이름
+  C_ID: number; // 노드 ID
+  C_type: number; // 노드 타입
   after_name: string; // 노드 새 이름
   user: any; // Define a more specific type
 }): Promise<GraphIpcResponse> => {
@@ -164,7 +166,8 @@ export const renameGraphNode = async ({
   // {"before_name": "노드 이전 이름", "after_name": "노드 새 이름"}
   try {
     const response = await window.electronAPI.graph.renameNodePy({
-      before_name,
+      C_ID,
+      C_type,
       after_name,
     });
     if (response.status === "success") {
