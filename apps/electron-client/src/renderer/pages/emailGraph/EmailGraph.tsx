@@ -17,7 +17,11 @@ import useUserProgressStore from "@stores/userProgressStore";
 import useAuthenticateStore from "@stores/authenticateStore";
 import useModalStore from "@stores/modalStore";
 
-import { useDeleteGraphNode, useRenameGraphNode } from "@hooks/useGraphHook";
+import {
+  useDeleteGraphNode,
+  useRenameGraphNode,
+  useCreateGraphNode,
+} from "@hooks/useGraphHook";
 
 import PersonIcon from "@assets/icons/PersonIcon";
 import CategoryIcon from "@assets/icons/CategoryIcon";
@@ -91,6 +95,7 @@ const EmailGraph = memo(
 
     const { mutateAsync: deleteGraphNode } = useDeleteGraphNode();
     const { mutateAsync: renameGraphNode } = useRenameGraphNode();
+    const { mutateAsync: createGraphNode } = useCreateGraphNode();
 
     const [mergeInputIsOpen, setMergeInputIsOpen] = useState(false);
     const [mergeData, setMergeData] = useState<{
@@ -102,6 +107,8 @@ const EmailGraph = memo(
 
     const [renameNode, setRenameNode] = useState(false);
     const [renameData, setRenameData] = useState<string | null>(null);
+
+    const [createNode, setCreateNode] = useState(false);
 
     const iconImageCache = useRef<{ [key: string]: HTMLImageElement }>({});
 
@@ -489,7 +496,7 @@ const EmailGraph = memo(
         setCtxMenu({
           visible: true,
           x: Math.min(e.offsetX, window.innerWidth - 200),
-          y: Math.min(e.offsetY, window.innerHeight - 120),
+          y: Math.min(e.offsetY, window.innerHeight - 200),
           node,
         });
       },
@@ -550,6 +557,45 @@ const EmailGraph = memo(
       [getRadius, onMerge, graph.nodes]
     );
 
+    // 노드 생성 핸들러
+    async function handleCreateNode(event: React.FormEvent<HTMLFormElement>) {
+      event.preventDefault();
+
+      const fd = new FormData(event.currentTarget);
+      const C_name = Object.fromEntries(fd.entries()).categoryName as string;
+
+      if (C_name.length < 1) {
+        openAlertModal({
+          title: "노드 생성 실패",
+          content: "노드 이름을 입력해주세요.",
+        });
+        return;
+      }
+
+      setLoading(true);
+      setLoadingMessage("노드 생성 중입니다.");
+
+      const response = await createGraphNode({ C_name });
+
+      if (response.status !== "success") {
+        setLoading(false);
+        setLoadingMessage("노드 생성 실패");
+        setCloseLoadingMessage();
+        openAlertModal({
+          title: "노드 생성 실패",
+          content: "노드 생성에 실패했습니다.",
+        });
+        return;
+      }
+
+      setLoading(false);
+      setLoadingMessage("노드 생성 완료");
+      setCloseLoadingMessage();
+
+      setCreateNode(false);
+    }
+
+    // 노드 병합
     async function handleMergeInputClose(
       event: React.FormEvent<HTMLFormElement>
     ) {
@@ -799,10 +845,45 @@ const EmailGraph = memo(
             cooldownTicks={300}
           />
         )}
+        {createNode && (
+          <div className="absolute top-0 left-0 w-full h-full z-10">
+            <form
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white min-w-80 p-4 rounded-lg shadow-lg z-20"
+              onSubmit={handleCreateNode}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg text-text font-pre-bold">
+                  카테고리 생성
+                </h2>
+                <IconButton
+                  onClick={() => {
+                    setCreateNode(false);
+                  }}
+                  icon={<CloseIcon width={20} height={20} />}
+                  className="p-2 bg-theme hover:bg-warning"
+                />
+              </div>
+              <input
+                type="text"
+                name="categoryName"
+                placeholder="생성할 카테고리 이름을 입력하세요"
+                className="bg-header text-text font-pre-regular rounded-lg p-2 w-full mb-4"
+              />
+              <div className="flex justify-end items-center w-full h-fit">
+                <button
+                  type="submit"
+                  className="bg-theme text-[#fff] px-4 py-1.5 rounded-lg"
+                >
+                  생성
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
         {mergeInputIsOpen && (
           <div className="absolute top-0 left-0 w-full h-full z-10">
             <form
-              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 rounded-lg shadow-lg z-20"
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white min-w-80 p-4 rounded-lg shadow-lg z-20"
               onSubmit={handleMergeInputClose}
             >
               <div className="flex items-center justify-between mb-4">
@@ -836,7 +917,7 @@ const EmailGraph = memo(
         {renameNode && (
           <div className="absolute top-0 left-0 w-full h-full z-10">
             <form
-              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 rounded-lg shadow-lg z-20"
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white min-w-80 p-4 rounded-lg shadow-lg z-20"
               onSubmit={handleRenameInputClose}
             >
               <div className="flex items-center justify-between mb-4">
@@ -867,10 +948,14 @@ const EmailGraph = memo(
             </form>
           </div>
         )}
+
         {ctxMenu.visible && (
           <EmailGraphRightClick
             ctxMenu={ctxMenu}
             setCtxMenu={setCtxMenu}
+            setCreate={() => {
+              setCreateNode(true);
+            }}
             setRename={() => {
               if (!ctxMenu.node) {
                 setCtxMenu({ ...ctxMenu, visible: false });

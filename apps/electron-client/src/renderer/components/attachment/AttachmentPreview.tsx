@@ -1,8 +1,10 @@
-// src/components/attachment/AttachmentPreview.tsx
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+
 import { X, FileX } from "lucide-react";
+
 import * as mammoth from "mammoth"; // mammoth 라이브러리 import
-import { useAttachmentPreview } from "../../hooks/useAttachments";
+
+import { useAttachmentPreview } from "@hooks/useAttachments";
 
 interface AttachmentPreviewProps {
   attachmentId: number;

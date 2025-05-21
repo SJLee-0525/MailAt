@@ -1,15 +1,19 @@
-// src/components/attachment/FileDetail.tsx 수정
-import React, { useState } from "react";
+import { useState } from "react";
+
 import { Eye, Download, Info, X } from "lucide-react";
-import type { Attachment } from "../../types/attachmentTypes";
+
+import type { Attachment } from "@/types/attachmentTypes";
+
+import { useDownloadAttachment } from "@hooks/useAttachments";
+
 import {
   formatFileSize,
   getFileTypeLabel,
   getFileType,
-} from "../../utils/attachmentUtils";
-import FileIconRenderer from "./FileIconRenderer";
-import { useDownloadAttachment } from "../../hooks/useAttachments";
-import AttachmentPreview from "./AttachmentPreview";
+} from "@utils/attachmentUtils";
+
+import FileIconRenderer from "@components/attachment/FileIconRenderer";
+import AttachmentPreview from "@components/attachment/AttachmentPreview";
 
 interface FileDetailProps {
   file: Attachment;

@@ -8,7 +8,6 @@ import {
   Clock,
   ChevronDown,
   ChevronRight,
-  Search,
   File,
   Users,
   X,
@@ -623,7 +622,7 @@ const AttachmentViewer = () => {
           {/* 검색 바 */}
           <div className="p-4">
             <div className="relative w-full">
-              <div className="flex items-center justify-between w-full h-12 px-4 bg-white text-text backdrop-blur-md bordershadow-sm rounded-full">
+              <div className="flex items-center justify-between w-full h-13 px-4 bg-white text-text backdrop-blur-md bordershadow-sm rounded-full">
                 <input
                   type="text"
                   placeholder="파일명, 발신자, 이메일 내용 검색..."
@@ -646,6 +645,7 @@ const AttachmentViewer = () => {
                       width={20}
                       height={20}
                       className="transition-all duration-300"
+                      strokeColor="white"
                     />
                   </button>
                 </div>
