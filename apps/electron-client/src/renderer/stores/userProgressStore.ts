@@ -10,6 +10,8 @@ interface UserProgressStore {
   calendarIsClosing: boolean;
   inboxIsOpen: boolean;
   inboxIsClosing: boolean;
+  attachmentViewerIsOpen: boolean;
+  attachmentViewerIsClosing: boolean; // 닫기 애니메이션 상태 추가
   selectedMail: { messageId: number; fromEmail: string } | null;
   selectedMailIsClosing: boolean;
   isReplying: boolean;
@@ -22,6 +24,7 @@ interface UserProgressStore {
   setMailFormIsOpen: (isOpen: boolean) => void;
   setInboxIsOpen: (isOpen: boolean) => void;
   setCalendarIsOpen: (isOpen: boolean) => void;
+  setAttachmentViewerIsOpen: (isOpen: boolean) => void;
   setSelectedMail: (
     email: { messageId: number; fromEmail: string } | null
   ) => void;
@@ -39,6 +42,8 @@ const useUserProgressStore = create<UserProgressStore>((set) => ({
   inboxIsClosing: false,
   calendarIsOpen: false,
   calendarIsClosing: false,
+  attachmentViewerIsOpen: false,
+  attachmentViewerIsClosing: false, // 닫기 애니메이션 상태 추가
   selectedMail: null,
   selectedMailIsClosing: false,
   isReplying: false,
@@ -82,6 +87,17 @@ const useUserProgressStore = create<UserProgressStore>((set) => ({
 
       setTimeout(() => {
         set({ calendarIsOpen: false, calendarIsClosing: false });
+      }, 300);
+    }
+  },
+  setAttachmentViewerIsOpen: (isOpen) => {
+    if (isOpen) {
+      set({ attachmentViewerIsOpen: isOpen });
+    } else {
+      set({ attachmentViewerIsClosing: true });
+
+      setTimeout(() => {
+        set({ attachmentViewerIsOpen: false, attachmentViewerIsClosing: false });
       }, 300);
     }
   },

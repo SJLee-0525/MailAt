@@ -9,9 +9,11 @@ import {
   Search,
   File,
   Users,
+  X,
 } from "lucide-react";
 import { ContentSearchResult } from "../../apis/attachmentApi";
 import "./AttachmentViewer.css";
+import useUserProgressStore from "@stores/userProgressStore";
 
 // 타입 및 유틸리티 함수 가져오기
 import type {
@@ -41,10 +43,12 @@ import FileIconRenderer from "./FileIconRenderer";
 
 type SimplifiedFilterMode = "recent" | "type" | "contact";
 
-const AttachmentViewer: React.FC = () => {
+const AttachmentViewer = () => {
+  const { attachmentViewerIsClosing, setAttachmentViewerIsOpen } = useUserProgressStore();
+  
   // 사용자 정보 가져오기
   const { selectedUser } = useAuthenticateStore();
-  const accountId = selectedUser?.accountId || 1; // 선택된 사용자의 계정 ID 사용
+  const accountId = selectedUser?.accountId || 1;
 
   // React Query로 모든 첨부파일 가져오기
   const {
@@ -487,145 +491,170 @@ const AttachmentViewer: React.FC = () => {
   }
 
   return (
-    <div className="attachment-container">
-      {/* 사이드바 */}
-      <div className="sidebar">
-        <h1 className="sidebar-title">
-          <Paperclip /> 첨부파일
+    <div
+      className={`flex flex-col w-full min-w-96 h-full bg-header transition-all duration-300 ease-in-out pointer-events-auto`}
+    >
+      {/* 헤더와 닫기 버튼 */}
+      <div className="flex justify-between items-center p-4 border-b border-light1">
+        <h1 className="flex items-center gap-2 text-lg font-pre-bold">
+          <Paperclip size={20} /> 첨부파일
         </h1>
-
-        <div className="sidebar-menu">
-          <div
-            className={`sidebar-menu-item ${
-              filterMode === "recent" ? "active" : ""
-            }`}
-            onClick={() => {
-              setFilterMode("recent");
-              setSelectedContact(null);
-            }}
-          >
-            <Clock /> <span>최근 파일</span>
+        <button 
+          onClick={() => setAttachmentViewerIsOpen(false)}
+          className="p-2 rounded-full hover:bg-light transition-colors"
+        >
+          <X size={20} />
+        </button>
+      </div>
+      
+      <div className="flex h-full overflow-hidden">
+        {/* 사이드바 */}
+        <div className="w-64 h-full border-r border-light1 p-4 overflow-y-auto">
+          <div className="sidebar-menu">
+            <div
+              className={`sidebar-menu-item ${
+                filterMode === "recent" ? "active" : ""
+              }`}
+              onClick={() => {
+                setFilterMode("recent");
+                setSelectedContact(null);
+              }}
+            >
+              <Clock /> <span>최근 파일</span>
+            </div>
+            <div
+              className={`sidebar-menu-item ${
+                filterMode === "type" ? "active" : ""
+              }`}
+              onClick={() => {
+                setFilterMode("type");
+                setSelectedContact(null);
+              }}
+            >
+              <FileText /> <span>파일 유형별</span>
+            </div>
           </div>
-          <div
-            className={`sidebar-menu-item ${
-              filterMode === "type" ? "active" : ""
-            }`}
-            onClick={() => {
-              setFilterMode("type");
-              setSelectedContact(null);
-            }}
-          >
-            <FileText /> <span>파일 유형별</span>
+
+          <div className="sidebar-section">
+            <div className="sidebar-section-title">
+              <div>
+                <Users
+                  size={16}
+                  style={{ marginRight: "5px", display: "inline" }}
+                />
+                연락처
+              </div>
+              {selectedContact && (
+                <button
+                  onClick={() => {
+                    setSelectedContact(null);
+                    setFilterMode("recent");
+                  }}
+                >
+                  초기화
+                </button>
+              )}
+            </div>
+            <div>
+              {contactGroups.map((contact, index) => (
+                <div
+                  key={index}
+                  className={`contact-item ${
+                    selectedContact === contact.contactEmail ? "active" : ""
+                  }`}
+                  onClick={() => handleContactSelect(contact.contactEmail)}
+                >
+                  <div className="contact-avatar">
+                    {contact.contactName.charAt(0)}
+                  </div>
+                  <span>{contact.contactName}</span>
+                  <span className="file-count">{contact.attachments.length}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="sidebar-section">
+            <div className="sidebar-section-title">
+              <div>
+                <FileText
+                  size={16}
+                  style={{ marginRight: "5px", display: "inline" }}
+                />
+                파일 유형
+              </div>
+            </div>
+            <div>
+              {fileTypeGroups.map((fileType, index) => (
+                <div
+                  key={index}
+                  className="contact-item"
+                  onClick={() => {
+                    setFilterMode("type");
+                    setSelectedContact(null);
+                    toggleGroup(`type-${fileType.type}`);
+                  }}
+                >
+                  <div className="file-type-icon">
+                    <FileIconRenderer mimeType={`${fileType.type}/x`} />
+                  </div>
+                  <span>{fileType.label}</span>
+                  <span className="file-count">
+                    {fileType.attachments.length}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="sidebar-section">
-          <div className="sidebar-section-title">
-            <div>
-              <Users
-                size={16}
-                style={{ marginRight: "5px", display: "inline" }}
-              />
-              연락처
+        {/* 메인 콘텐츠 */}
+        <div className="flex-1 h-full overflow-y-auto">
+          {/* 검색 바 */}
+          <div className="p-4">
+            <div className="relative w-full">
+              <div className="flex items-center justify-between w-full h-12 px-4 bg-white/60 backdrop-blur-md border border-light2 shadow-sm rounded-full">
+
+                <input
+                  type="text"
+                  placeholder="파일명, 발신자, 이메일 내용 검색..."
+                  className="font-pre-regular w-full h-full px-4 py-auto border-none rounded-full focus:outline-none bg-transparent"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                />
+                <div className="flex items-center">
+                  {contentSearchMutation.isPending &&
+                    searchTerm.trim().length >= 2 && (
+                      <div className="mr-2">
+                        <div className="spinner-small"></div>
+                      </div>
+                    )}
+                  <button
+                    type="button"
+                    className="p-2 rounded-full bg-theme text-white hover:bg-theme-dark transition-all duration-300"
+                  >
+                    <Search size={20} />
+                  </button>
+                </div>
+              </div>
             </div>
-            {selectedContact && (
-              <button
-                onClick={() => {
-                  setSelectedContact(null);
-                  setFilterMode("recent");
-                }}
-              >
-                초기화
-              </button>
+          </div>
+
+          {/* 파일 목록 */}
+          <div className="p-4">
+            {isLoading ? (
+              <div className="flex justify-center items-center h-64">
+                <div>로딩 중...</div>
+              </div>
+            ) : error ? (
+              <div className="flex justify-center items-center h-64 text-error">
+                오류가 발생했습니다: {(error as Error).message}
+              </div>
+            ) : (
+              renderContent()
             )}
           </div>
-          <div>
-            {contactGroups.map((contact, index) => (
-              <div
-                key={index}
-                className={`contact-item ${
-                  selectedContact === contact.contactEmail ? "active" : ""
-                }`}
-                onClick={() => handleContactSelect(contact.contactEmail)}
-              >
-                <div className="contact-avatar">
-                  {contact.contactName.charAt(0)}
-                </div>
-                <span>{contact.contactName}</span>
-                <span className="file-count">{contact.attachments.length}</span>
-              </div>
-            ))}
-          </div>
         </div>
-
-        <div className="sidebar-section">
-          <div className="sidebar-section-title">
-            <div>
-              <FileText
-                size={16}
-                style={{ marginRight: "5px", display: "inline" }}
-              />
-              파일 유형
-            </div>
-          </div>
-          <div>
-            {fileTypeGroups.map((fileType, index) => (
-              <div
-                key={index}
-                className="contact-item"
-                onClick={() => {
-                  setFilterMode("type");
-                  setSelectedContact(null);
-                  toggleGroup(`type-${fileType.type}`);
-                }}
-              >
-                <div className="file-type-icon">
-                  <FileIconRenderer mimeType={`${fileType.type}/x`} />
-                </div>
-                <span>{fileType.label}</span>
-                <span className="file-count">
-                  {fileType.attachments.length}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* 메인 콘텐츠 */}
-      <div className="main-content">
-        {/* 상단 검색바 */}
-        <div className="toolbar flex justify-center">
-          <div className="relative w-full md:w-4/5 lg:w-3/4 xl:w-2/3 max-w-2xl px-3">
-            <div className="flex items-center justify-between px-1.5 w-full h-12 bg-light1 text-gray-700 rounded-full">
-              <input
-                type="text"
-                placeholder="파일명, 발신자, 이메일 내용 검색..."
-                className="font-pre-regular w-full h-full px-4 py-auto border-none rounded-full focus:outline-none bg-transparent"
-                value={searchTerm}
-                onChange={handleSearchChange}
-              />
-              <div className="flex items-center">
-                {/* 검색 중 로딩 표시 */}
-                {contentSearchMutation.isPending &&
-                  searchTerm.trim().length >= 2 && (
-                    <div className="mr-2">
-                      <div className="spinner-small"></div>
-                    </div>
-                  )}
-                <button
-                  type="button"
-                  className="p-2 rounded-full bg-theme text-white hover:bg-theme-dark transition-all duration-300"
-                >
-                  <Search size={20} />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 파일 목록 */}
-        {renderContent()}
       </div>
 
       {/* 파일 상세 정보 패널 - 별도 위치에 배치 */}
