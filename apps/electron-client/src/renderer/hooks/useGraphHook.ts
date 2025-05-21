@@ -128,6 +128,7 @@ export const useDeleteGraphNode = () => {
   return mutation;
 };
 
+// 노드 이름 수정
 export const useRenameGraphNode = () => {
   const queryClient = useQueryClient();
   const { user } = useAuthenticateStore();

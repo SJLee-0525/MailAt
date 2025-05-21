@@ -12,6 +12,7 @@ interface CtxMenuState {
 interface EmailGraphRightClickProps {
   ctxMenu: CtxMenuState;
   setCtxMenu: React.Dispatch<React.SetStateAction<CtxMenuState>>;
+  setRename: () => void; // New prop for renaming
   onGoBack?: () => void; // New prop for "Go Back" action
   onDelete?: () => void; // New prop for "Delete" action
 }
@@ -19,6 +20,7 @@ interface EmailGraphRightClickProps {
 const EmailGraphRightClick = ({
   ctxMenu,
   setCtxMenu,
+  setRename,
   onGoBack,
   onDelete,
 }: EmailGraphRightClickProps) => {
@@ -53,13 +55,11 @@ const EmailGraphRightClick = ({
         <li
           className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
           onClick={() => {
-            console.log("전체 조회 :", ctxMenu.node);
-            // This might be a different action, like fetching all details for the current node's context
-            // For now, it just closes the menu.
+            setRename();
             setCtxMenu((m) => ({ ...m, visible: false }));
           }}
         >
-          전체 조회
+          이름 변경
         </li>
         {onGoBack && ( // Only show "뒤로가기" if onGoBack is provided
           <li

@@ -13,11 +13,11 @@ import ForceGraph2D, { ForceGraphMethods } from "react-force-graph-2d";
 
 import { buildGraph } from "@utils/getBuildGraph";
 
-// import useUserProgressStore from "@stores/userProgressStore";
+import useUserProgressStore from "@stores/userProgressStore";
 import useAuthenticateStore from "@stores/authenticateStore";
 import useModalStore from "@stores/modalStore";
 
-import { useDeleteGraphNode } from "@hooks/useGraphHook";
+import { useDeleteGraphNode, useRenameGraphNode } from "@hooks/useGraphHook";
 
 import PersonIcon from "@assets/icons/PersonIcon";
 import CategoryIcon from "@assets/icons/CategoryIcon";
@@ -29,6 +29,7 @@ import CloseIcon from "@assets/icons/CloseIcon";
 import EmailGraphRightClick from "@pages/emailGraph/components/EmailGraphRightClick";
 
 import { RawNode, SelectedGraph, GraphNode } from "@/types/graphType";
+import { set } from "date-fns";
 
 interface Props {
   rawNodes: RawNode[];
@@ -63,7 +64,7 @@ interface CtxMenuState {
 // 줌 및 애니메이션 관련 상수 정의
 const INITIAL_ZOOM_LEVEL = 6.5;
 const NODE_DETAIL_ZOOM_LEVEL = 10;
-const NEW_GRAPH_APPEAR_ZOOM_LEVEL = INITIAL_ZOOM_LEVEL / 2.5; // 새 그래프가 나타날 때 초기 줌 레벨
+// const NEW_GRAPH_APPEAR_ZOOM_LEVEL = INITIAL_ZOOM_LEVEL / 2.5; // 새 그래프가 나타날 때 초기 줌 레벨
 const ZOOM_DURATION = 500;
 const FADE_DURATION = 800;
 
@@ -84,11 +85,13 @@ const EmailGraph = memo(
     onMerge,
     onNavigateBack,
   }: Props) => {
-    // const { setLoading, setLoadingMessage } = useUserProgressStore();
+    const { setLoading, setLoadingMessage, setCloseLoadingMessage } =
+      useUserProgressStore();
     const { currentTheme } = useAuthenticateStore();
     const { openAlertModal } = useModalStore();
 
     const { mutateAsync: deleteGraphNode } = useDeleteGraphNode();
+    const { mutateAsync: renameGraphNode } = useRenameGraphNode();
 
     const [mergeInputIsOpen, setMergeInputIsOpen] = useState(false);
     const [mergeData, setMergeData] = useState<{
@@ -97,6 +100,9 @@ const EmailGraph = memo(
       C_ID2: number;
       C_type2: number;
     } | null>(null);
+
+    const [renameNode, setRenameNode] = useState(false);
+    const [renameData, setRenameData] = useState<string | null>(null);
 
     const iconImageCache = useRef<{ [key: string]: HTMLImageElement }>({});
 
@@ -545,7 +551,9 @@ const EmailGraph = memo(
       [getRadius, onMerge, graph.nodes]
     );
 
-    function handleMergeInputClose(event: React.FormEvent<HTMLFormElement>) {
+    async function handleMergeInputClose(
+      event: React.FormEvent<HTMLFormElement>
+    ) {
       event.preventDefault();
 
       const fd = new FormData(event.currentTarget);
@@ -562,7 +570,7 @@ const EmailGraph = memo(
       if (!mergeData) return;
       const { C_ID1, C_type1, C_ID2, C_type2 } = mergeData;
 
-      onMerge({
+      await onMerge({
         C_ID1,
         C_type1,
         C_ID2,
@@ -572,6 +580,53 @@ const EmailGraph = memo(
 
       setMergeInputIsOpen(false);
       setMergeData(null);
+    }
+
+    async function handleRenameInputClose(
+      event: React.FormEvent<HTMLFormElement>
+    ) {
+      event.preventDefault();
+
+      const fd = new FormData(event.currentTarget);
+      const after_name = Object.fromEntries(fd.entries()).afterName as string;
+
+      if (after_name.length < 1) {
+        openAlertModal({
+          title: "이름 변경 실패",
+          content: "변경할 이름을 입력해주세요.",
+        });
+        return;
+      }
+
+      if (!renameData) return;
+
+      const payload = {
+        before_name: renameData,
+        after_name,
+      };
+
+      setLoading(true);
+      setLoadingMessage("이름 변경 중입니다.");
+
+      const response = await renameGraphNode(payload);
+      console.log("renameGraphNode response", response);
+      if (response.status !== "success") {
+        setLoading(false);
+        setLoadingMessage("이름 변경 실패");
+        setCloseLoadingMessage();
+        openAlertModal({
+          title: "이름 변경 실패",
+          content: "노드 이름 변경에 실패했습니다.",
+        });
+        return;
+      }
+
+      setLoading(false);
+      setLoadingMessage("이름 변경 완료");
+      setCloseLoadingMessage();
+
+      setRenameNode(false);
+      setRenameData(null);
     }
 
     // 링크 캔버스 렌더링
@@ -745,19 +800,6 @@ const EmailGraph = memo(
             cooldownTicks={300}
           />
         )}
-        {ctxMenu.visible && (
-          <EmailGraphRightClick
-            ctxMenu={ctxMenu}
-            setCtxMenu={setCtxMenu}
-            onGoBack={handleGoBackFromMenu}
-            onDelete={() =>
-              handleDeleteNode({
-                C_ID: ctxMenu.node?.id ?? 0,
-                C_type: ctxMenu.node?.C_type ?? 0,
-              })
-            }
-          />
-        )}
         {mergeInputIsOpen && (
           <div className="absolute top-0 left-0 w-full h-full z-10">
             <form
@@ -784,7 +826,6 @@ const EmailGraph = memo(
               <div className="flex justify-end items-center w-full h-fit">
                 <button
                   type="submit"
-                  onClick={() => setMergeInputIsOpen(false)}
                   className="bg-theme text-[#fff] px-4 py-1.5 rounded-lg"
                 >
                   병합
@@ -792,6 +833,62 @@ const EmailGraph = memo(
               </div>
             </form>
           </div>
+        )}
+        {renameNode && (
+          <div className="absolute top-0 left-0 w-full h-full z-10">
+            <form
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 rounded-lg shadow-lg z-20"
+              onSubmit={handleRenameInputClose}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg text-text font-pre-bold">이름 변경</h2>
+                <IconButton
+                  onClick={() => {
+                    setRenameNode(false);
+                    setRenameData(null);
+                  }}
+                  icon={<CloseIcon width={20} height={20} />}
+                  className="p-2 bg-theme hover:bg-warning"
+                />
+              </div>
+              <input
+                type="text"
+                name="afterName"
+                placeholder="변경할 이름을 입력하세요"
+                className="bg-header text-text font-pre-regular rounded-lg p-2 w-full mb-4"
+              />
+              <div className="flex justify-end items-center w-full h-fit">
+                <button
+                  type="submit"
+                  className="bg-theme text-[#fff] px-4 py-1.5 rounded-lg"
+                >
+                  변경
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+        {ctxMenu.visible && (
+          <EmailGraphRightClick
+            ctxMenu={ctxMenu}
+            setCtxMenu={setCtxMenu}
+            setRename={() => {
+              if (!ctxMenu.node) {
+                setCtxMenu({ ...ctxMenu, visible: false });
+                return;
+              }
+
+              setRenameNode(true);
+              setRenameData(ctxMenu.node?.name);
+            }}
+            onGoBack={handleGoBackFromMenu}
+            onDelete={() =>
+              handleDeleteNode({
+                C_ID: ctxMenu.node?.id ?? 0,
+                C_type: ctxMenu.node?.C_type ?? 0,
+              })
+            }
+          />
         )}
       </div>
     );
