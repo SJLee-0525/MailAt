@@ -11,11 +11,12 @@ import { useGetEmailFolders } from "@hooks/useGetConversations";
 import HoverZone from "@layouts/HoverZone";
 import SideNav from "@components/common/nav/SideNav";
 import Calendar from "@components/calendar/Calendar";
+import AttachmentViewer from "@/components/attachment/AttachmentViewer";
 import Inbox from "@components/inbox/Inbox";
 import DetailEmail from "@components/detailEmail/DetailEmail";
 
 const PopUpLayout = () => {
-  const { inboxIsOpen, calendarIsOpen, selectedMail, isReplying } =
+  const { inboxIsOpen, calendarIsOpen, selectedMail, isReplying, attachmentViewerIsOpen } =
     useUserProgressStore();
 
   if (calendarIsOpen) {
@@ -25,6 +26,17 @@ const PopUpLayout = () => {
       </div>
     );
   }
+
+  if (attachmentViewerIsOpen) {
+  return (
+    <div className="absolute top-0 right-0 w-full h-full pointer-events-none z-50">
+      <div className="w-full h-full pointer-events-auto">
+        <AttachmentViewer />
+      </div>
+    </div>
+  );
+}
+
 
   return (
     <div className="absolute top-0 right-0 flex flex-row-reverse w-full h-full pointer-events-none">
