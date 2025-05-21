@@ -1,10 +1,5 @@
 @import url("../../styles/animations.css");
 
-:root {
-  --radius-soft: 0.75rem;
-}
-
-
 /* AttachmentViewer.css */
 .attachment-container {
   display: flex;
@@ -46,6 +41,7 @@
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   font-family: var(--font-pre-medium, "Pretendard-Medium");
+  color: var(--color-text, #505050);
   border-radius: 0.375rem;
   cursor: pointer;
   margin-bottom: 0.25rem;
@@ -60,7 +56,7 @@
 
 .sidebar-menu-item.active {
   background-color: var(--color-theme, #022d48);
-  color: var(--color-white, #ffffff);
+  color: #ffffff;
 }
 
 .sidebar-menu-item:hover:not(.active) {
@@ -74,7 +70,7 @@
 .sidebar-section-title {
   font-size: 0.875rem;
   font-family: var(--font-pre-semi-bold, "Pretendard-SemiBold");
-  color: var(--color-icon, #7d7983);
+  color: var(--color-text, #7d7983);
   margin-bottom: 0.5rem;
   display: flex;
   align-items: center;
@@ -98,11 +94,12 @@
   cursor: pointer;
   margin-bottom: 0.125rem;
   transition: all 0.2s;
+  color: var(--color-text, #505050);
 }
 
 .contact-item.active {
   background-color: var(--color-theme, #022d48);
-  color: var(--color-white, #ffffff);
+  color: #ffffff;
 }
 
 .contact-item:hover:not(.active) {
@@ -114,7 +111,7 @@
   height: 1.5rem;
   border-radius: 9999px;
   background-color: var(--color-light2, #dfe0e2);
-  color: var(--color-theme, #022d48);
+  color: var(--color-title, #022d48);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -123,8 +120,8 @@
 }
 
 .contact-item.active .contact-avatar {
-  background-color: var(--color-white, #ffffff);
-  color: var(--color-theme, #022d48);
+  background-color: var(--color-light2, #ffffff);
+  color: var(--color-title, #022d48);
 }
 
 .file-type-icon {
@@ -168,7 +165,7 @@
 .search-input {
   width: 100%;
   border-radius: 9999px; /* 완전한 원형 */
-  border: 1px solid var(--color-light2, #dfe0e2);
+  border: 1px solid var(--color-light, #dfe0e2);
   padding: 0.5rem 0.75rem 0.5rem 2.5rem;
   font-size: 0.875rem;
   font-family: var(--font-pre-regular, "Pretendard-Regular");
@@ -186,7 +183,7 @@
   left: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--color-icon, #7d7983);
+  color: #fff;
   width: 1.25rem;
   height: 1.25rem;
 }
@@ -223,7 +220,8 @@
 }
 
 .current-path span {
-  color: var(--color-theme, #022d48);
+  margin-left: 0.5rem;
+  color: var(--color-title, #022d48);
   font-family: var(--font-pre-medium, "Pretendard-Medium");
 }
 
@@ -321,12 +319,12 @@
 }
 
 .file-card:hover {
-  background-color: var(--color-light1, #edeef7);
+  background-color: var(--color-light, #edeef7);
   border-color: var(--color-light3, #bcc0c3);
 }
 
 .file-card.selected {
-  border: 2px solid var(--color-theme, #022d48);
+  border: 2px solid var(--color-light3, #022d48);
   box-shadow: 0 2px 4px rgba(2, 45, 72, 0.1);
 }
 
@@ -434,7 +432,7 @@
 .detail-title {
   font-size: 1.125rem;
   font-family: var(--font-pre-bold, "Pretendard-Bold");
-  color: var(--color-theme, #022d48);
+  color: var(--color-text, #022d48);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -454,7 +452,7 @@
   height: 28px;
   border-radius: 50%;
   background-color: var(--color-light1, #edeef7);
-  color: var(--color-title, #505050);
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -520,7 +518,7 @@
 
 .detail-file-name {
   font-family: var(--font-pre-bold, "Pretendard-Bold");
-  color: var(--color-title, #505050);
+  color: var(--color-text, #505050);
   word-break: break-word;
   margin-bottom: 1.5rem;
 }
@@ -546,7 +544,7 @@
 
 .detail-info-label {
   font-family: var(--font-pre-medium, "Pretendard-Medium");
-  color: var(--color-title, #505050);
+  color: var(--color-text, #505050);
 }
 
 .detail-info-value {
@@ -581,7 +579,7 @@
 
 .preview-button {
   background-color: var(--color-light1, #edeef7);
-  color: var(--color-theme, #022d48);
+  color: var(--color-text, #505050);
 }
 
 .preview-button:hover {
@@ -590,7 +588,7 @@
 
 .download-button {
   background-color: var(--color-theme, #022d48);
-  color: var(--color-white, #ffffff);
+  color: #fff;
 }
 
 .download-button:hover {

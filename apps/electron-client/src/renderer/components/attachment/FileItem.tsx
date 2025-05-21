@@ -1,8 +1,8 @@
-// src/components/attachment/FileItem.tsx
-import React from "react";
-import type { Attachment } from "../../types/attachmentTypes";
-import { formatFileSize } from "../../utils/attachmentUtils";
-import FileIconRenderer from "./FileIconRenderer";
+import type { Attachment } from "@/types/attachmentTypes";
+
+import { formatFileSize } from "@utils/attachmentUtils";
+
+import FileIconRenderer from "@components/attachment/FileIconRenderer";
 
 interface FileItemProps {
   file: Attachment;

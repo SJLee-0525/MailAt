@@ -65,15 +65,15 @@ const SideNav = () => {
           <>
             <IconButton
               type="button"
-              className={`p-2 transition-all duration-200 hover:bg-accept ${
+              className={`p-2.5 transition-all duration-200 hover:bg-accept ${
                 attachmentViewerIsOpen ? "bg-accept" : ""
               }`}
-              icon={<Paperclip color="#e9e9e9" size={20} />}
+              icon={<Paperclip color="#e9e9e9" size={22} />}
               onClick={handleOpenAttachmentViewer}
             />
             <IconButton
               type="button"
-            className="p-2 transition-all duration-200 hover:bg-accept"
+              className="p-2 transition-all duration-200 hover:bg-accept"
               icon={<CalendarIcon strokeColor="#e9e9e9" />}
               onClick={handleOpenCalendar}
             />
