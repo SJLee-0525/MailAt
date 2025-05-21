@@ -215,7 +215,7 @@ def summarize_email():
             # OpenAI API 호출 (gpt-4o 또는 gpt-4.1 등)
             # server_openai.py의 tool 사용 방식 적용
             response = client.chat.completions.create(
-                model="gpt-4o", # 또는 "gpt-4.1", "gpt-3.5-turbo" 등 사용 가능한 모델
+                model="gpt-4.1", # 또는 "gpt-4.1", "gpt-3.5-turbo" 등 사용 가능한 모델
                 messages=messages,
                 max_tokens=1024, # OpenAI 모델에 적합한 max_tokens
                 temperature=0.0,
