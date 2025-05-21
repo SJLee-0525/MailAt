@@ -16,6 +16,8 @@ import { buildGraph } from "@utils/getBuildGraph";
 
 import useAuthenticateStore from "@stores/authenticateStore";
 
+import { useDeleteGraphNode } from "@hooks/useGraphHook";
+
 import PersonIcon from "@assets/icons/PersonIcon";
 import CategoryIcon from "@assets/icons/CategoryIcon";
 import FolderIcon from "@assets/icons/FolderIcon";
@@ -27,8 +29,8 @@ import { RawNode, GraphNode } from "@/types/graphType";
 // Props 인터페이스
 interface Props {
   rawNodes: RawNode[];
-  onSelect?: (idx: number) => void;
-  onMerge: (srcId: number, tgtId: number) => void;
+  onSelect?: (node: GraphNode) => void; // Changed from (idx: number) to (node: GraphNode)
+  onMerge: (srcName: string, tgtName: string) => void;
   onNavigateBack?: () => void;
 }
 
@@ -57,6 +59,8 @@ const ME_LINK_MAX_DISTANCE_CAP = 45; // "me" 노드와의 최대 거리 (val이 
 const EmailGraph = memo(
   ({ rawNodes, onSelect, onMerge, onNavigateBack }: Props) => {
     const { currentTheme } = useAuthenticateStore();
+
+    const { mutateAsync: deleteGraphNode } = useDeleteGraphNode();
 
     const iconImageCache = useRef<{ [key: string]: HTMLImageElement }>({});
 
@@ -312,6 +316,7 @@ const EmailGraph = memo(
           clearTimeout(clickTimerRef.current);
           clickTimerRef.current = null;
           console.log("더블클릭!", node);
+          // Potentially handle double-click action here if needed
           return;
         }
 
@@ -339,7 +344,7 @@ const EmailGraph = memo(
 
           // 페이드 아웃 후 API 호출
           animateGraphOpacity(0, FADE_DURATION, () => {
-            onSelect?.(node.id);
+            onSelect?.(node); // Changed from onSelect?.(node.id)
           });
 
           console.log("단일클릭! (Zooming in or selecting Me)", node);
@@ -410,6 +415,26 @@ const EmailGraph = memo(
       []
     );
 
+    async function handleDeleteNode({
+      C_ID,
+      C_type,
+    }: {
+      C_ID: number;
+      C_type: number;
+    }) {
+      console.log("Deleting node with ID:", C_ID, "and type:", C_type);
+      try {
+        const response = await deleteGraphNode({ C_ID, C_type });
+        if (response.status === "success") {
+          console.log("Node deleted successfully");
+        } else {
+          console.error("Failed to delete node:", response);
+        }
+      } catch (error) {
+        console.error("Error deleting node:", error);
+      }
+    }
+
     // 노드 드래그 후 병합 판별
     const handleDragEnd = useCallback(
       (d: GraphNode) => {
@@ -431,7 +456,7 @@ const EmailGraph = memo(
           return dist < rDragged + getRadius(n);
         });
         if (tgt) {
-          onMerge(d.id, tgt.id);
+          onMerge(d.name, tgt.name);
         }
         fgRef.current?.d3ReheatSimulation?.();
       },
@@ -614,6 +639,12 @@ const EmailGraph = memo(
             ctxMenu={ctxMenu}
             setCtxMenu={setCtxMenu}
             onGoBack={handleGoBackFromMenu}
+            onDelete={() =>
+              handleDeleteNode({
+                C_ID: ctxMenu.node?.id ?? 0,
+                C_type: ctxMenu.node?.C_type ?? 0,
+              })
+            }
           />
         )}
       </div>
