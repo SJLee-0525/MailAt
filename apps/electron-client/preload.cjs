@@ -135,6 +135,10 @@ try {
         console.log("[PRELOAD] graph.moveMailPy 호출됨", json_obj);
         return ipcRenderer.invoke("graph:moveMailPy", json_obj);
       },
+      searchByKeywordPy: (json_obj) => {
+        console.log("[PRELOAD] graph.searchByKeywordPy 호출됨", json_obj);
+        return ipcRenderer.invoke("graph:searchByKeywordPy", json_obj);
+      },
     },
 
     // 개발용 테스트 API 추가
