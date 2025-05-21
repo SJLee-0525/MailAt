@@ -8,6 +8,8 @@ const __dirname = path.dirname(__filename);
 const pythonScriptsDir = path.join(__dirname, "neo4jPythonModule");
 const pythonExecutable = "python"; // 또는 "python3" 등 Python 실행 파일 경로
 
+console.log("Python Scripts Directory:", pythonScriptsDir); 
+
 /**
  * Python 스크립트 또는 실행 파일을 실행하고 결과를 반환하는 내부 함수
  * @param {string} scriptName 실행할 Python 스크립트 파일 이름 (예: "graph_operations.py") 또는 실행 파일 이름 (예: "graph_operations.exe")
@@ -20,6 +22,10 @@ function runPythonScript(scriptName, operation, args = {}) {
     const scriptPath = path.join(pythonScriptsDir, scriptName);
     const command = pythonExecutable;
     const commandArgs = [scriptPath, operation, JSON.stringify(args)];
+
+    console.log(`[runPythonScript] Script path: ${scriptPath}`);
+    console.log(`[runPythonScript] Command: ${command}`);
+    console.log(`[runPythonScript] Args: ${JSON.stringify(commandArgs)}`);
 
     console.log(`[runPythonScript] Executing: ${command} ${commandArgs.join(" ")}`);
 

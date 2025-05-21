@@ -1084,7 +1084,7 @@ if __name__ == "__main__":
         result = None
 
         if operation == "createNode":
-            create_node_py(args)
+            result = create_node_py(args)
         elif operation == "deleteNode":
             result = delete_node_py(args)
         elif operation == "readNode":
