@@ -12,14 +12,16 @@ interface CtxMenuState {
 interface EmailGraphRightClickProps {
   ctxMenu: CtxMenuState;
   setCtxMenu: React.Dispatch<React.SetStateAction<CtxMenuState>>;
-  setRename?: () => void; // New prop for renaming
-  onGoBack?: () => void; // New prop for "Go Back" action
-  onDelete?: () => void; // New prop for "Delete" action
+  setCreate?: () => void;
+  setRename?: () => void;
+  onGoBack?: () => void;
+  onDelete?: () => void;
 }
 
 const EmailGraphRightClick = ({
   ctxMenu,
   setCtxMenu,
+  setCreate,
   setRename,
   onGoBack,
   onDelete,
@@ -52,15 +54,28 @@ const EmailGraphRightClick = ({
       onContextMenu={(e) => e.preventDefault()} // 메뉴 위에서 또 우클릭 막기
     >
       <ul>
-        <li
-          className="px-4 py-2 hover:bg-light1 cursor-pointer"
-          onClick={() => {
-            setRename?.();
-            setCtxMenu((m) => ({ ...m, visible: false }));
-          }}
-        >
-          이름 변경
-        </li>
+        {setCreate && (
+          <li
+            className="px-4 py-2 hover:bg-light1 cursor-pointer"
+            onClick={() => {
+              setCreate();
+              setCtxMenu((m) => ({ ...m, visible: false }));
+            }}
+          >
+            카테고리 추가
+          </li>
+        )}
+        {setRename && (
+          <li
+            className="px-4 py-2 hover:bg-light1 cursor-pointer"
+            onClick={() => {
+              setRename();
+              setCtxMenu((m) => ({ ...m, visible: false }));
+            }}
+          >
+            이름 변경
+          </li>
+        )}
         {onGoBack && ( // Only show "뒤로가기" if onGoBack is provided
           <li
             className="px-4 py-2 hover:bg-light1  cursor-pointer"

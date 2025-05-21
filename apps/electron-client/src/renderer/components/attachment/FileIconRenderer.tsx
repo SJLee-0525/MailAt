@@ -1,5 +1,3 @@
-// src/components/attachment/FileIconRenderer.tsx
-import React from "react";
 import {
   FileText,
   Image,
@@ -9,7 +7,8 @@ import {
   Archive,
   FileSpreadsheet,
 } from "lucide-react";
-import { getFileIconInfo } from "../../utils/attachmentUtils";
+
+import { getFileIconInfo } from "@utils/attachmentUtils";
 
 interface FileIconProps {
   mimeType: string;

@@ -139,7 +139,8 @@ export const useRenameGraphNode = () => {
     GraphIpcResponse,
     Error,
     {
-      before_name: string;
+      C_ID: number;
+      C_type: number;
       after_name: string;
     }
   >({

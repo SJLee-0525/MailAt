@@ -1,19 +1,26 @@
-// src/components/attachment/AttachmentViewer.tsx
-import React, { useState, useEffect, useRef } from "react";
+import "@components/attachment/AttachmentViewer.css";
+
+import { useState, useEffect, useRef } from "react";
+
 import {
   FileText,
   Paperclip,
   Clock,
   ChevronDown,
   ChevronRight,
-  Search,
   File,
   Users,
   X,
 } from "lucide-react";
-import { ContentSearchResult } from "../../apis/attachmentApi";
-import "./AttachmentViewer.css";
+
+import { ContentSearchResult } from "@apis/attachmentApi";
+
 import useUserProgressStore from "@stores/userProgressStore";
+
+import {
+  useAllAttachments,
+  useSearchAttachmentsByContent,
+} from "@hooks/useAttachments";
 
 // 타입 및 유틸리티 함수 가져오기
 import type {
@@ -21,31 +28,31 @@ import type {
   DateGroup,
   ContactGroup,
   FileTypeGroup,
-} from "../../types/attachmentTypes";
+} from "@/types/attachmentTypes";
+
 import {
   groupByDate,
   groupByContact,
   groupByFileType,
   sortByRecent,
   formatDate,
-} from "../../utils/attachmentUtils";
-import { searchAttachments } from "../../utils/getAttachmentData";
-import {
-  useAllAttachments,
-  useSearchAttachmentsByContent,
-} from "../../hooks/useAttachments";
-import useAuthenticateStore from "@/stores/authenticateStore";
+} from "@utils/attachmentUtils";
+import { searchAttachments } from "@utils/getAttachmentData";
+
+import useAuthenticateStore from "@stores/authenticateStore";
+
+import SearchIcon from "@assets/icons/SearchIcon";
 
 // 컴포넌트 가져오기
-import FileItem from "./FileItem";
-import FileDetail from "./FileDetail";
-import FileIconRenderer from "./FileIconRenderer";
+import FileItem from "@components/attachment/FileItem";
+import FileDetail from "@components/attachment/FileDetail";
+import FileIconRenderer from "@components/attachment/FileIconRenderer";
 
 type SimplifiedFilterMode = "recent" | "type" | "contact";
 
 const AttachmentViewer = () => {
-  const { attachmentViewerIsClosing, setAttachmentViewerIsOpen } = useUserProgressStore();
-  
+  const { setAttachmentViewerIsOpen } = useUserProgressStore();
+
   // 사용자 정보 가져오기
   const { selectedUser } = useAuthenticateStore();
   const accountId = selectedUser?.accountId || 1;
@@ -355,7 +362,7 @@ const AttachmentViewer = () => {
                   size={16}
                   style={{ display: "inline", marginRight: "5px" }}
                 />
-                연락처: <span>{selectedContactData.contactName}</span>
+                연락처 :<span>{selectedContactData.contactName}</span>
               </div>
               <div className="file-list">
                 {groupByDate(selectedContactData.attachments).map(
@@ -496,17 +503,17 @@ const AttachmentViewer = () => {
     >
       {/* 헤더와 닫기 버튼 */}
       <div className="flex justify-between items-center p-4 border-b border-light1">
-        <h1 className="flex items-center gap-2 text-lg font-pre-bold">
+        <h1 className="flex items-center gap-2 text-lg text-text font-pre-bold">
           <Paperclip size={20} /> 첨부파일
         </h1>
-        <button 
+        <button
           onClick={() => setAttachmentViewerIsOpen(false)}
-          className="p-2 rounded-full hover:bg-light transition-colors"
+          className="p-2 rounded-full bg-default hover:bg-error transition-colors duration-300 ease-in-out"
         >
-          <X size={20} />
+          <X size={20} stroke="#fff" />
         </button>
       </div>
-      
+
       <div className="flex h-full overflow-hidden">
         {/* 사이드바 */}
         <div className="w-64 h-full border-r border-light1 p-4 overflow-y-auto">
@@ -568,7 +575,9 @@ const AttachmentViewer = () => {
                     {contact.contactName.charAt(0)}
                   </div>
                   <span>{contact.contactName}</span>
-                  <span className="file-count">{contact.attachments.length}</span>
+                  <span className="file-count">
+                    {contact.attachments.length}
+                  </span>
                 </div>
               ))}
             </div>
@@ -613,8 +622,7 @@ const AttachmentViewer = () => {
           {/* 검색 바 */}
           <div className="p-4">
             <div className="relative w-full">
-              <div className="flex items-center justify-between w-full h-12 px-4 bg-white/60 backdrop-blur-md border border-light2 shadow-sm rounded-full">
-
+              <div className="flex items-center justify-between w-full h-13 px-4 bg-white text-text backdrop-blur-md bordershadow-sm rounded-full">
                 <input
                   type="text"
                   placeholder="파일명, 발신자, 이메일 내용 검색..."
@@ -633,7 +641,12 @@ const AttachmentViewer = () => {
                     type="button"
                     className="p-2 rounded-full bg-theme text-white hover:bg-theme-dark transition-all duration-300"
                   >
-                    <Search size={20} />
+                    <SearchIcon
+                      width={20}
+                      height={20}
+                      className="transition-all duration-300"
+                      strokeColor="white"
+                    />
                   </button>
                 </div>
               </div>
@@ -643,7 +656,7 @@ const AttachmentViewer = () => {
           {/* 파일 목록 */}
           <div className="p-4">
             {isLoading ? (
-              <div className="flex justify-center items-center h-64">
+              <div className="flex justify-center items-center h-64 text-shadow-title">
                 <div>로딩 중...</div>
               </div>
             ) : error ? (

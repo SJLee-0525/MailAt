@@ -77,9 +77,9 @@ const InboxContents = () => {
 
     try {
       setIsSyncing(true);
-      console.log(
-        `[InboxContents] 폴더 동기화 시작: ${selectedFolder}, 계정 ID: ${accountId}`
-      );
+      // console.log(
+      //   `[InboxContents] 폴더 동기화 시작: ${selectedFolder}, 계정 ID: ${accountId}`
+      // );
 
       await syncEmailMutation.mutateAsync({
         accountId,
@@ -89,7 +89,7 @@ const InboxContents = () => {
 
       // 동기화 후 이메일 목록 리프레시
       await refetch();
-      console.log(`[InboxContents] 동기화 및 데이터 갱신 완료`);
+      // console.log(`[InboxContents] 동기화 및 데이터 갱신 완료`);
     } catch (error) {
       console.error("[InboxContents] 동기화 오류:", error);
     } finally {
@@ -115,7 +115,7 @@ const InboxContents = () => {
   // sentinel 이 화면에 들어오면 다음 페이지 요청
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
-      console.log("[InboxContents] Fetching next page...");
+      // console.log("[InboxContents] Fetching next page...");
       fetchNextPage();
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
@@ -146,7 +146,7 @@ const InboxContents = () => {
     }
   }
 
-  console.log("[InboxContents] conversations", conversations);
+  // console.log("[InboxContents] conversations", conversations);
   // if (!conversations) return null; // 기존 null 체크 제거
 
   // conversations가 배열이고, 각 요소가 null이나 undefined가 아닌 경우만 필터링합니다.

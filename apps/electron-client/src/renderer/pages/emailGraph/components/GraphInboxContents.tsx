@@ -11,6 +11,7 @@ import userProgressStore from "@stores/userProgressStore";
 import useAuthenticateStore from "@stores/authenticateStore";
 
 import GraphInboxContent from "@pages/emailGraph/components/GraphInboxContent";
+import GraphSpinner from "@pages/emailGraph/components/GraphSpinner";
 
 const GraphInboxContents = () => {
   const { selectedGraph, graphConversations, setGraphConversations } =
@@ -18,11 +19,12 @@ const GraphInboxContents = () => {
   const {
     selectedMail,
     setSelectedMail,
+    isLoading,
     setLoading,
     setLoadingMessage,
     setCloseLoadingMessage,
   } = userProgressStore();
-  const { user } = useAuthenticateStore();
+  const { user, currentTheme } = useAuthenticateStore();
 
   const { mutateAsync: markEmailAsRead } = useMarkEmailAsRead();
 
@@ -94,31 +96,42 @@ const GraphInboxContents = () => {
     }
   }
 
-  if (!graphConversations) return null;
+  if (isLoading && graphConversations.length === 0)
+    return (
+      <div className="flex items-center justify-center w-full h-full bg-white rounded-lg">
+        <GraphSpinner theme={currentTheme} size={28} />
+      </div>
+    );
 
   return (
-    <div className="flex flex-col items-center justify-between w-full h-full pb-1.5 gap-1 bg-white rounded-lg">
-      <div className="flex flex-col items-start w-full h-full px-2 gap-2 bg-white rounded-lg overflow-y-auto hide-scrollbar">
-        {graphConversations.map((email) => {
-          return (
-            <GraphInboxContent
-              key={email.message_id} // email이 null/undefined가 아니므로 messageId 접근이 비교적 안전해집니다.
-              sentAt={email.sentAt}
-              isRead={email.isRead}
-              fromName={email.fromName}
-              fromEmail={email.fromEmail}
-              subject={email.subject}
-              snippet={email.snippet}
-              isSelected={
-                selectedMail !== null &&
-                selectedMail.messageId === Number(email.message_id)
-              }
-              onClick={() => openDetailEmail(email)}
-            />
-          );
-        })}
-      </div>
-    </div>
+    <>
+      {graphConversations && graphConversations.length === 0 ? (
+        <div className="flex items-center justify-center w-full h-full bg-white rounded-lg">
+          <p className="text-gray-500">메일이 없습니다.</p>
+        </div>
+      ) : (
+        <div className="flex flex-col items-start w-full h-full px-2 gap-2 bg-white rounded-lg overflow-y-auto hide-scrollbar">
+          {graphConversations.map((email) => {
+            return (
+              <GraphInboxContent
+                key={email.message_id} // email이 null/undefined가 아니므로 messageId 접근이 비교적 안전해집니다.
+                sentAt={email.sentAt}
+                isRead={email.isRead}
+                fromName={email.fromName}
+                fromEmail={email.fromEmail}
+                subject={email.subject}
+                snippet={email.snippet}
+                isSelected={
+                  selectedMail !== null &&
+                  selectedMail.messageId === Number(email.message_id)
+                }
+                onClick={() => openDetailEmail(email)}
+              />
+            );
+          })}
+        </div>
+      )}
+    </>
   );
 };
 

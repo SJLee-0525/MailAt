@@ -257,7 +257,8 @@ interface ElectronAPI {
 
     // 그래프 노드 이름 수정
     renameNodePy(json_obj: {
-      before_name: string; // 노드 이전 이름
+      C_ID: number; // 노드 ID
+      C_type: number; // 노드 타입
       after_name: string; // 노드 새 이름
     }): Promise<GraphIpcResponse>;
 
