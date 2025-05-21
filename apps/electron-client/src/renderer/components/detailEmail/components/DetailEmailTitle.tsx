@@ -66,7 +66,7 @@ const DetailEmailTitle = ({
   // const parsedFrom = parseEmailFromName(from);
 
   async function handleChangeIsRead() {
-    console.log("DetailEmailTitle", to);
+    // console.log("DetailEmailTitle", to);
 
     try {
       const response = await markEmailAsRead({
@@ -145,7 +145,7 @@ const DetailEmailTitle = ({
               </span>
             </div>
           </div>
-          {isExpanded && <DetailEmailInfo isRead={isRead} to={fromEmail} />}
+          {isExpanded && <DetailEmailInfo to={fromEmail} />}
         </div>
 
         <div className="flex items-center gap-2">

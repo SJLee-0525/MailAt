@@ -294,6 +294,18 @@ interface ElectronAPI {
     }>;
   };
 
+  calendar: {
+    // 캘린더 이벤트 조회
+    getEvents(params: {
+      accountId: number;
+      year: number;
+      month: number;
+    }): Promise<{
+      success: boolean;
+      data: CalendarEventFromAPI[];
+    }>;
+  };
+
   // 이메일 전송
   sendEmail(emailData: EmailSendRequestData): Promise<{
     success: boolean;

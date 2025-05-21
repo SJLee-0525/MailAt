@@ -29,7 +29,6 @@ import CloseIcon from "@assets/icons/CloseIcon";
 import EmailGraphRightClick from "@pages/emailGraph/components/EmailGraphRightClick";
 
 import { RawNode, SelectedGraph, GraphNode } from "@/types/graphType";
-import { set } from "date-fns";
 
 interface Props {
   rawNodes: RawNode[];
@@ -504,7 +503,7 @@ const EmailGraph = memo(
       C_ID: number;
       C_type: number;
     }) {
-      console.log("Deleting node with ID:", C_ID, "and type:", C_type);
+      // console.log("Deleting node with ID:", C_ID, "and type:", C_type);
       try {
         const response = await deleteGraphNode({ C_ID, C_type });
         if (response.status === "success") {
@@ -609,7 +608,7 @@ const EmailGraph = memo(
       setLoadingMessage("이름 변경 중입니다.");
 
       const response = await renameGraphNode(payload);
-      console.log("renameGraphNode response", response);
+      // console.log("renameGraphNode response", response);
       if (response.status !== "success") {
         setLoading(false);
         setLoadingMessage("이름 변경 실패");
@@ -672,7 +671,7 @@ const EmailGraph = memo(
 
         ctx.strokeStyle =
           currentTheme === "theme-night" ? "#606885" : "#f8f8f8";
-        ctx.lineWidth = 2 / gs; // 스케일에 따라 선 두께 조정
+        ctx.lineWidth = 1 / gs; // 스케일에 따라 선 두께 조정
 
         ctx.beginPath();
         ctx.moveTo(s.x, s.y); // 라인 시작점

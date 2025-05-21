@@ -56,7 +56,7 @@ const SearchBar = () => {
     try {
       const response = await searchGraphNode({ keyword: searchQuery });
       if (response) {
-        console.log("Search results:", response);
+        // console.log("Search results:", response);
         setGraphData(response);
 
         setBottomNavProgress(null);

@@ -47,13 +47,13 @@ const EmailGraphRightClick = ({
   return (
     <div
       ref={htmlRef}
-      className="absolute z-50 bg-white border border-gray-200 rounded-md shadow-lg min-w-[140px] font-pre-medium text-sm"
+      className="absolute z-50 bg-white border border-gray-200 rounded-md shadow-lg min-w-[140px] font-pre-medium text-sm text-text"
       style={{ left: ctxMenu.x, top: ctxMenu.y }}
       onContextMenu={(e) => e.preventDefault()} // 메뉴 위에서 또 우클릭 막기
     >
       <ul>
         <li
-          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+          className="px-4 py-2 hover:bg-light1 cursor-pointer"
           onClick={() => {
             setRename();
             setCtxMenu((m) => ({ ...m, visible: false }));
@@ -63,7 +63,7 @@ const EmailGraphRightClick = ({
         </li>
         {onGoBack && ( // Only show "뒤로가기" if onGoBack is provided
           <li
-            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+            className="px-4 py-2 hover:bg-light1  cursor-pointer"
             onClick={() => {
               onGoBack();
               setCtxMenu((m) => ({ ...m, visible: false }));
@@ -74,7 +74,7 @@ const EmailGraphRightClick = ({
         )}
 
         <li
-          className="px-4 py-2 text-red-600 hover:bg-gray-100 cursor-pointer"
+          className="px-4 py-2 text-red-600 hover:bg-light1 cursor-pointer"
           onClick={() => {
             if (onDelete) {
               onDelete();

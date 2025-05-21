@@ -16,10 +16,6 @@ const NetworkPage = () => {
   const { graphData, setSelectedGraph, setGraphConversations } =
     useConversationsStore();
 
-  useEffect(() => {
-    console.log("Current graphData from store:", graphData);
-  }, [graphData]);
-
   const {
     setGraphInboxIsOpen,
     setLoading,
@@ -73,7 +69,7 @@ const NetworkPage = () => {
 
   // 뒤로가기 처리: 현재 그래프를 재설정 (새 ref로 전달)
   async function handleNavigateBack() {
-    console.log("Navigating back, simulating re-feed of graph data.");
+    // console.log("Navigating back, simulating re-feed of graph data.");
 
     if (inParams.length === 0) {
       console.log("No inParams to reset.");
@@ -138,7 +134,7 @@ const NetworkPage = () => {
     C_type2: number;
     after_name: string;
   }) {
-    console.log("Merge", C_ID1, C_type1, C_ID2, C_type2);
+    // console.log("Merge", C_ID1, C_type1, C_ID2, C_type2);
 
     if (C_type1 < 2 || C_type2 < 2) {
       openAlertModal({
@@ -170,7 +166,7 @@ const NetworkPage = () => {
         return;
       }
 
-      console.log("Merge response:", response);
+      // console.log("Merge response:", response);
     } catch (error) {
       console.error("Error merging nodes:", error);
     }

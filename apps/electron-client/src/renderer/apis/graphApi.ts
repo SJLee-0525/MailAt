@@ -21,11 +21,6 @@ export const readGraphNode = async ({
   C_type: number; // 중심 노드 타입,
   IO_type: number; //  inout 타입
 }): Promise<RawNode[]> => {
-  console.error("1111111111111Graph Node Params:", {
-    C_ID,
-    C_type,
-    IO_type,
-  });
   /*
   "C_ID": 중심 노드 ID,
   "C_type": 중심 노드 타입,
@@ -37,9 +32,10 @@ export const readGraphNode = async ({
       C_type,
       IO_type,
     });
-    console.error("[Get] 그래프 노드 조회", response);
+    // console.error("[Get] 그래프 노드 조회", response);
+
     if (response.status === "success") {
-      console.error("Graph Node Result:", response.result);
+      // console.error("Graph Node Result:", response.result);
       return response.result.nodes;
     } else {
       console.error("Graph Node Error:", response.message);
@@ -72,6 +68,7 @@ export const readGraphMessage = async ({
       IO_type,
       In,
     });
+
     if (response.status === "success") {
       return response.result.emails;
     } else {
@@ -102,6 +99,7 @@ export const createGraphNode = async ({
     const response = await window.electronAPI.graph.createNodePy({
       C_name,
     });
+
     if (response.status === "success") {
       return response;
     } else {
@@ -135,6 +133,7 @@ export const deleteGraphNode = async ({
       C_ID,
       C_type,
     });
+
     if (response.status === "success") {
       return response;
     } else {
@@ -201,6 +200,7 @@ export const mergeGraphNode = async ({
       C_type2,
       after_name,
     });
+
     if (response.status === "success") {
       return response;
     } else {
@@ -220,8 +220,6 @@ export const deleteGraphMessage = async ({
   message_id: number; // 삭제할 메일의 ID
   user: any; // Define a more specific type
 }): Promise<GraphIpcResponse> => {
-  // const { user } = useAuthenticateStore(); // Remove hook call
-
   if (!user) {
     throw new Error("User not authenticated");
   }
@@ -254,8 +252,6 @@ export const moveGraphMessage = async ({
   sub_category_id: number; // 서브카테고리 ID
   user: any; // Define a more specific type
 }): Promise<GraphIpcResponse> => {
-  // const { user } = useAuthenticateStore(); // Remove hook call
-
   if (!user) {
     throw new Error("User not authenticated");
   }
@@ -267,6 +263,7 @@ export const moveGraphMessage = async ({
       category_id,
       sub_category_id,
     });
+
     if (response.status === "success") {
       return response;
     } else {
@@ -288,7 +285,8 @@ export const searchGraphNode = async ({
     const response = await window.electronAPI.graph.searchByKeywordPy({
       keyword,
     });
-    console.error("Search Graph Node Response:", response);
+    // console.error("Search Graph Node Response:", response);
+
     if (response.status === "success") {
       return response.result.nodes;
     } else {

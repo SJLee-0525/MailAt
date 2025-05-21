@@ -129,9 +129,9 @@ const MailCreateForm = () => {
 
   // 실제 제출 핸들러
   async function handleSubmit() {
-    console.log("받는 사람:", sender);
-    console.log("제목:", titleRef.current?.value);
-    console.log("본문:", html);
+    // console.log("받는 사람:", sender);
+    // console.log("제목:", titleRef.current?.value);
+    // console.log("본문:", html);
 
     if (!user) return;
 
@@ -176,7 +176,7 @@ const MailCreateForm = () => {
       const response = await sendEmail(emailData as EmailSendRequestData);
 
       if (response.success) {
-        console.log("이메일 전송 성공:", response.messageId);
+        // console.log("이메일 전송 성공:", response.messageId);
 
         setLoading(false);
         setLoadingMessage("이메일 전송 성공");

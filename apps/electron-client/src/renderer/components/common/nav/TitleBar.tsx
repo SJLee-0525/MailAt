@@ -20,7 +20,7 @@ const TopButton = ({
 }) => {
   return (
     <button
-      className={`flex justify-center items-center w-12 h-full transition-all ease-in-out duration-200 bg-transparent ${type === "normal" ? "hover:bg-default" : "hover:bg-error"}`}
+      className={`flex justify-center items-center w-8 h-8 transition-all ease-in-out duration-200 bg-transparent rounded-lg ${type === "normal" ? "hover:bg-default" : "hover:bg-error"}`}
       onClick={onClick}
     >
       {icon}
@@ -108,7 +108,7 @@ const TitleBar = () => {
       </div>
 
       <nav
-        className="flex items-center h-full"
+        className="flex items-center h-full gap-1 pe-3"
         style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties} // 드래그 불가능 영역으로 설정
       >
         <TopButton

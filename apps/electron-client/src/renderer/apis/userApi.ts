@@ -15,7 +15,7 @@ export const createUser = async (username: string): Promise<User> => {
     const response = await window.electronAPI.user.create({
       username,
     });
-    console.log(`[POST] window.electronAPI.user.create(${username})`, response);
+    // console.log(`[POST] window.electronAPI.user.create(${username})`, response);
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -28,7 +28,7 @@ export const getUser = async (
 ): Promise<{ success: boolean; data: User }> => {
   try {
     const response = await window.electronAPI.user.get(userId);
-    console.log(`[GET] window.electronAPI.user.get(${userId})`, response);
+    // console.log(`[GET] window.electronAPI.user.get(${userId})`, response);
     return response;
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -44,10 +44,10 @@ export const updateUser = async (
     const response = await window.electronAPI.user.update(userId, {
       username,
     });
-    console.log(
-      `[PUT] window.electronAPI.user.update(${userId}, ${username})`,
-      response
-    );
+    // console.log(
+    //   `[PUT] window.electronAPI.user.update(${userId}, ${username})`,
+    //   response
+    // );
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -60,7 +60,7 @@ export const deleteUser = async (
 ): Promise<{ success: boolean }> => {
   try {
     const response = await window.electronAPI.user.delete(userId);
-    console.log(`[DELETE] window.electronAPI.user.delete(${userId})`, response);
+    // console.log(`[DELETE] window.electronAPI.user.delete(${userId})`, response);
     return response;
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -73,12 +73,12 @@ export const createAccount = async (
 ): Promise<{ success: boolean; data: CreateAccountResponse[] }> => {
   try {
     const response = await window.electronAPI.account.create(accountData);
-    console.log(
-      `[POST] window.electronAPI.account.create(${JSON.stringify(
-        accountData
-      )})`,
-      response
-    );
+    // console.log(
+    //   `[POST] window.electronAPI.account.create(${JSON.stringify(
+    //     accountData
+    //   )})`,
+    //   response
+    // );
     return response;
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -89,7 +89,7 @@ export const createAccount = async (
 export const getAccounts = async (): Promise<CreateAccountResponse[]> => {
   try {
     const response = await window.electronAPI.account.getAll();
-    console.log(`[GET] window.electronAPI.account.getAll()`, response);
+    // console.log(`[GET] window.electronAPI.account.getAll()`, response);
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -104,10 +104,10 @@ export const deleteAccount = async ({
 }): Promise<{ success: boolean }> => {
   try {
     const response = await window.electronAPI.account.delete(accountId);
-    console.log(
-      `[DELETE] window.electronAPI.account.delete(${accountId})`,
-      response
-    );
+    // console.log(
+    //   `[DELETE] window.electronAPI.account.delete(${accountId})`,
+    //   response
+    // );
     return response;
   } catch (error: unknown) {
     throw new Error(error as string);
