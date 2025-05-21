@@ -11,7 +11,6 @@ import { getUser } from "@apis/userApi";
 import TutorialLayout from "@layouts/TutorialLayout";
 
 import MainLayout from "@layouts/MainLayout";
-// import Home from "@pages/home/Home";
 import EmailGraphPage from "@pages/emailGraph/EmailGraphPage";
 
 import TitleBar from "@components/common/nav/TitleBar"; // TitleBar 컴포넌트 import
@@ -53,48 +52,16 @@ const App = () => {
           setIsLoggedIn(true); // 로그인 상태 업데이트
 
           return true;
+        } else {
+          // 사용자 정보 가져오기 실패
+          setIsLoggedIn(false); // 로그인 상태 업데이트
+          return false;
         }
-
-        // 사용자 정보 가져오기 실패
-        setIsLoggedIn(false); // 로그인 상태 업데이트
-        return false;
       }
 
       getUserIdFromStorage(storedData);
     }
   }, []);
-
-  const handleTestGraphConnection = async () => {
-    try {
-      console.log("[FRONTEND] Calling graph.testGraph...");
-      // electronAPI가 window 객체에 제대로 노출되었는지 확인합니다.
-      if (
-        window.electronAPI &&
-        window.electronAPI.graph &&
-        window.electronAPI.graph.testGraph
-      ) {
-        const result = await window.electronAPI.graph.testGraph();
-        console.log("[FRONTEND] graph.testGraph result:", result);
-        alert(
-          "Graph Test Result: \nStatus: " +
-            result.success +
-            "\nMessage: " +
-            (result.success ? JSON.stringify(result.data) : result.message)
-        );
-      } else {
-        console.error(
-          "[FRONTEND] electronAPI.graph.testGraph is not available."
-        );
-        alert(
-          "Error: electronAPI.graph.testGraph is not available. Check preload script."
-        );
-      }
-    } catch (error: any) {
-      // Explicitly type error as any or a more specific error type
-      console.error("[FRONTEND] Error calling graph.testGraph:", error);
-      alert("Error calling graph.testGraph: " + error.message);
-    }
-  };
 
   // 로그인 상태에 따라 다른 페이지 렌더링
   if (!isLoggedIn) {
@@ -133,9 +100,6 @@ const App = () => {
         <Alert />
         <NewMailFormModal />
         <Modal />
-        <button onClick={handleTestGraphConnection}>
-          Test Graph Connection
-        </button>
       </QueryClientProvider>
     </div>
   );

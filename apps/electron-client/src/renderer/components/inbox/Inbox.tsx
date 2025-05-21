@@ -8,11 +8,11 @@ import InboxContents from "@components/inbox/components/InboxContents";
 import Chat from "@components/chat/Chat";
 
 const Inbox = () => {
-  const { user } = useAuthenticateStore();
+  const { user, authUsers } = useAuthenticateStore();
   const { inboxIsClosing, selectedMail, chattingIsOpen } =
     useUserProgressStore();
 
-  if (!user) return null;
+  if (!user || authUsers.length === 0) return null;
 
   return (
     <div

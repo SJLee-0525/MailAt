@@ -2,8 +2,10 @@ import clsx from "clsx";
 
 import { Outlet } from "react-router-dom";
 
+import useAuthenticateStore from "@stores/authenticateStore";
 import useUserProgressStore from "@stores/userProgressStore";
 
+import { useGetAccounts } from "@hooks/useGetUser";
 import { useGetEmailFolders } from "@hooks/useGetConversations";
 
 import HoverZone from "@layouts/HoverZone";
@@ -33,7 +35,10 @@ const PopUpLayout = () => {
 };
 
 const MainLayout = () => {
+  const { user, authUsers } = useAuthenticateStore();
   const { inboxIsOpen } = useUserProgressStore();
+
+  useGetAccounts();
 
   // 폴더 목록 조회
   useGetEmailFolders();
@@ -81,7 +86,7 @@ const MainLayout = () => {
           <div className={sidePaneClass} />
         </div>
 
-        <HoverZone />
+        {user && authUsers.length > 0 && <HoverZone />}
       </main>
     </div>
   );

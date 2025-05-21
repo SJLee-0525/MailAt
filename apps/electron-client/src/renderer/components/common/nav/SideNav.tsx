@@ -1,5 +1,6 @@
 import useModalStore from "@stores/modalStore";
 import useUserProgressStore from "@stores/userProgressStore";
+import useAuthenticateStore from "@stores/authenticateStore";
 
 import MenuIcon from "@assets/icons/MenuIcon";
 import CalendarIcon from "@assets/icons/CalendarIcon";
@@ -17,6 +18,7 @@ const SideNav = () => {
     setSelectedMail,
     setChattingIsOpen,
   } = useUserProgressStore();
+  const { user, authUsers } = useAuthenticateStore();
 
   function handleCloseAllModal() {
     setCalendarIsOpen(false);
@@ -44,12 +46,14 @@ const SideNav = () => {
           icon={<MenuIcon strokeColor="#e9e9e9" />}
           onClick={handleCloseAllModal}
         />
-        <IconButton
-          type="button"
-          className="p-2 transition-all duration-200 hover:bg-accept"
-          icon={<CalendarIcon strokeColor="#e9e9e9" />}
-          onClick={handleOpenCalendar}
-        />
+        {user && authUsers.length > 0 && (
+          <IconButton
+            type="button"
+            className="p-2 transition-all duration-200 hover:bg-accept"
+            icon={<CalendarIcon strokeColor="#e9e9e9" />}
+            onClick={handleOpenCalendar}
+          />
+        )}
         <IconButton
           type="button"
           className="p-2 transition-all duration-200 hover:bg-accept"

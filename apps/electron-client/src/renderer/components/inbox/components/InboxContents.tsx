@@ -94,30 +94,38 @@ const InboxContents = () => {
     }
   }
 
+  console.log("[InboxContents] conversations", conversations);
+  // if (!conversations) return null; // 기존 null 체크 제거
+
+  // conversations가 배열이고, 각 요소가 null이나 undefined가 아닌 경우만 필터링합니다.
+  // 이렇게 하면 conversations가 [undefined]와 같은 형태로 들어와도 안전하게 빈 배열로 처리됩니다.
+  const validConversations = Array.isArray(conversations)
+    ? conversations.filter((email) => email != null)
+    : [];
+
   return (
     <div className="flex flex-col items-center justify-between w-full h-full pb-1.5 gap-1 bg-white rounded-lg">
       {folders && <InboxFolders folders={folders} />}
 
-      {conversations && (
-        <div className="flex flex-col items-start w-full h-full px-2 gap-2 bg-white rounded-lg overflow-y-auto hide-scrollbar">
-          {conversations.map((email) => {
-            return (
-              <InboxContent
-                key={email.messageId}
-                email={email}
-                isSelected={
-                  selectedMail !== null &&
-                  selectedMail.messageId === email.messageId
-                }
-                onClick={() => openDetailEmail(email)}
-              />
-            );
-          })}
+      {/* validConversations를 사용하여 항상 list container를 렌더링합니다. 내용이 없으면 비어있게 됩니다. */}
+      <div className="flex flex-col items-start w-full h-full px-2 gap-2 bg-white rounded-lg overflow-y-auto hide-scrollbar">
+        {validConversations.map((email) => {
+          return (
+            <InboxContent
+              key={email.messageId} // email이 null/undefined가 아니므로 messageId 접근이 비교적 안전해집니다.
+              email={email}
+              isSelected={
+                selectedMail !== null &&
+                selectedMail.messageId === email.messageId
+              }
+              onClick={() => openDetailEmail(email)}
+            />
+          );
+        })}
 
-          {/* 무한 스크롤 sentinel */}
-          <div ref={bottomRef} className="min-h-1 max-h-1" />
-        </div>
-      )}
+        {/* 무한 스크롤 sentinel */}
+        <div ref={bottomRef} className="min-h-1 max-h-1" />
+      </div>
     </div>
   );
 };
