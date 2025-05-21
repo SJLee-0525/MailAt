@@ -46,12 +46,53 @@ export const readGraphNode = async ({
   }
 };
 
+export const readGraphMessage = async ({
+  C_ID,
+  C_type,
+  IO_type,
+  In,
+}: {
+  C_ID: string; // 중심 노드 ID
+  C_type: number; // 중심 노드 타입
+  IO_type: number; // inout 타입
+  In: string[]; // 메일 필터링 조건
+}): Promise<GraphEmail[]> => {
+  const { user } = useAuthenticateStore();
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  /*
+  "C_ID": 중심 노드 ID,
+  "C_type": 중심 노드 타입,
+  "IO_type": inout 타입,
+  "In": 메일 필터링 조건
+  */
+  try {
+    const response = await window.electronAPI.graph.readMessagePy({
+      C_ID,
+      C_type,
+      IO_type,
+      In,
+    });
+    if (response.status === "success") {
+      return response.result.emails;
+    } else {
+      throw new Error(response.message);
+    }
+  } catch (error) {
+    console.error("Error fetching graph messages:", error);
+    throw error;
+  }
+};
+
 // 노드 생성
 export const createGraphNode = async ({
   C_name,
 }: {
   C_name: string; // 새로운 카테고리 이름
-}): Promise<GraphIpcResponse> => {
+}): Promise<{ status: "success" | "fail"; message: string }> => {
   const { user } = useAuthenticateStore();
 
   if (!user) {
@@ -81,7 +122,7 @@ export const deleteGraphNode = async ({
 }: {
   C_ID: string; // 삭제할 노드 ID
   C_type: number; // 삭제할 노드 타입
-}): Promise<{ status: "success" | "fail" }> => {
+}): Promise<GraphIpcResponse> => {
   const { user } = useAuthenticateStore();
 
   if (!user) {
@@ -112,7 +153,7 @@ export const renameGraphNode = async ({
 }: {
   before_name: string; // 노드 이전 이름
   after_name: string; // 노드 새 이름
-}): Promise<{ status: "success" | "fail" }> => {
+}): Promise<GraphIpcResponse> => {
   const { user } = useAuthenticateStore();
 
   if (!user) {
@@ -145,7 +186,7 @@ export const mergeGraphNode = async ({
   before_name1: string; // 노드 이전 이름1
   before_name2: string; // 노드 이전 이름2
   after_name: string; // 노드 새 이름
-}): Promise<{ status: "success" | "fail" }> => {
+}): Promise<GraphIpcResponse> => {
   const { user } = useAuthenticateStore();
 
   if (!user) {
@@ -175,7 +216,7 @@ export const deleteGraphMessage = async ({
   message_id,
 }: {
   message_id: number; // 삭제할 메일의 ID
-}): Promise<{ status: "success" | "fail" }> => {
+}): Promise<GraphIpcResponse> => {
   const { user } = useAuthenticateStore();
 
   if (!user) {
@@ -207,7 +248,7 @@ export const moveGraphMessage = async ({
   message_id: number; // 이동할 메일의 ID
   category_id: number; // 카테고리 ID
   sub_category_id: number; // 서브카테고리 ID
-}): Promise<{ status: "success" | "fail" }> => {
+}): Promise<GraphIpcResponse> => {
   const { user } = useAuthenticateStore();
 
   if (!user) {
