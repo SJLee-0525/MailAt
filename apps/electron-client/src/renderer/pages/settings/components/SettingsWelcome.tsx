@@ -109,8 +109,8 @@ const SettingsWelcome = ({
   return (
     <>
       {user && user.username ? (
-        <div className="flex flex-col items-center justify-center w-full h-fit text-center font-pre-bold">
-          <div className="flex items-center justify-end w-full h-7">
+        <div className="flex flex-col items-center justify-center w-full h-fit py-1 text-center font-pre-bold">
+          <div className="flex items-center justify-end w-full h-7 gap-0.5">
             {!isExistNameEdit && (
               <>
                 <IconButton

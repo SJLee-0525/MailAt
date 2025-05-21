@@ -9,6 +9,7 @@ import useUserProgressStore from "@stores/userProgressStore";
 
 import { decodeImapModifiedUtf7Segment } from "@utils/getEmailData";
 
+import IconButton from "@components/common/button/IconButton";
 import ReloadIcon from "@assets/icons/ReloadIcon";
 import LightIcon from "@assets/icons/LightIcon";
 import NightIcon from "@assets/icons/NightIcon";
@@ -113,30 +114,28 @@ const SettingsHeader = () => {
   }
 
   return (
-    <div className="flex items-center justify-between w-full h-16 min-h-16  px-4">
+    <div className="flex items-center justify-between w-full h-16 min-h-16 px-4">
       <h3 className="font-pre-bold text-xl text-text">설정</h3>
       <div className="relative flex items-center justify-center gap-4">
-        <ReloadIcon
-          width={20}
-          height={20}
-          strokeWidth={2}
+        <IconButton
+          type="button"
+          icon={<ReloadIcon width={20} height={20} />}
+          className="p-2 transition-all duration-200 ease-in-out hover:bg-light2"
           onClick={() => setIsOpenSync(!isOpenSync)}
         />
 
         {currentTheme === THEMES[0].class ? (
-          <NightIcon
-            width={24}
-            height={24}
-            strokeColor="#000000"
-            strokeWidth={2}
+          <IconButton
+            type="button"
+            icon={<NightIcon width={24} height={24} />}
+            className="p-1.5 transition-all duration-200 ease-in-out hover:bg-light2"
             onClick={() => handleThemeChange(THEMES[1].class)}
           />
         ) : (
-          <LightIcon
-            width={24}
-            height={24}
-            strokeColor="#ffffff"
-            strokeWidth={2}
+          <IconButton
+            type="button"
+            icon={<LightIcon width={24} height={24} />}
+            className="p-1.5 transition-all duration-200 ease-in-out hover:bg-light2"
             onClick={() => handleThemeChange(THEMES[0].class)}
           />
         )}

@@ -17,6 +17,8 @@ import {
   EmailDetailByThreadId,
 } from "@/types/emailTypes";
 
+import { RawNode, GraphEmail, GraphIpcResponse } from "@/types/graphType";
+
 import { AttachmentInfo } from "@/types/attachmentTypes";
 
 // ① 전역으로 노출할 API 시그니처를 기술
@@ -211,6 +213,72 @@ interface ElectronAPI {
       folderName: string;
       limit?: number;
     }): Promise<{ success: boolean; data: EmailSyncResponse }>;
+  };
+
+  // 그래프 관련
+  graph: {
+    // 그래프 노드 조회
+    readNodePy(params: {
+      C_ID: string;
+      C_type: number;
+      IO_type: number;
+    }): Promise<{
+      status: "success" | "fail";
+      message: string;
+      result: {
+        nodes: RawNode[];
+      };
+    }>;
+
+    // 그래프 메일 조회 (preload.cjs와 일치시키기 위해 readMessagePy로 변경 권장)
+    readMessagePy(json_obj: {
+      C_ID: string;
+      C_type: number;
+      IO_type: number;
+      In: string[];
+    }): Promise<{
+      status: "success" | "fail";
+      message: string;
+      result: {
+        emails: GraphEmail[];
+      };
+    }>;
+
+    // 그래프 노드 생성
+    createNodePy(json_obj: {
+      C_name: string; // 새로운 카테고리 이름
+    }): Promise<{ status: "success" | "fail"; message: string }>;
+
+    // 그래프 노드 삭제
+    deleteNodePy(json_obj: {
+      C_ID: string; // 삭제할 노드 ID
+      C_type: number; // 삭제할 노드 타입
+    }): Promise<GraphIpcResponse>;
+
+    // 그래프 노드 이름 수정
+    renameNodePy(json_obj: {
+      before_name: string; // 노드 이전 이름
+      after_name: string; // 노드 새 이름
+    }): Promise<GraphIpcResponse>;
+
+    // 그래프 노드 병합
+    mergeNodePy(json_obj: {
+      before_name1: string; // 노드 이전 이름1
+      before_name2: string; // 노드 이전 이름2
+      after_name: string; // 노드 새 이름
+    }): Promise<GraphIpcResponse>;
+
+    // 그래프 메일 삭제
+    deleteMailPy(json_obj: {
+      message_id: number; // 삭제할 메일의 ID
+    }): Promise<GraphIpcResponse>;
+
+    // 그래프 메일 이동
+    moveMailPy(json_obj: {
+      message_id: number;
+      category_id: number;
+      sub_category_id: number;
+    }): Promise<GraphIpcResponse>;
   };
 
   // 이메일 전송

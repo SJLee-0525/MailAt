@@ -27,11 +27,13 @@ const Calendar = () => {
           selectedDate={selectedDateInfo.date}
           isClosing={calendarIsClosing} // 이 prop이 필요한지 확인
           // 해당 날짜의 일정을 전달 (schedulesData.schedules는 "yyyy-MM-dd"를 키로 가짐)
-          schedulesForDate={schedulesData.schedules[selectedDateInfo.date] || []}
+          schedulesForDate={
+            schedulesData.schedules[selectedDateInfo.date] || []
+          }
         />
       )}
       <div
-        className={`flex flex-col w-full min-w-96 h-full bg-light1 rounded-xl transition-all duration-300 ease-in-out pointer-events-auto ${
+        className={`flex flex-col w-full min-w-96 h-full bg-header transition-all duration-300 ease-in-out pointer-events-auto ${
           calendarIsClosing ? "calendar-is-closing" : "calendar-is-open"
         }`}
       >
@@ -42,7 +44,7 @@ const Calendar = () => {
             /* 캘린더 닫기 로직 */
           }}
         />
-        <div className="flex flex-col w-full h-full px-1 pb-1 bg-light1 rounded-b-xl overflow-y-auto">
+        <div className="flex flex-col w-full h-full px-1 pb-1 bg-header overflow-y-auto">
           {/* 로딩 및 에러 상태 처리 */}
           {schedulesData.isLoading && (
             <div className="p-4 text-center">캘린더 정보를 불러오는 중...</div>

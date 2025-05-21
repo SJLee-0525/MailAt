@@ -49,7 +49,12 @@ const DetailEmailTitle = ({
   onReply: (replyData: ReplyData) => void;
   openChat: () => void;
 }) => {
-  const { setIsReplying } = useUserProgressStore();
+  const {
+    setIsReplying,
+    setLoading,
+    setLoadingMessage,
+    setCloseLoadingMessage,
+  } = useUserProgressStore();
   const { openAlertModal } = useModalStore();
 
   const { mutateAsync: deleteEmail } = useDeleteEmail();
@@ -81,22 +86,31 @@ const DetailEmailTitle = ({
   }
 
   async function handleDelete() {
-    if (window.confirm("정말로 삭제하시겠습니까?")) {
-      const response = await deleteEmail({ messageId: id });
+    const response = await deleteEmail({ messageId: id });
 
-      if (response.success) {
-        openAlertModal({
-          title: "삭제 성공",
-          content: "이메일이 삭제되었습니다.",
-        });
-      } else {
-        openAlertModal({
-          title: "삭제 실패",
-          content: "이메일 삭제에 실패했습니다.",
-        });
-        console.error("Error deleting email:", response, isFlagged);
-      }
+    setLoading(true);
+    setLoadingMessage("이메일 삭제 중...");
+
+    if (response.success) {
+      setLoading(false);
+      setLoadingMessage("이메일 삭제 성공");
+
+      openAlertModal({
+        title: "삭제 성공",
+        content: "이메일이 삭제되었습니다.",
+      });
+    } else {
+      setLoading(false);
+      setLoadingMessage("이메일 삭제 실패");
+
+      openAlertModal({
+        title: "삭제 실패",
+        content: "이메일 삭제에 실패했습니다.",
+      });
+      console.error("Error deleting email:", response, isFlagged);
     }
+
+    setCloseLoadingMessage();
   }
 
   return (

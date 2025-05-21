@@ -1,8 +1,3 @@
-// =====================================
-// EmailGraph 컴포넌트 - 전체 그래프 렌더링 및 상호작용 정의
-// 이메일 노드 데이터를 시각화하고 사용자 이벤트(클릭, 드래그, 우클릭 등)를 처리함
-// =====================================
-
 import {
   memo,
   useMemo,
@@ -12,21 +7,26 @@ import {
   useCallback,
   useEffect,
 } from "react";
+import ReactDOMServer from "react-dom/server";
+import React from "react"; // Import React for JSX
 
 import ForceGraph2D, { ForceGraphMethods } from "react-force-graph-2d";
 
-// 노드 데이터 가공 유틸
 import { buildGraph } from "@utils/getBuildGraph";
 
-// 우클릭 메뉴 컴포넌트
+import useAuthenticateStore from "@stores/authenticateStore";
+
+import PersonIcon from "@assets/icons/PersonIcon";
+import CategoryIcon from "@assets/icons/CategoryIcon";
+import FolderIcon from "@assets/icons/FolderIcon";
+
 import EmailGraphRightClick from "@pages/emailGraph/components/EmailGraphRightClick";
 
-import { RawNode, RawEmail, GraphNode } from "@/types/graphType";
+import { RawNode, GraphNode } from "@/types/graphType";
 
 // Props 인터페이스
 interface Props {
   rawNodes: RawNode[];
-  rawEmails: RawEmail[];
   onSelect?: (idx: number) => void;
   onMerge: (srcId: number, tgtId: number) => void;
   onNavigateBack?: () => void;
@@ -42,13 +42,68 @@ interface CtxMenuState {
 
 // 줌 및 애니메이션 관련 상수 정의
 const INITIAL_ZOOM_LEVEL = 6.5;
-const NODE_DETAIL_ZOOM_LEVEL = 120;
+const NODE_DETAIL_ZOOM_LEVEL = 10;
 const NEW_GRAPH_APPEAR_ZOOM_LEVEL = INITIAL_ZOOM_LEVEL / 2.5; // 새 그래프가 나타날 때 초기 줌 레벨
-const ZOOM_DURATION = 2000;
-const FADE_DURATION = 2000;
+const ZOOM_DURATION = 500;
+const FADE_DURATION = 800;
+
+// "me" 노드 관련 링크 거리 상수
+const ME_NODE_ID = 0;
+const DEFAULT_LINK_DISTANCE = 10; // "me" 노드와 관련 없는 링크의 기본 거리
+const ME_LINK_BASE_DISTANCE = 100; // "me" 노드 링크 거리 계산을 위한 기본 값 (val이 클수록 거리가 짧아짐)
+const ME_LINK_MIN_DISTANCE = 15; // "me" 노드와의 최소 거리
+const ME_LINK_MAX_DISTANCE_CAP = 45; // "me" 노드와의 최대 거리 (val이 매우 작을 경우 대비)
 
 const EmailGraph = memo(
-  ({ rawNodes, rawEmails, onSelect, onMerge, onNavigateBack }: Props) => {
+  ({ rawNodes, onSelect, onMerge, onNavigateBack }: Props) => {
+    const { currentTheme } = useAuthenticateStore();
+
+    const iconImageCache = useRef<{ [key: string]: HTMLImageElement }>({});
+
+    useEffect(() => {
+      const iconColor = "#ffffff"; // 아이콘 색상
+      const nominalIconSize = 24; // SVG 내부 렌더링을 위한 기본 크기
+
+      function prepareIcon(iconKey: string, component: React.ReactElement) {
+        const svgString = ReactDOMServer.renderToStaticMarkup(component);
+        const img = new Image();
+        img.onload = () => {
+          iconImageCache.current[iconKey] = img;
+        };
+        img.onerror = () => {
+          console.error(`Failed to load image for icon: ${iconKey}`);
+        };
+        img.src = `data:image/svg+xml;base64,${btoa(
+          unescape(encodeURIComponent(svgString))
+        )}`;
+      }
+
+      prepareIcon(
+        `person_${currentTheme}`,
+        <PersonIcon
+          width={nominalIconSize}
+          height={nominalIconSize}
+          strokeColor={iconColor}
+        />
+      );
+      prepareIcon(
+        `category_${currentTheme}`,
+        <CategoryIcon
+          width={nominalIconSize}
+          height={nominalIconSize}
+          strokeColor={iconColor}
+        />
+      );
+      prepareIcon(
+        `folder_${currentTheme}`,
+        <FolderIcon
+          width={nominalIconSize}
+          height={nominalIconSize}
+          strokeColor={iconColor}
+        />
+      );
+    }, [currentTheme]);
+
     // 우클릭 메뉴 상태 관리
     const [ctxMenu, setCtxMenu] = useState<CtxMenuState>({
       visible: false,
@@ -58,7 +113,23 @@ const EmailGraph = memo(
     });
 
     // rawNodes를 기반으로 그래프 객체 생성
-    const graph = useMemo(() => buildGraph(rawNodes), [rawNodes, rawEmails]);
+    const graph = useMemo(() => {
+      if (currentTheme === "theme-night") {
+        return buildGraph(rawNodes, [
+          "#556c99",
+          "#7689b0",
+          "#ffab90",
+          "#ffe79a",
+        ]);
+      } else {
+        return buildGraph(rawNodes, [
+          "#022d48",
+          "#0a5685",
+          "#e76f51",
+          "#ffb45c",
+        ]);
+      }
+    }, [rawNodes, currentTheme]);
 
     // 그래프 wrapper 크기 측정
     const wrapRef = useRef<HTMLDivElement>(null);
@@ -117,17 +188,72 @@ const EmailGraph = memo(
       []
     );
 
-    // 그래프 데이터가 바뀌면 줌 리셋 및 투명도 복원
+    // "me" 노드와의 거리를 val에 따라 조절하는 함수
+    const getLinkDistance = useCallback(
+      (link: {
+        source: GraphNode | string | number;
+        target: GraphNode | string | number;
+      }) => {
+        const sourceId =
+          typeof link.source === "object" &&
+          link.source !== null &&
+          "id" in link.source
+            ? link.source.id
+            : (link.source as string | number);
+        const targetId =
+          typeof link.target === "object" &&
+          link.target !== null &&
+          "id" in link.target
+            ? link.target.id
+            : (link.target as string | number);
+
+        let valToConsider: number | undefined;
+        let isMeLink = false;
+
+        if (sourceId === ME_NODE_ID) {
+          const targetNode = graph.nodes.find((n) => n.id === targetId);
+          valToConsider = targetNode?.val;
+          isMeLink = true;
+        } else if (targetId === ME_NODE_ID) {
+          const sourceNode = graph.nodes.find((n) => n.id === sourceId);
+          valToConsider = sourceNode?.val;
+          isMeLink = true;
+        }
+
+        if (isMeLink) {
+          const val =
+            valToConsider !== undefined && valToConsider > 0
+              ? valToConsider
+              : 0.1; // val이 0 또는 undefined일 경우 작은 값으로 대체
+          const calculatedDistance = ME_LINK_BASE_DISTANCE / val;
+          return Math.min(
+            ME_LINK_MAX_DISTANCE_CAP,
+            Math.max(ME_LINK_MIN_DISTANCE, calculatedDistance)
+          );
+        }
+
+        // "me" 노드와 관련 없는 링크는 기본 거리 사용
+        return DEFAULT_LINK_DISTANCE;
+      },
+      [graph.nodes] // graph.nodes가 변경될 때 이 함수가 올바른 val 값을 참조하도록 합니다.
+    );
+
+    // 그래프 데이터가 바뀌면 줌 리셋, 투명도 복원 및 링크 거리 적용
     useEffect(() => {
       if (fgRef.current && graph.nodes.length > 0 && w > 0 && h > 0) {
-        // const meNode = graph.nodes.find((n) => n.id === 0);
+        // 링크 거리 먼저 설정
+        const linkForce = fgRef.current.d3Force("link");
+        if (linkForce) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (linkForce as any).distance(getLinkDistance);
+        }
 
         if (isTransitioning) {
           // 트랜지션 중 새 데이터 도착 시 (클릭/뒤로가기 후)
+          // 이 블록은 새 그래프가 나타나는 것을 처리합니다.
 
-          fgRef.current.centerAt(0, 0, 0); // 즉시 중앙 정렬
-
-          // 그래프는 현재 투명도 0 상태여야 함
+          fgRef.current.centerAt(0, 0, 0); // 새 그래프를 위해 즉시 중앙 정렬
+          // 이전 animateGraphOpacity(0, ...) 호출로 인해 그래프는 현재 투명도 0 상태여야 합니다.
           fgRef.current.zoom(NEW_GRAPH_APPEAR_ZOOM_LEVEL, 0); // 즉시 "작은" 크기로 줌 설정
 
           // "작은" 크기에서 INITIAL_ZOOM_LEVEL로 줌 애니메이션
@@ -135,26 +261,25 @@ const EmailGraph = memo(
 
           // 동시에 페이드 인 애니메이션
           animateGraphOpacity(1, FADE_DURATION, () => {
-            setIsTransitioning(false); // 페이드 인 완료 시 플래그 해제
+            setIsTransitioning(false); // 트랜지션 완료
           });
         } else {
           // 초기 로드 또는 트랜지션과 무관한 데이터 변경 시
-
           fgRef.current.centerAt(0, 0, 0); // 즉시 중앙 정렬
-
           fgRef.current.zoom(INITIAL_ZOOM_LEVEL, 0); // 즉시 최종 줌 레벨로 설정
-
           currentOpacityRef.current = 1; // 투명도 전체 설정
           setGraphOpacity(1); // 즉시 표시
-          setIsTransitioning(false); // 플래그 초기화
+          // setIsTransitioning(false); // 이미 false이거나, 완료된 트랜지션이었다면 false로 설정될 것입니다.
         }
+
+        // 모든 변경 후 시뮬레이션 재가열
+        fgRef.current.d3ReheatSimulation?.();
       }
-    }, [graph, w, h, animateGraphOpacity]); // isTransitioning은 의도적으로 의존성 배열에서 제외
+    }, [graph, w, h, getLinkDistance, animateGraphOpacity]); // isTransitioning 및 setIsTransitioning을 의존성 배열에서 제거
 
     // 노드 반지름 계산
     const getRadius = useCallback(
-      (n: any) =>
-        n.id === 0 ? 12 : Math.max(Math.min(n.val * 0.5 + 6, 24), 8),
+      (n: any) => (n.id === 0 ? 12 : Math.min(n.val * 4, 10)),
       []
     );
 
@@ -192,63 +317,83 @@ const EmailGraph = memo(
 
         clickTimerRef.current = setTimeout(() => {
           clickTimerRef.current = null;
-          if (isTransitioning) return;
+          if (isTransitioning) return; // 이미 트랜지션 중이면 중복 실행 방지
           setIsTransitioning(true);
 
-          // 확대 줌 애니메이션
-          if (node.id !== 0) {
-            if (
-              fgRef.current &&
-              typeof node.x === "number" &&
-              typeof node.y === "number"
-            ) {
-              fgRef.current.centerAt(node.x, node.y, 0);
-              fgRef.current.zoom(NODE_DETAIL_ZOOM_LEVEL, ZOOM_DURATION);
+          // 확대 줌 및 중앙 정렬 애니메이션
+          if (fgRef.current) {
+            if (typeof node.x === "number" && typeof node.y === "number") {
+              fgRef.current.centerAt(node.x, node.y, ZOOM_DURATION);
+            } else {
+              // 노드에 x, y 좌표가 없는 경우 (예: 초기 "me" 노드) 그래프 중앙으로 정렬
+              const { x: screenCenterX, y: screenCenterY } =
+                fgRef.current.screen2GraphCoords(w / 2, h / 2);
+              fgRef.current.centerAt(
+                screenCenterX,
+                screenCenterY,
+                ZOOM_DURATION
+              );
             }
+            fgRef.current.zoom(NODE_DETAIL_ZOOM_LEVEL, ZOOM_DURATION);
           }
 
           // 페이드 아웃 후 API 호출
-          animateGraphOpacity(0, FADE_DURATION);
-          setTimeout(() => {
+          animateGraphOpacity(0, FADE_DURATION, () => {
             onSelect?.(node.id);
-            fgRef.current && fgRef.current.centerAt(0, 0, ZOOM_DURATION + 200);
-          }, ZOOM_DURATION);
+          });
 
           console.log("단일클릭! (Zooming in or selecting Me)", node);
         }, DBL_GAP);
       },
-      [onSelect, animateGraphOpacity, isTransitioning, setIsTransitioning]
+      [
+        onSelect,
+        animateGraphOpacity, // stable
+        isTransitioning, // guard clause용
+        setIsTransitioning, // stable setter
+        graph.nodes, // "me" 노드 클릭 시 좌표 없는 경우 대비 (현재 로직상 직접 사용은 안하나, 안정성을 위해 포함 가능)
+        w,
+        h, // screen2GraphCoords용
+        // fgRef (stable ref), DBL_GAP, ZOOM_DURATION, NODE_DETAIL_ZOOM_LEVEL, FADE_DURATION (constants)
+      ]
     );
 
     // 뒤로가기 메뉴 클릭 시 초기 뷰 복원
     const handleGoBackFromMenu = useCallback(() => {
-      if (isTransitioning) return;
+      if (isTransitioning) return; // 이미 트랜지션 중이면 중복 실행 방지
       setIsTransitioning(true);
       setCtxMenu({ visible: false, x: 0, y: 0, node: null });
 
-      // 전체 보기로 줌
+      // 전체 보기로 줌 및 중앙 정렬
       if (fgRef.current) {
         fgRef.current.zoom(INITIAL_ZOOM_LEVEL, ZOOM_DURATION);
-        const meNode = graph.nodes.find((n) => n.id === 0);
+        const meNode = graph.nodes.find((n) => n.id === ME_NODE_ID);
         if (
           meNode &&
           typeof meNode.x === "number" &&
           typeof meNode.y === "number"
         ) {
           fgRef.current.centerAt(meNode.x, meNode.y, ZOOM_DURATION);
+        } else {
+          // "me" 노드가 없거나 좌표가 없는 경우 그래프 중앙으로 정렬
+          const { x: screenCenterX, y: screenCenterY } =
+            fgRef.current.screen2GraphCoords(w / 2, h / 2);
+          fgRef.current.centerAt(screenCenterX, screenCenterY, ZOOM_DURATION);
         }
       }
 
-      animateGraphOpacity(0, FADE_DURATION);
-      setTimeout(() => {
+      // 페이드 아웃 후 API 호출
+      animateGraphOpacity(0, FADE_DURATION, () => {
         onNavigateBack?.();
-      }, ZOOM_DURATION);
+      });
     }, [
       onNavigateBack,
-      animateGraphOpacity,
-      graph.nodes,
-      isTransitioning,
-      setIsTransitioning,
+      animateGraphOpacity, // stable
+      graph.nodes, // meNode 찾기용
+      isTransitioning, // guard clause용
+      setIsTransitioning, // stable setter
+      w,
+      h, // screen2GraphCoords용
+      // fgRef (stable ref), INITIAL_ZOOM_LEVEL, ZOOM_DURATION, FADE_DURATION, ME_NODE_ID (constants)
     ]);
 
     // 우클릭 핸들러: 좌표와 노드 정보 저장
@@ -301,62 +446,121 @@ const EmailGraph = memo(
 
         const s: any = l.source;
         const t: any = l.target;
-        if (s.x == null || t.x == null) {
+
+        if (s?.x == null || s?.y == null || t?.x == null || t?.y == null) {
           ctx.restore();
           return;
         }
+
+        const dx = t.x - s.x;
+        const dy = t.y - s.y;
+        const dist = Math.hypot(dx, dy);
+
+        if (dist === 0) {
+          ctx.restore();
+          return;
+        }
+
+        const targetNodeRadius = getRadius(t);
+
+        const effectiveVisualLength = Math.max(0, dist - targetNodeRadius);
+
+        if (effectiveVisualLength === 0) {
+          ctx.restore();
+          return;
+        }
+
+        const shortenScaleFactor = effectiveVisualLength / (dist + 0.5);
+
+        // 애니메이션 진행률에 따라 링크 길이 조정
         const key = `${s.id}->${t.id}`;
-        const p = animMap[key] ?? 1;
-        const xx = s.x + (t.x - s.x) * p;
-        const yy = s.y + (t.y - s.y) * p;
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 2 / gs;
+        const animationProgress = animMap[key] ?? 1; // 0~1 사이의 값으로 애니메이션 진행률을 가져옴
+
+        const finalEndX = s.x + dx * shortenScaleFactor * animationProgress;
+        const finalEndY = s.y + dy * shortenScaleFactor * animationProgress;
+
+        ctx.strokeStyle =
+          currentTheme === "theme-night" ? "#606885" : "#f8f8f8";
+        ctx.lineWidth = 2 / gs; // 스케일에 따라 선 두께 조정
+
         ctx.beginPath();
-        ctx.moveTo(s.x, s.y);
-        ctx.lineTo(xx, yy);
+        ctx.moveTo(s.x, s.y); // 라인 시작점
+        ctx.lineTo(finalEndX, finalEndY); // 라인 끝점
         ctx.stroke();
 
         ctx.restore();
       },
-      [animMap, graphOpacity]
+      [animMap, graphOpacity, getRadius] // graphOpacity는 애니메이션과 관련이 없지만, 캔버스의 투명도를 조정하기 위해 사용
     );
 
     // 노드 캔버스 렌더링
     const nodeCanvasObject = useCallback(
-      (n: any, ctx: CanvasRenderingContext2D, gs: number) => {
+      (n: any, ctx: CanvasRenderingContext2D) => {
         ctx.save();
         ctx.globalAlpha = graphOpacity;
 
         const baseSize = getRadius(n);
         ctx.beginPath();
-        if (n.C_type === 2 || n.C_type === 3) {
-          const rectHeight = baseSize * 1.3;
-          const rectWidth = baseSize * 2;
-          const cornerRadius = Math.min(rectHeight, rectWidth) * 0.15;
+        ctx.arc(n.x ?? 0, n.y ?? 0, baseSize, 0, 2 * Math.PI, false);
+
+        if (n.id === 0) {
+          ctx.fillStyle = "#021a60";
+        } else {
+          ctx.fillStyle = n.color;
+        }
+        ctx.fill(); // 원 먼저 그리기
+
+        // 아이콘 렌더링
+        let iconKey: string | null = null;
+        if (n.id !== 0) {
+          switch (n.C_type) {
+            case 1:
+              iconKey = `person_${currentTheme}`;
+              break;
+            case 2:
+              iconKey = `category_${currentTheme}`;
+              break;
+            case 3:
+              iconKey = `folder_${currentTheme}`;
+              break;
+            default:
+              break;
+          }
+        }
+
+        if (iconKey && iconImageCache.current[iconKey]) {
+          const img = iconImageCache.current[iconKey];
           const nodeX = n.x ?? 0;
           const nodeY = n.y ?? 0;
-          ctx.roundRect(
-            nodeX - rectWidth / 2,
-            nodeY - rectHeight / 2,
-            rectWidth,
-            rectHeight,
-            cornerRadius
-          );
-        } else {
-          ctx.arc(n.x ?? 0, n.y ?? 0, baseSize, 0, 2 * Math.PI, false);
-        }
-        ctx.fillStyle = n.color || "#9CA3AF";
-        ctx.fill();
+          const iconSize = baseSize * 1.2; // 아이콘 크기를 baseSize의 1.2배로 조정
+          const drawX = nodeX - iconSize / 2;
+          const drawY = nodeY - iconSize / 2;
 
-        ctx.font = `${12 / gs}px Pretendard`;
+          const originalAlpha = ctx.globalAlpha; // 현재 투명도 저장
+          ctx.globalAlpha = 1; // 아이콘을 항상 완전히 보이도록 설정
+          ctx.drawImage(img, drawX, drawY, iconSize, iconSize);
+          ctx.globalAlpha = originalAlpha; // 원래 투명도로 복원
+        }
+
+        // 텍스트 렌더링
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillStyle = "#fff";
-        ctx.fillText(n.name || "", n.x ?? 0, n.y ?? 0);
+
+        if (n.id === 0) {
+          ctx.font = `${6}px Pretendard-SemiBold`;
+          ctx.fillStyle = "#ffffff";
+          ctx.fillText(n.name || "", n.x ?? 0, n.y ?? 0);
+        } else {
+          ctx.font = `${2.4}px Pretendard-SemiBold`;
+          ctx.fillStyle =
+            currentTheme === "theme-night" ? "#ffffff" : "#000000";
+          const textYPosition = (n.y ?? 0) + baseSize + 3; // 텍스트 위치 조정
+          ctx.fillText(n.name || "", n.x ?? 0, textYPosition);
+        }
 
         ctx.restore();
       },
-      [getRadius, graphOpacity]
+      [getRadius, graphOpacity, currentTheme] // Added currentTheme
     );
 
     // 최종 렌더링 JSX

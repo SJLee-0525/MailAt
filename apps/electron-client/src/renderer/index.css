@@ -86,6 +86,7 @@
   --color-success: #0094ff;
   --color-warning: #ffb45c;
   --color-error: #ee5c5c;
+  --color-calendardisalbed: #dddddd;
 }
 
 /* 다크 테마 */
@@ -111,6 +112,7 @@ html.theme-night {
   --color-success: #0094ff; /* 유지 */
   --color-warning: #ffb45c; /* 유지 */
   --color-error: #ee5c5c; /* 유지 */
+  --color-calendardisalbed: #24262c;
 }
 
 html.theme-night #root {

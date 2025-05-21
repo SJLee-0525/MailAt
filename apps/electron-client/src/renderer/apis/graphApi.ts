@@ -1,174 +1,233 @@
-// 그래프 초기화 요청
-export const resetGraph = async () => {
-  try {
-    const response = await window.electronAPI.graph.testGraph();
-    console.log(`[DELETE] window.electronAPI.graph.resetGraph()`, response);
+import useAuthenticateStore from "@stores/authenticateStore";
 
-    const response2 = await window.electronAPI.graph.readData();
-    console.log(`[GET] window.electronAPI.graph.readData()`, response2);
-    return response.data;
-  } catch (error: unknown) {
-    throw new Error(error as string);
-  }
-};
+import { RawNode, GraphEmail, GraphIpcResponse } from "@/types/graphType";
 
-// 노드 생성 요청
-export const createNode = async (nodeData) => {
-  try {
-    const response = await window.electronAPI.graph.createNode(nodeData);
-    console.log(`[POST] window.electronAPI.graph.createNode()`, response);
-    return response.data;
-  } catch (error: unknown) {
-    throw new Error(error as string);
-  }
-};
+/*
+중심 노드 타입 - 0 : Root, 1 : Person, 2 : Category, 3 : Subcategory
+중심 노드 ID - Root, Person : contact_id, Category, Subcategory : category_id
+inout 타입 - 1 : in, 2 : out, 3 : in&out
+*/
 
-// 노드 업데이트 요청
-export const updateNode = async ({ nodeId, updateData }) => {
-  try {
-    const response = await window.electronAPI.graph.updateNode({
-      nodeId,
-      updateData,
-    });
-    console.log(
-      `[PUT] window.electronAPI.graph.updateNode(${nodeId}, ${updateData})`,
-      response
-    );
-    return response.data;
-  } catch (error: unknown) {
-    throw new Error(error as string);
-  }
-};
-
-// 노드 삭제 요청
-export const deleteNode = ({ nodeId }) => {
-  try {
-    const response = window.electronAPI.graph.deleteNode(nodeId);
-    console.log(
-      `[DELETE] window.electronAPI.graph.deleteNode(${nodeId})`,
-      response
-    );
-    return response.data;
-  } catch (error: unknown) {
-    throw new Error(error as string);
-  }
-};
-
-// 노드 조회 요청
-export const readNode = async ({
+// 그래프 노드 목록 조회
+export const readGraphNode = async ({
   C_ID,
   C_type,
   IO_type,
 }: {
-  C_ID: number;
-  C_type: number;
-  IO_type: number;
-}) => {
+  C_ID: string; //  중심 노드 ID
+  C_type: number; // 중심 노드 타입,
+  IO_type: number; //  inout 타입
+}): Promise<RawNode[]> => {
+  const { user } = useAuthenticateStore();
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  /*
+  "C_ID": 중심 노드 ID,
+  "C_type": 중심 노드 타입,
+  "IO_type": inout 타입 
+  */
   try {
-    const response = await window.electronAPI.graph.readNode({
+    const response = await window.electronAPI.graph.readNodePy({
       C_ID,
       C_type,
       IO_type,
     });
-    console.log(
-      `[GE1111T] window.electronAPI.graph.readNode(${C_ID}, ${C_type}, ${IO_type})`,
-      response
-    );
-    return response.data; // Assuming the resolved response object has a 'data' property
-  } catch (error: unknown) {
-    throw new Error(error as string);
+    if (response.status === "success") {
+      return response.result.nodes;
+    } else {
+      throw new Error(response.message);
+    }
+  } catch (error) {
+    console.error("Error fetching graph nodes:", error);
+    throw error;
   }
 };
 
-// 노드 메시지 읽기 요청
-export const readNodeMessage = async ({
-  basic_C_ID,
-  C_type,
-  filter,
+// 노드 생성
+export const createGraphNode = async ({
+  C_name,
 }: {
-  basic_C_ID: any;
-  C_type: any;
-  filter: any;
-}) => {
+  C_name: string; // 새로운 카테고리 이름
+}): Promise<GraphIpcResponse> => {
+  const { user } = useAuthenticateStore();
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  // {"C_name": "새로운 카테고리"}
   try {
-    const response = await window.electronAPI.graph.readMessage({
-      basic_C_ID,
-      C_type,
-      filter,
+    const response = await window.electronAPI.graph.createNodePy({
+      C_name,
     });
-    console.log(
-      `[GET] window.electronAPI.graph.readMessage(${basic_C_ID}, ${C_type}, ${filter})`,
-      response
-    );
-    return response.data;
-  } catch (error: unknown) {
-    throw new Error(error as string);
+    if (response.status === "success") {
+      return response;
+    } else {
+      throw new Error(response.message);
+    }
+  } catch (error) {
+    console.error("Error creating graph node:", error);
+    throw error;
   }
 };
 
-// 노드 메시지 삭제 요청
-export const deleteNodeMessage = async ({ message_C_ID, except_C_ID }) => {
-  try {
-    const response = await window.electronAPI.graph.deleteMessage({
-      message_C_ID,
-      except_C_ID,
-    });
-    console.log(
-      `[DELETE] window.electronAPI.graph.deleteMessage(${message_C_ID}, ${except_C_ID})`,
-      response
-    );
-    return response.data;
-  } catch (error: unknown) {
-    throw new Error(error as string);
-  }
-};
+// 노드 삭제
+export const deleteGraphNode = async ({
+  C_ID,
+  C_type,
+}: {
+  C_ID: string; // 삭제할 노드 ID
+  C_type: number; // 삭제할 노드 타입
+}): Promise<{ status: "success" | "fail" }> => {
+  const { user } = useAuthenticateStore();
 
-// 노드 라벨 수정 요청
-export const updateNodeLabel = async ({ C_ID, newLabel }) => {
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  // {"C_ID": 노드 ID, "C_type": 노드 타입}
   try {
-    const response = await window.electronAPI.graph.updateLabel({
+    const response = await window.electronAPI.graph.deleteNodePy({
       C_ID,
-      newLabel,
+      C_type,
     });
-    console.log(
-      `[PUT] window.electronAPI.graph.updateLabel(${C_ID}, ${newLabel})`,
-      response
-    );
-    return response.data;
-  } catch (error: unknown) {
-    throw new Error(error as string);
+    if (response.status === "success") {
+      return response;
+    } else {
+      throw new Error("Failed to delete node");
+    }
+  } catch (error) {
+    console.error("Error deleting graph node:", error);
+    throw error;
   }
 };
 
-// 키워드 검색 요청 처리
-export const searchByKeyword = async ({ keyword }) => {
+// 노드 이름 변경
+export const renameGraphNode = async ({
+  before_name,
+  after_name,
+}: {
+  before_name: string; // 노드 이전 이름
+  after_name: string; // 노드 새 이름
+}): Promise<{ status: "success" | "fail" }> => {
+  const { user } = useAuthenticateStore();
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  // {"before_name": "노드 이전 이름", "after_name": "노드 새 이름"}
   try {
-    const response = await window.electronAPI.graph.searchByKeyword({
-      keyword,
+    const response = await window.electronAPI.graph.renameNodePy({
+      before_name,
+      after_name,
     });
-    console.log(
-      `[GET] window.electronAPI.graph.searchByKeyword(${keyword})`,
-      response
-    );
-    return response.data;
-  } catch (error: unknown) {
-    throw new Error(error as string);
+    if (response.status === "success") {
+      return response;
+    } else {
+      throw new Error("Failed to rename node");
+    }
+  } catch (error) {
+    console.error("Error renaming graph node:", error);
+    throw error;
   }
 };
 
-// 노드 병합 요청
-export const mergeNodes = async ({ from_C_ID, to_C_ID }) => {
+// 노드 병합
+export const mergeGraphNode = async ({
+  before_name1,
+  before_name2,
+  after_name,
+}: {
+  before_name1: string; // 노드 이전 이름1
+  before_name2: string; // 노드 이전 이름2
+  after_name: string; // 노드 새 이름
+}): Promise<{ status: "success" | "fail" }> => {
+  const { user } = useAuthenticateStore();
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  // {"before_name1": "노드 이전 이름1", "before_name2": "노드 이전 이름2", "after_name": "노드 새 이름"}
   try {
-    const response = await window.electronAPI.graph.mergeNode({
-      from_C_ID,
-      to_C_ID,
+    const response = await window.electronAPI.graph.mergeNodePy({
+      before_name1,
+      before_name2,
+      after_name,
     });
-    console.log(
-      `[PUT] window.electronAPI.graph.mergeNode(${from_C_ID}, ${to_C_ID})`,
-      response
-    );
-    return response.data;
-  } catch (error: unknown) {
-    throw new Error(error as string);
+    if (response.status === "success") {
+      return response;
+    } else {
+      throw new Error("Failed to merge nodes");
+    }
+  } catch (error) {
+    console.error("Error merging graph nodes:", error);
+    throw error;
+  }
+};
+
+// 메일 삭제
+export const deleteGraphMessage = async ({
+  message_id,
+}: {
+  message_id: number; // 삭제할 메일의 ID
+}): Promise<{ status: "success" | "fail" }> => {
+  const { user } = useAuthenticateStore();
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  // {"message_id": 메세지 ID}
+  try {
+    const response = await window.electronAPI.graph.deleteMailPy({
+      message_id,
+    });
+    if (response.status === "success") {
+      return response;
+    } else {
+      throw new Error("Failed to delete message");
+    }
+  } catch (error) {
+    console.error("Error deleting graph message:", error);
+    throw error;
+  }
+};
+
+// 메일 이동
+export const moveGraphMessage = async ({
+  message_id,
+  category_id,
+  sub_category_id,
+}: {
+  message_id: number; // 이동할 메일의 ID
+  category_id: number; // 카테고리 ID
+  sub_category_id: number; // 서브카테고리 ID
+}): Promise<{ status: "success" | "fail" }> => {
+  const { user } = useAuthenticateStore();
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  // {"message_id": 메세지 ID, "category_id": 카테고리 ID, "sub_category_id": 서브카테고리 ID}
+  try {
+    const response = await window.electronAPI.graph.moveMailPy({
+      message_id,
+      category_id,
+      sub_category_id,
+    });
+    if (response.status === "success") {
+      return response;
+    } else {
+      throw new Error("Failed to move message");
+    }
+  } catch (error) {
+    console.error("Error moving graph message:", error);
+    throw error;
   }
 };
