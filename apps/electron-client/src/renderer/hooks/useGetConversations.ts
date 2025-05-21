@@ -100,7 +100,7 @@ export const useGetEmailFolders = () => {
         ];
       });
 
-      console.log("폴더 색상 매핑:", foldersWithColor);
+      // console.log("폴더 색상 매핑:", foldersWithColor);
       setFolders(foldersWithColor);
     }
   }, [query.data, setFolders]);

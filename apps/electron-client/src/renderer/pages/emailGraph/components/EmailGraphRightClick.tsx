@@ -12,6 +12,7 @@ interface CtxMenuState {
 interface EmailGraphRightClickProps {
   ctxMenu: CtxMenuState;
   setCtxMenu: React.Dispatch<React.SetStateAction<CtxMenuState>>;
+  setRename?: () => void; // New prop for renaming
   onGoBack?: () => void; // New prop for "Go Back" action
   onDelete?: () => void; // New prop for "Delete" action
 }
@@ -19,6 +20,7 @@ interface EmailGraphRightClickProps {
 const EmailGraphRightClick = ({
   ctxMenu,
   setCtxMenu,
+  setRename,
   onGoBack,
   onDelete,
 }: EmailGraphRightClickProps) => {
@@ -45,36 +47,34 @@ const EmailGraphRightClick = ({
   return (
     <div
       ref={htmlRef}
-      className="absolute z-50 bg-white border border-gray-200 rounded-md shadow-lg min-w-[140px] font-pre-medium text-sm"
+      className="absolute z-50 bg-white border border-gray-200 rounded-md shadow-lg min-w-[140px] font-pre-medium text-sm text-text"
       style={{ left: ctxMenu.x, top: ctxMenu.y }}
       onContextMenu={(e) => e.preventDefault()} // 메뉴 위에서 또 우클릭 막기
     >
       <ul>
         <li
-          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+          className="px-4 py-2 hover:bg-light1 cursor-pointer"
           onClick={() => {
-            console.log("전체 조회 :", ctxMenu.node);
-            // This might be a different action, like fetching all details for the current node's context
-            // For now, it just closes the menu.
+            setRename?.();
             setCtxMenu((m) => ({ ...m, visible: false }));
           }}
         >
-          전체 조회
+          이름 변경
         </li>
         {onGoBack && ( // Only show "뒤로가기" if onGoBack is provided
           <li
-            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+            className="px-4 py-2 hover:bg-light1  cursor-pointer"
             onClick={() => {
               onGoBack();
               setCtxMenu((m) => ({ ...m, visible: false }));
             }}
           >
-            뒤로가기
+            홈으로
           </li>
         )}
 
         <li
-          className="px-4 py-2 text-red-600 hover:bg-gray-100 cursor-pointer"
+          className="px-4 py-2 text-red-600 hover:bg-light1 cursor-pointer"
           onClick={() => {
             if (onDelete) {
               onDelete();

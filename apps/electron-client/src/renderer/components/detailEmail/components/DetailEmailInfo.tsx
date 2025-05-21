@@ -1,5 +1,5 @@
-const DetailEmailInfo = ({ isRead, to }: { isRead: boolean; to: string }) => {
-  console.log("DetailEmailInfo", isRead, to);
+const DetailEmailInfo = ({ to }: { to: string }) => {
+  // console.log("DetailEmailInfo", isRead, to);
 
   return (
     <div className="flex items-center justify-start h-fit ps-8 gap-2">

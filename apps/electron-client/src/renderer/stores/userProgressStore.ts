@@ -12,17 +12,20 @@ interface UserProgressStore {
   inboxIsClosing: boolean;
   attachmentViewerIsOpen: boolean;
   attachmentViewerIsClosing: boolean; // 닫기 애니메이션 상태 추가
+  graphInboxIsOpen: boolean;
+  graphInboxIsClosing: boolean;
   selectedMail: { messageId: number; fromEmail: string } | null;
   selectedMailIsClosing: boolean;
   isReplying: boolean;
   chattingIsOpen: boolean;
   chattingIsClosing: boolean;
   setLoading: (isLoading: boolean) => void;
-  setLoadingMessage: (loadingMessage: string) => void;
+  setLoadingMessage: (loadingMessage: string | null) => void;
   setCloseLoadingMessage: () => void;
   setBottomNavProgress: (progress: "search" | null) => void;
   setMailFormIsOpen: (isOpen: boolean) => void;
   setInboxIsOpen: (isOpen: boolean) => void;
+  setGraphInboxIsOpen: (isOpen: boolean) => void;
   setCalendarIsOpen: (isOpen: boolean) => void;
   setAttachmentViewerIsOpen: (isOpen: boolean) => void;
   setSelectedMail: (
@@ -32,7 +35,7 @@ interface UserProgressStore {
   setChattingIsOpen: (isOpen: boolean) => void;
 }
 
-const useUserProgressStore = create<UserProgressStore>((set) => ({
+const useUserProgressStore = create<UserProgressStore>((set, get) => ({
   isLoading: false,
   loadingMessage: null,
   bottomNavProgress: null,
@@ -40,6 +43,8 @@ const useUserProgressStore = create<UserProgressStore>((set) => ({
   mailFormIsClosing: false,
   inboxIsOpen: false,
   inboxIsClosing: false,
+  graphInboxIsOpen: false,
+  graphInboxIsClosing: false,
   calendarIsOpen: false,
   calendarIsClosing: false,
   attachmentViewerIsOpen: false,
@@ -53,7 +58,9 @@ const useUserProgressStore = create<UserProgressStore>((set) => ({
   setLoadingMessage: (loadingMessage) => set({ loadingMessage }),
   setCloseLoadingMessage: () => {
     setTimeout(() => {
-      set({ loadingMessage: null });
+      if (!get().isLoading) {
+        set({ loadingMessage: null });
+      }
     }, 3000);
   },
   setBottomNavProgress: (progress) => set({ bottomNavProgress: progress }),
@@ -79,6 +86,17 @@ const useUserProgressStore = create<UserProgressStore>((set) => ({
       }, 300);
     }
   },
+  setGraphInboxIsOpen: (isOpen) => {
+    if (isOpen) {
+      set({ graphInboxIsOpen: isOpen });
+    } else {
+      set({ graphInboxIsClosing: true });
+
+      setTimeout(() => {
+        set({ graphInboxIsOpen: false, graphInboxIsClosing: false });
+      }, 300);
+    }
+  },
   setCalendarIsOpen: (isOpen) => {
     if (isOpen) {
       set({ calendarIsOpen: isOpen });
@@ -97,7 +115,10 @@ const useUserProgressStore = create<UserProgressStore>((set) => ({
       set({ attachmentViewerIsClosing: true });
 
       setTimeout(() => {
-        set({ attachmentViewerIsOpen: false, attachmentViewerIsClosing: false });
+        set({
+          attachmentViewerIsOpen: false,
+          attachmentViewerIsClosing: false,
+        });
       }, 300);
     }
   },

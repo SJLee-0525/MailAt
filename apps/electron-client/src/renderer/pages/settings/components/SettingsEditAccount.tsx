@@ -9,10 +9,10 @@ const SettingEditAccount = ({
 }) => {
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const data = Object.fromEntries(formData.entries());
+    // const formData = new FormData(e.currentTarget);
+    // const data = Object.fromEntries(formData.entries());
 
-    console.log("Form Data:", data);
+    // console.log("Form Data:", data);
   }
 
   return (

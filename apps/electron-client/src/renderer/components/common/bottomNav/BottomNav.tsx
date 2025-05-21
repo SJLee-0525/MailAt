@@ -20,21 +20,21 @@ const BottomNav = () => {
       <BottomNavButton
         icon={<SearchIcon strokeColor="white" />}
         onClick={() => {
-          console.log("Search");
+          // console.log("Search");
           setBottomNavProgress("search");
         }}
       />
       <BottomNavButton
         icon={<EditIcon strokeColor="white" />}
         onClick={() => {
-          console.log("Edit");
+          // console.log("Edit");
           setMailFormIsOpen(true);
         }}
       />
       <BottomNavButton
         icon={<InboxIcon strokeColor="white" />}
         onClick={() => {
-          console.log("Inbox");
+          // console.log("Inbox");
           setCalendarIsOpen(false);
           setInboxIsOpen(!inboxIsOpen);
         }}

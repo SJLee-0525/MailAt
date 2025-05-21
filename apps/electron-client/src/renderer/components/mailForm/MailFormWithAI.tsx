@@ -153,7 +153,7 @@ const MailFormWithAI = forwardRef<HTMLInputElement, MailFormWithAIProps>(
           setSuggestion("");
         }
       } catch (err) {
-        console.error("AI 제안 오류", err);
+        // console.error("AI 제안 오류", err);
         setLoadingMessage("AI 제안 오류");
         setSuggestion("");
         setCorrectionMode(false);

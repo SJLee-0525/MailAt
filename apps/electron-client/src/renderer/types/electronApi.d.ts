@@ -263,9 +263,11 @@ interface ElectronAPI {
 
     // 그래프 노드 병합
     mergeNodePy(json_obj: {
-      before_name1: string; // 노드 이전 이름1
-      before_name2: string; // 노드 이전 이름2
-      after_name: string; // 노드 새 이름
+      C_ID1: number;
+      C_type1: number;
+      C_ID2: number;
+      C_type2: number;
+      after_name: string;
     }): Promise<GraphIpcResponse>;
 
     // 그래프 메일 삭제
@@ -279,6 +281,29 @@ interface ElectronAPI {
       category_id: number;
       sub_category_id: number;
     }): Promise<GraphIpcResponse>;
+
+    // 그래프 노드 검색
+    searchByKeywordPy(json_obj: {
+      keyword: string; // 검색할 키워드
+    }): Promise<{
+      status: "success" | "fail";
+      message: string;
+      result: {
+        nodes: RawNode[];
+      };
+    }>;
+  };
+
+  calendar: {
+    // 캘린더 이벤트 조회
+    getEvents(params: {
+      accountId: number;
+      year: number;
+      month: number;
+    }): Promise<{
+      success: boolean;
+      data: CalendarEventFromAPI[];
+    }>;
   };
 
   // 이메일 전송

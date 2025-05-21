@@ -191,10 +191,10 @@ export const getEmailsByThreadId = async ({
 
   try {
     const response = await window.electronAPI.email.getThreadsByEmail(params);
-    console.log(
-      `[GET]121321312 window.electronAPI.email.getThreadsByEmail(${params})`,
-      response
-    );
+    // console.log(
+    //   `[GET] window.electronAPI.email.getThreadsByEmail(${params})`,
+    //   response
+    // );
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -209,10 +209,10 @@ export const deleteEmail = async ({
 }): Promise<{ success: boolean; messageId: number }> => {
   try {
     const response = await window.electronAPI.email.delete(messageId);
-    console.log(
-      `[DELETE] window.electronAPI.email.delete(${messageId})`,
-      response
-    );
+    // console.log(
+    //   `[DELETE] window.electronAPI.email.delete(${messageId})`,
+    //   response
+    // );
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -233,10 +233,10 @@ export const markEmailAsRead = async (
       messageId,
       isRead,
     });
-    console.log(
-      `[PATCH] window.electronAPI.email.markAsRead(${messageId}, ${isRead})`,
-      response
-    );
+    // console.log(
+    //   `[PATCH] window.electronAPI.email.markAsRead(${messageId}, ${isRead})`,
+    //   response
+    // );
     return response.data;
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -249,10 +249,10 @@ export const sendEmail = async (
 ): Promise<{ success: boolean; messageId: number }> => {
   try {
     const response = await window.electronAPI.sendEmail(emailData);
-    console.log(
-      `[POST] window.electronAPI.sendEmail(${JSON.stringify(emailData)})`,
-      response
-    );
+    // console.log(
+    //   `[POST] window.electronAPI.sendEmail(${JSON.stringify(emailData)})`,
+    //   response
+    // );
     return response;
   } catch (error: unknown) {
     throw new Error(error as string);

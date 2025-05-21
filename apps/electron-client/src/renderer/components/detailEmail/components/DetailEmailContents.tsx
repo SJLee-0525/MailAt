@@ -23,7 +23,6 @@ const DetailEmailContents = ({
         date={detailEmail.sentAt}
         fromName={detailEmail.fromName}
         fromEmail={detailEmail.fromEmail}
-        to={detailEmail.fromEmail} // 내 메일 나중에 넣어야 할 듯 임시로 아무거나 넣어둠
         body={detailEmail.bodyHtml}
         attachments={detailEmail.attachments ? detailEmail.attachments : []}
         isFlagged={detailEmail.isFlagged}

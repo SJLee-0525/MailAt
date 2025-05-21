@@ -49,7 +49,7 @@ const SettingsAddAccount = ({ closeAction }: { closeAction: () => void }) => {
       smtpPort: Number(smtpPort),
     };
 
-    console.log("이메일 추가 payload", payload);
+    // console.log("이메일 추가 payload", payload);
 
     // api 호출 (!!!!!!!추후 보완 필요)
     setLoading(true);

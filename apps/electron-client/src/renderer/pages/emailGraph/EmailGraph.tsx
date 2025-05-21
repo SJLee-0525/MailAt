@@ -8,29 +8,47 @@ import {
   useEffect,
 } from "react";
 import ReactDOMServer from "react-dom/server";
-import React from "react"; // Import React for JSX
 
 import ForceGraph2D, { ForceGraphMethods } from "react-force-graph-2d";
 
 import { buildGraph } from "@utils/getBuildGraph";
 
+import useUserProgressStore from "@stores/userProgressStore";
 import useAuthenticateStore from "@stores/authenticateStore";
+import useModalStore from "@stores/modalStore";
 
-import { useDeleteGraphNode } from "@hooks/useGraphHook";
+import { useDeleteGraphNode, useRenameGraphNode } from "@hooks/useGraphHook";
 
 import PersonIcon from "@assets/icons/PersonIcon";
 import CategoryIcon from "@assets/icons/CategoryIcon";
 import FolderIcon from "@assets/icons/FolderIcon";
 
+import IconButton from "@components/common/button/IconButton";
+import CloseIcon from "@assets/icons/CloseIcon";
+
 import EmailGraphRightClick from "@pages/emailGraph/components/EmailGraphRightClick";
 
-import { RawNode, GraphNode } from "@/types/graphType";
+import { RawNode, SelectedGraph, GraphNode } from "@/types/graphType";
 
-// Props 인터페이스
 interface Props {
   rawNodes: RawNode[];
-  onSelect?: (node: GraphNode) => void; // Changed from (idx: number) to (node: GraphNode)
-  onMerge: (srcName: string, tgtName: string) => void;
+  graphLoading: boolean;
+  onSelect: ({ C_ID, C_type, IO_type, In }: SelectedGraph) => void;
+  onDoubleClick: (node: GraphNode) => void; // Changed from (idx: number) to (node: GraphNode)
+  onInitialScreen: () => void;
+  onMerge: ({
+    C_ID1,
+    C_type1,
+    C_ID2,
+    C_type2,
+    after_name,
+  }: {
+    C_ID1: number;
+    C_type1: number;
+    C_ID2: number;
+    C_type2: number;
+    after_name: string;
+  }) => void;
   onNavigateBack?: () => void;
 }
 
@@ -45,7 +63,7 @@ interface CtxMenuState {
 // 줌 및 애니메이션 관련 상수 정의
 const INITIAL_ZOOM_LEVEL = 6.5;
 const NODE_DETAIL_ZOOM_LEVEL = 10;
-const NEW_GRAPH_APPEAR_ZOOM_LEVEL = INITIAL_ZOOM_LEVEL / 2.5; // 새 그래프가 나타날 때 초기 줌 레벨
+// const NEW_GRAPH_APPEAR_ZOOM_LEVEL = INITIAL_ZOOM_LEVEL / 2.5; // 새 그래프가 나타날 때 초기 줌 레벨
 const ZOOM_DURATION = 500;
 const FADE_DURATION = 800;
 
@@ -57,10 +75,33 @@ const ME_LINK_MIN_DISTANCE = 15; // "me" 노드와의 최소 거리
 const ME_LINK_MAX_DISTANCE_CAP = 45; // "me" 노드와의 최대 거리 (val이 매우 작을 경우 대비)
 
 const EmailGraph = memo(
-  ({ rawNodes, onSelect, onMerge, onNavigateBack }: Props) => {
+  ({
+    rawNodes,
+    graphLoading,
+    onSelect,
+    onDoubleClick,
+    onInitialScreen,
+    onMerge,
+    onNavigateBack,
+  }: Props) => {
+    const { setLoading, setLoadingMessage, setCloseLoadingMessage } =
+      useUserProgressStore();
     const { currentTheme } = useAuthenticateStore();
+    const { openAlertModal } = useModalStore();
 
     const { mutateAsync: deleteGraphNode } = useDeleteGraphNode();
+    const { mutateAsync: renameGraphNode } = useRenameGraphNode();
+
+    const [mergeInputIsOpen, setMergeInputIsOpen] = useState(false);
+    const [mergeData, setMergeData] = useState<{
+      C_ID1: number;
+      C_type1: number;
+      C_ID2: number;
+      C_type2: number;
+    } | null>(null);
+
+    const [renameNode, setRenameNode] = useState(false);
+    const [renameData, setRenameData] = useState<string | null>(null);
 
     const iconImageCache = useRef<{ [key: string]: HTMLImageElement }>({});
 
@@ -156,6 +197,9 @@ const EmailGraph = memo(
     // ForceGraph 인스턴스 참조용 ref
     const fgRef = useRef<ForceGraphMethods<any, any> | undefined>(undefined);
 
+    // 이전 노드 상태 저장을 위한 ref (뷰 리셋 조건 판단용)
+    const prevGraphNodesJsonRef = useRef<string | null>(null);
+
     // 트랜지션 여부, 투명도 애니메이션 제어용 상태 및 ref
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [graphOpacity, setGraphOpacity] = useState(1);
@@ -245,41 +289,73 @@ const EmailGraph = memo(
     // 그래프 데이터가 바뀌면 줌 리셋, 투명도 복원 및 링크 거리 적용
     useEffect(() => {
       if (fgRef.current && graph.nodes.length > 0 && w > 0 && h > 0) {
-        // 링크 거리 먼저 설정
-        const linkForce = fgRef.current.d3Force("link");
-        if (linkForce) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (linkForce as any).distance(getLinkDistance);
+        const currentGraphNodesJson = JSON.stringify(
+          graph.nodes
+            .slice() // Create a copy to sort
+            .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)) // Sort by id
+            .map((n) => ({
+              id: n.id,
+              C_ID: n.C_ID,
+              C_type: n.C_type,
+              val: n.val, // val도 줌/레이아웃에 영향을 줄 수 있으므로 포함
+            }))
+        );
+
+        let nodesAreEffectivelyTheSame = false;
+        if (prevGraphNodesJsonRef.current === currentGraphNodesJson) {
+          nodesAreEffectivelyTheSame = true;
         }
 
-        if (isTransitioning) {
-          // 트랜지션 중 새 데이터 도착 시 (클릭/뒤로가기 후)
-          // 이 블록은 새 그래프가 나타나는 것을 처리합니다.
+        if (!nodesAreEffectivelyTheSame) {
+          setIsTransitioning(true); // 트랜지션 시작
+          animateGraphOpacity(0, 0, () => {
+            // 즉시 투명하게 만들고 시작
+            const hasMeNode = graph.nodes.some((n) => n.id === ME_NODE_ID);
+            let centerX: number | undefined, centerY: number | undefined;
 
-          fgRef.current.centerAt(0, 0, 0); // 새 그래프를 위해 즉시 중앙 정렬
-          // 이전 animateGraphOpacity(0, ...) 호출로 인해 그래프는 현재 투명도 0 상태여야 합니다.
-          fgRef.current.zoom(NEW_GRAPH_APPEAR_ZOOM_LEVEL, 0); // 즉시 "작은" 크기로 줌 설정
+            if (hasMeNode) {
+              const meNode = graph.nodes.find((n) => n.id === ME_NODE_ID);
+              if (
+                meNode &&
+                typeof meNode.x === "number" &&
+                typeof meNode.y === "number"
+              ) {
+                centerX = meNode.x;
+                centerY = meNode.y;
+              }
+            }
 
-          // "작은" 크기에서 INITIAL_ZOOM_LEVEL로 줌 애니메이션
-          fgRef.current.zoom(INITIAL_ZOOM_LEVEL, FADE_DURATION);
+            if (
+              typeof centerX === "undefined" ||
+              typeof centerY === "undefined"
+            ) {
+              const { x: screenCenterX, y: screenCenterY } =
+                fgRef.current!.screen2GraphCoords(w / 2, h / 2);
+              centerX = screenCenterX;
+              centerY = screenCenterY;
+            }
 
-          // 동시에 페이드 인 애니메이션
-          animateGraphOpacity(1, FADE_DURATION, () => {
-            setIsTransitioning(false); // 트랜지션 완료
+            fgRef.current!.zoom(INITIAL_ZOOM_LEVEL, ZOOM_DURATION);
+            fgRef.current!.centerAt(centerX, centerY, ZOOM_DURATION);
+
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            fgRef.current!.d3Force("link")?.distance(getLinkDistance);
+
+            animateGraphOpacity(1, FADE_DURATION, () => {
+              setIsTransitioning(false); // 트랜지션 종료
+            });
           });
         } else {
-          // 초기 로드 또는 트랜지션과 무관한 데이터 변경 시
-          fgRef.current.centerAt(0, 0, 0); // 즉시 중앙 정렬
-          fgRef.current.zoom(INITIAL_ZOOM_LEVEL, 0); // 즉시 최종 줌 레벨로 설정
-          currentOpacityRef.current = 1; // 투명도 전체 설정
-          setGraphOpacity(1); // 즉시 표시
-          // setIsTransitioning(false); // 이미 false이거나, 완료된 트랜지션이었다면 false로 설정될 것입니다.
+          // 노드 내용은 동일하나 graph 객체 참조만 변경된 경우 (예: 부모 리렌더링)
+          // 링크 거리 등 "가벼운" 업데이트만 수행할 수 있음
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          fgRef.current!.d3Force("link")?.distance(getLinkDistance);
         }
-
-        // 모든 변경 후 시뮬레이션 재가열
-        fgRef.current.d3ReheatSimulation?.();
+        prevGraphNodesJsonRef.current = currentGraphNodesJson;
       }
-    }, [graph, w, h, getLinkDistance, animateGraphOpacity]); // isTransitioning 및 setIsTransitioning을 의존성 배열에서 제거
+    }, [graph, w, h, getLinkDistance, animateGraphOpacity]);
 
     // 노드 반지름 계산
     const getRadius = useCallback(
@@ -310,20 +386,12 @@ const EmailGraph = memo(
     }, [animMap]);
 
     // 노드 클릭 핸들러 (단일 vs 더블)
+    // 여깄ㄸ ㅏ클릭 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
     const handleNodeClick = useCallback(
       (node: GraphNode) => {
         if (clickTimerRef.current) {
           clearTimeout(clickTimerRef.current);
           clickTimerRef.current = null;
-          console.log("더블클릭!", node);
-          // Potentially handle double-click action here if needed
-          return;
-        }
-
-        clickTimerRef.current = setTimeout(() => {
-          clickTimerRef.current = null;
-          if (isTransitioning) return; // 이미 트랜지션 중이면 중복 실행 방지
-          setIsTransitioning(true);
 
           // 확대 줌 및 중앙 정렬 애니메이션
           if (fgRef.current) {
@@ -344,14 +412,26 @@ const EmailGraph = memo(
 
           // 페이드 아웃 후 API 호출
           animateGraphOpacity(0, FADE_DURATION, () => {
-            onSelect?.(node); // Changed from onSelect?.(node.id)
+            onDoubleClick(node); // Changed from onSelect?.(node.id)
           });
+          return;
+        }
 
-          console.log("단일클릭! (Zooming in or selecting Me)", node);
+        clickTimerRef.current = setTimeout(() => {
+          clickTimerRef.current = null;
+          // if (isTransitioning) return; // 이미 트랜지션 중이면 중복 실행 방지
+          setIsTransitioning(true);
+
+          onSelect({
+            C_ID: node.C_ID,
+            C_type: node.C_type,
+            IO_type: 3,
+            In: [],
+          });
         }, DBL_GAP);
       },
       [
-        onSelect,
+        onDoubleClick,
         animateGraphOpacity, // stable
         isTransitioning, // guard clause용
         setIsTransitioning, // stable setter
@@ -368,26 +448,27 @@ const EmailGraph = memo(
       setIsTransitioning(true);
       setCtxMenu({ visible: false, x: 0, y: 0, node: null });
 
-      // 전체 보기로 줌 및 중앙 정렬
-      if (fgRef.current) {
-        fgRef.current.zoom(INITIAL_ZOOM_LEVEL, ZOOM_DURATION);
-        const meNode = graph.nodes.find((n) => n.id === ME_NODE_ID);
-        if (
-          meNode &&
-          typeof meNode.x === "number" &&
-          typeof meNode.y === "number"
-        ) {
-          fgRef.current.centerAt(meNode.x, meNode.y, ZOOM_DURATION);
-        } else {
-          // "me" 노드가 없거나 좌표가 없는 경우 그래프 중앙으로 정렬
-          const { x: screenCenterX, y: screenCenterY } =
-            fgRef.current.screen2GraphCoords(w / 2, h / 2);
-          fgRef.current.centerAt(screenCenterX, screenCenterY, ZOOM_DURATION);
-        }
-      }
+      // // 전체 보기로 줌 및 중앙 정렬
+      // if (fgRef.current) {
+      //   fgRef.current.zoom(INITIAL_ZOOM_LEVEL, ZOOM_DURATION);
+      //   const meNode = graph.nodes.find((n) => n.id === ME_NODE_ID);
+      //   if (
+      //     meNode &&
+      //     typeof meNode.x === "number" &&
+      //     typeof meNode.y === "number"
+      //   ) {
+      //     fgRef.current.centerAt(meNode.x, meNode.y, ZOOM_DURATION);
+      //   } else {
+      //     // "me" 노드가 없거나 좌표가 없는 경우 그래프 중앙으로 정렬
+      //     const { x: screenCenterX, y: screenCenterY } =
+      //       fgRef.current.screen2GraphCoords(w / 2, h / 2);
+      //     fgRef.current.centerAt(screenCenterX, screenCenterY, ZOOM_DURATION);
+      //   }
+      // }
 
       // 페이드 아웃 후 API 호출
       animateGraphOpacity(0, FADE_DURATION, () => {
+        onInitialScreen(); // 초기 화면으로 복원
         onNavigateBack?.();
       });
     }, [
@@ -422,7 +503,7 @@ const EmailGraph = memo(
       C_ID: number;
       C_type: number;
     }) {
-      console.log("Deleting node with ID:", C_ID, "and type:", C_type);
+      // console.log("Deleting node with ID:", C_ID, "and type:", C_type);
       try {
         const response = await deleteGraphNode({ C_ID, C_type });
         if (response.status === "success") {
@@ -456,12 +537,96 @@ const EmailGraph = memo(
           return dist < rDragged + getRadius(n);
         });
         if (tgt) {
-          onMerge(d.name, tgt.name);
+          setMergeInputIsOpen(true);
+          setMergeData({
+            C_ID1: d.C_ID,
+            C_type1: d.C_type,
+            C_ID2: tgt.C_ID,
+            C_type2: tgt.C_type,
+          });
         }
         fgRef.current?.d3ReheatSimulation?.();
       },
       [getRadius, onMerge, graph.nodes]
     );
+
+    async function handleMergeInputClose(
+      event: React.FormEvent<HTMLFormElement>
+    ) {
+      event.preventDefault();
+
+      const fd = new FormData(event.currentTarget);
+      const after_name = Object.fromEntries(fd.entries()).mergeName as string;
+
+      if (after_name.length < 1) {
+        openAlertModal({
+          title: "병합 실패",
+          content: "병합할 이름을 입력해주세요.",
+        });
+        return;
+      }
+
+      if (!mergeData) return;
+      const { C_ID1, C_type1, C_ID2, C_type2 } = mergeData;
+
+      await onMerge({
+        C_ID1,
+        C_type1,
+        C_ID2,
+        C_type2,
+        after_name,
+      });
+
+      setMergeInputIsOpen(false);
+      setMergeData(null);
+    }
+
+    async function handleRenameInputClose(
+      event: React.FormEvent<HTMLFormElement>
+    ) {
+      event.preventDefault();
+
+      const fd = new FormData(event.currentTarget);
+      const after_name = Object.fromEntries(fd.entries()).afterName as string;
+
+      if (after_name.length < 1) {
+        openAlertModal({
+          title: "이름 변경 실패",
+          content: "변경할 이름을 입력해주세요.",
+        });
+        return;
+      }
+
+      if (!renameData) return;
+
+      const payload = {
+        before_name: renameData,
+        after_name,
+      };
+
+      setLoading(true);
+      setLoadingMessage("이름 변경 중입니다.");
+
+      const response = await renameGraphNode(payload);
+      // console.log("renameGraphNode response", response);
+      if (response.status !== "success") {
+        setLoading(false);
+        setLoadingMessage("이름 변경 실패");
+        setCloseLoadingMessage();
+        openAlertModal({
+          title: "이름 변경 실패",
+          content: "노드 이름 변경에 실패했습니다.",
+        });
+        return;
+      }
+
+      setLoading(false);
+      setLoadingMessage("이름 변경 완료");
+      setCloseLoadingMessage();
+
+      setRenameNode(false);
+      setRenameData(null);
+    }
 
     // 링크 캔버스 렌더링
     const linkCanvasObject = useCallback(
@@ -506,7 +671,7 @@ const EmailGraph = memo(
 
         ctx.strokeStyle =
           currentTheme === "theme-night" ? "#606885" : "#f8f8f8";
-        ctx.lineWidth = 2 / gs; // 스케일에 따라 선 두께 조정
+        ctx.lineWidth = 1 / gs; // 스케일에 따라 선 두께 조정
 
         ctx.beginPath();
         ctx.moveTo(s.x, s.y); // 라인 시작점
@@ -572,7 +737,7 @@ const EmailGraph = memo(
         ctx.textBaseline = "middle";
 
         if (n.id === 0) {
-          ctx.font = `${6}px Pretendard-SemiBold`;
+          ctx.font = `${3}px Pretendard-SemiBold`;
           ctx.fillStyle = "#ffffff";
           ctx.fillText(n.name || "", n.x ?? 0, n.y ?? 0);
         } else {
@@ -592,9 +757,9 @@ const EmailGraph = memo(
     return (
       <div
         ref={wrapRef}
-        className="w-full h-full overflow-hidden flex justify-center items-center"
+        className="relative w-full h-full overflow-hidden flex justify-center items-center"
       >
-        {w > 0 && h > 0 && (
+        {w > 0 && h > 0 && !graphLoading && (
           <ForceGraph2D
             ref={fgRef}
             width={w}
@@ -634,10 +799,87 @@ const EmailGraph = memo(
             cooldownTicks={300}
           />
         )}
+        {mergeInputIsOpen && (
+          <div className="absolute top-0 left-0 w-full h-full z-10">
+            <form
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 rounded-lg shadow-lg z-20"
+              onSubmit={handleMergeInputClose}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg text-text font-pre-bold">병합하기</h2>
+                <IconButton
+                  onClick={() => {
+                    setMergeInputIsOpen(false);
+                    setMergeData(null);
+                  }}
+                  icon={<CloseIcon width={20} height={20} />}
+                  className="p-2 bg-theme hover:bg-warning"
+                />
+              </div>
+              <input
+                type="text"
+                name="mergeName"
+                placeholder="병합할 이름을 입력하세요"
+                className="bg-header text-text font-pre-regular rounded-lg p-2 w-full mb-4"
+              />
+              <div className="flex justify-end items-center w-full h-fit">
+                <button
+                  type="submit"
+                  className="bg-theme text-[#fff] px-4 py-1.5 rounded-lg"
+                >
+                  병합
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+        {renameNode && (
+          <div className="absolute top-0 left-0 w-full h-full z-10">
+            <form
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 rounded-lg shadow-lg z-20"
+              onSubmit={handleRenameInputClose}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg text-text font-pre-bold">이름 변경</h2>
+                <IconButton
+                  onClick={() => {
+                    setRenameNode(false);
+                    setRenameData(null);
+                  }}
+                  icon={<CloseIcon width={20} height={20} />}
+                  className="p-2 bg-theme hover:bg-warning"
+                />
+              </div>
+              <input
+                type="text"
+                name="afterName"
+                placeholder="변경할 이름을 입력하세요"
+                className="bg-header text-text font-pre-regular rounded-lg p-2 w-full mb-4"
+              />
+              <div className="flex justify-end items-center w-full h-fit">
+                <button
+                  type="submit"
+                  className="bg-theme text-[#fff] px-4 py-1.5 rounded-lg"
+                >
+                  변경
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
         {ctxMenu.visible && (
           <EmailGraphRightClick
             ctxMenu={ctxMenu}
             setCtxMenu={setCtxMenu}
+            setRename={() => {
+              if (!ctxMenu.node) {
+                setCtxMenu({ ...ctxMenu, visible: false });
+                return;
+              }
+
+              setRenameNode(true);
+              setRenameData(ctxMenu.node?.name);
+            }}
             onGoBack={handleGoBackFromMenu}
             onDelete={() =>
               handleDeleteNode({

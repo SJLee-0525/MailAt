@@ -1,12 +1,19 @@
 import CalendarDetailHeader from "@components/calendar/components/CalendarDetailHeader";
 import CalendarDetailContents from "@components/calendar/components/CalendarDetailContents";
 
+interface Schedule {
+  id: string;
+  task: string;
+}
+
 const CalendarDetail = ({
   selectedDate,
   isClosing,
+  schedulesForDate,
 }: {
   selectedDate: string;
   isClosing: boolean;
+  schedulesForDate: Schedule[];
 }) => {
   return (
     <div
@@ -14,7 +21,7 @@ const CalendarDetail = ({
     >
       <CalendarDetailHeader selectedDate={selectedDate} />
       <div className="w-full h-full px-1 pb-1 bg-header overflow-y-auto text-text">
-        <CalendarDetailContents />
+        <CalendarDetailContents schedulesForDate={schedulesForDate} />
       </div>
     </div>
   );

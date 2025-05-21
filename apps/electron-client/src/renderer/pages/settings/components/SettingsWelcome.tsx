@@ -61,7 +61,7 @@ const SettingsWelcome = ({
 
     try {
       const response = await updateUser(user.userId, name);
-      console.log(response);
+      // console.log(response);
 
       setLoading(false);
       setLoadingMessage("사용자 이름 수정 성공");
@@ -92,7 +92,7 @@ const SettingsWelcome = ({
       await deleteUser(userId);
       // 사용자 삭제 후 추가적인 작업 수행 (예: 상태 업데이트, UI 변경 등)
       onDelete(); // 사용자 삭제 후 상태 업데이트
-      console.log("사용자 삭제 성공");
+      // console.log("사용자 삭제 성공");
 
       setLoading(false);
       setLoadingMessage("사용자 삭제 성공");

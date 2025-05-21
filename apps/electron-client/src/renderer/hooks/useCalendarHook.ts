@@ -14,7 +14,9 @@ import {
 } from "date-fns";
 
 import { useState, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { useQuery } from "@tanstack/react-query";
+
 import useAuthenticateStore from "@stores/authenticateStore";
 
 interface CalendarEventFromAPI {
@@ -39,7 +41,7 @@ interface Schedules {
 export const useCalendar = () => {
   const { user } = useAuthenticateStore();
   const accountId = user?.userId;
-  const queryClient = useQueryClient();
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(
     format(new Date(), "yyyy-MM-dd")
@@ -72,9 +74,7 @@ export const useCalendar = () => {
       if (response.success && response.data) {
         return response.data as CalendarEventFromAPI[];
       }
-      throw new Error(
-        response.message || "캘린더 이벤트를 불러오는데 실패했습니다."
-      );
+      throw new Error("캘린더 이벤트를 불러오는데 실패했습니다.");
     },
     enabled: !!accountId,
   });
@@ -94,7 +94,9 @@ export const useCalendar = () => {
               newSchedules[eventDate] = [];
             }
             // message_id가 API 응답에 실제로 오는지 확인 필요. 없다면 index 등을 활용.
-            const scheduleId = event.message_id ? String(event.message_id) : `event-${index}-${Date.now()}`;
+            const scheduleId = event.message_id
+              ? String(event.message_id)
+              : `event-${index}-${Date.now()}`;
             newSchedules[eventDate].push({
               id: scheduleId,
               task: event.task,

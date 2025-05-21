@@ -49,7 +49,7 @@ const SettingsName = () => {
     // api 호출
     try {
       const response = await createUser(name);
-      console.log(response);
+      // console.log(response);
 
       setLoading(false);
       setLoadingMessage("사용자 등록 성공");

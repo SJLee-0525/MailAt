@@ -46,7 +46,7 @@ export const useGetGraphNode = ({
           new Error("User ID is required for graph query.")
         );
       }
-      console.log("Graph Node Params111111111111111:");
+
       return readGraphNode({ C_ID, C_type, IO_type });
     },
     enabled: !!userId && enabled, // userId가 있고, enabled 플래그가 true일 때만 fetch
@@ -54,25 +54,17 @@ export const useGetGraphNode = ({
   });
 
   useEffect(() => {
-    console.log("Graph data u1111111111111pdated:", query.data);
     if (query.isSuccess && query.data) {
       setGraphData(query.data);
     }
-  }, [query.data, setGraphData]);
+  }, [query.data, query.isSuccess, setGraphData]);
 
   return query;
 };
+
 export const useCreateGraphNode = () => {
   const queryClient = useQueryClient();
-  const { user, authUsers } = useAuthenticateStore(); // authUsers is already here
-
-  // if (!user) { // This check is redundant due to how mutationFn is called
-  //   throw new Error("User not authenticated");
-  // }
-
-  // if (!authUsers || (authUsers && authUsers.length === 0)) { // Redundant
-  //   throw new Error("User not authenticated");
-  // }
+  const { user } = useAuthenticateStore();
 
   const userId = user?.userId;
 
@@ -136,13 +128,10 @@ export const useDeleteGraphNode = () => {
   return mutation;
 };
 
+// 노드 이름 수정
 export const useRenameGraphNode = () => {
   const queryClient = useQueryClient();
   const { user } = useAuthenticateStore();
-
-  // if (!user) { // Redundant
-  //   throw new Error("User not authenticated");
-  // }
 
   const userId = user?.userId;
 
@@ -155,7 +144,6 @@ export const useRenameGraphNode = () => {
     }
   >({
     mutationFn: (variables) => {
-      // Pass user to renameGraphNode
       if (!user) {
         return Promise.reject(
           new Error("User not authenticated for renaming node.")
@@ -187,7 +175,13 @@ export const useMergeGraphNode = () => {
   const mutation = useMutation<
     GraphIpcResponse,
     Error,
-    { before_name1: string; before_name2: string; after_name: string }
+    {
+      C_ID1: number;
+      C_type1: number;
+      C_ID2: number;
+      C_type2: number;
+      after_name: string;
+    }
   >({
     mutationFn: (variables) => {
       // Pass user to mergeGraphNode
@@ -196,7 +190,7 @@ export const useMergeGraphNode = () => {
           new Error("User not authenticated for merging node.")
         );
       }
-      return mergeGraphNode({ ...variables, user });
+      return mergeGraphNode({ ...variables });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["graph", userId] });
