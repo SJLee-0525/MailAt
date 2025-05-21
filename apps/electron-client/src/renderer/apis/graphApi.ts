@@ -14,30 +14,33 @@ export const readGraphNode = async ({
   C_type,
   IO_type,
 }: {
-  C_ID: string; //  중심 노드 ID
+  C_ID: number; //  중심 노드 ID
   C_type: number; // 중심 노드 타입,
   IO_type: number; //  inout 타입
 }): Promise<RawNode[]> => {
-  const { user } = useAuthenticateStore();
-
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
+  console.error("1111111111111Graph Node Params:", {
+    C_ID,
+    C_type,
+    IO_type,
+  });
   /*
   "C_ID": 중심 노드 ID,
   "C_type": 중심 노드 타입,
   "IO_type": inout 타입 
   */
   try {
+    console.log(111111111111);
     const response = await window.electronAPI.graph.readNodePy({
       C_ID,
       C_type,
       IO_type,
     });
+    console.error("[Get] 그래프 노드 조회", response);
     if (response.status === "success") {
+      console.error("Graph Node Result:", response.result);
       return response.result.nodes;
     } else {
+      console.error("Graph Node Error:", response.message);
       throw new Error(response.message);
     }
   } catch (error) {
@@ -51,15 +54,23 @@ export const readGraphMessage = async ({
   C_type,
   IO_type,
   In,
+  user, // Add user as a parameter
+  authUsers, // Add authUsers as a parameter
 }: {
-  C_ID: string; // 중심 노드 ID
+  C_ID: number; // 중심 노드 ID
   C_type: number; // 중심 노드 타입
   IO_type: number; // inout 타입
   In: string[]; // 메일 필터링 조건
+  user: any; // Define a more specific type
+  authUsers: any[]; // Define a more specific type
 }): Promise<GraphEmail[]> => {
-  const { user } = useAuthenticateStore();
+  // const { user, authUsers } = useAuthenticateStore(); // Remove hook call
 
   if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  if (!authUsers || (authUsers && authUsers.length === 0)) {
     throw new Error("User not authenticated");
   }
 
@@ -90,10 +101,12 @@ export const readGraphMessage = async ({
 // 노드 생성
 export const createGraphNode = async ({
   C_name,
+  user, // Add user as a parameter
 }: {
   C_name: string; // 새로운 카테고리 이름
+  user: any; // Define a more specific type
 }): Promise<{ status: "success" | "fail"; message: string }> => {
-  const { user } = useAuthenticateStore();
+  // const { user } = useAuthenticateStore(); // Remove hook call
 
   if (!user) {
     throw new Error("User not authenticated");
@@ -119,11 +132,13 @@ export const createGraphNode = async ({
 export const deleteGraphNode = async ({
   C_ID,
   C_type,
+  user, // Add user as a parameter
 }: {
-  C_ID: string; // 삭제할 노드 ID
+  C_ID: number; // 삭제할 노드 ID
   C_type: number; // 삭제할 노드 타입
+  user: any; // Define a more specific type
 }): Promise<GraphIpcResponse> => {
-  const { user } = useAuthenticateStore();
+  // const { user } = useAuthenticateStore(); // Remove hook call
 
   if (!user) {
     throw new Error("User not authenticated");
@@ -150,11 +165,13 @@ export const deleteGraphNode = async ({
 export const renameGraphNode = async ({
   before_name,
   after_name,
+  user, // Add user as a parameter
 }: {
   before_name: string; // 노드 이전 이름
   after_name: string; // 노드 새 이름
+  user: any; // Define a more specific type
 }): Promise<GraphIpcResponse> => {
-  const { user } = useAuthenticateStore();
+  // const { user } = useAuthenticateStore(); // Remove hook call
 
   if (!user) {
     throw new Error("User not authenticated");
@@ -182,12 +199,14 @@ export const mergeGraphNode = async ({
   before_name1,
   before_name2,
   after_name,
+  user, // Add user as a parameter
 }: {
   before_name1: string; // 노드 이전 이름1
   before_name2: string; // 노드 이전 이름2
   after_name: string; // 노드 새 이름
+  user: any; // Define a more specific type
 }): Promise<GraphIpcResponse> => {
-  const { user } = useAuthenticateStore();
+  // const { user } = useAuthenticateStore(); // Remove hook call
 
   if (!user) {
     throw new Error("User not authenticated");
@@ -214,10 +233,12 @@ export const mergeGraphNode = async ({
 // 메일 삭제
 export const deleteGraphMessage = async ({
   message_id,
+  user, // Add user as a parameter
 }: {
   message_id: number; // 삭제할 메일의 ID
+  user: any; // Define a more specific type
 }): Promise<GraphIpcResponse> => {
-  const { user } = useAuthenticateStore();
+  // const { user } = useAuthenticateStore(); // Remove hook call
 
   if (!user) {
     throw new Error("User not authenticated");
@@ -244,12 +265,14 @@ export const moveGraphMessage = async ({
   message_id,
   category_id,
   sub_category_id,
+  user, // Add user as a parameter
 }: {
   message_id: number; // 이동할 메일의 ID
   category_id: number; // 카테고리 ID
   sub_category_id: number; // 서브카테고리 ID
+  user: any; // Define a more specific type
 }): Promise<GraphIpcResponse> => {
-  const { user } = useAuthenticateStore();
+  // const { user } = useAuthenticateStore(); // Remove hook call
 
   if (!user) {
     throw new Error("User not authenticated");

@@ -219,7 +219,7 @@ interface ElectronAPI {
   graph: {
     // 그래프 노드 조회
     readNodePy(params: {
-      C_ID: string;
+      C_ID: number;
       C_type: number;
       IO_type: number;
     }): Promise<{
@@ -232,7 +232,7 @@ interface ElectronAPI {
 
     // 그래프 메일 조회 (preload.cjs와 일치시키기 위해 readMessagePy로 변경 권장)
     readMessagePy(json_obj: {
-      C_ID: string;
+      C_ID: number;
       C_type: number;
       IO_type: number;
       In: string[];
@@ -251,7 +251,7 @@ interface ElectronAPI {
 
     // 그래프 노드 삭제
     deleteNodePy(json_obj: {
-      C_ID: string; // 삭제할 노드 ID
+      C_ID: number; // 삭제할 노드 ID
       C_type: number; // 삭제할 노드 타입
     }): Promise<GraphIpcResponse>;
 

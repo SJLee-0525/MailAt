@@ -13,12 +13,14 @@ interface EmailGraphRightClickProps {
   ctxMenu: CtxMenuState;
   setCtxMenu: React.Dispatch<React.SetStateAction<CtxMenuState>>;
   onGoBack?: () => void; // New prop for "Go Back" action
+  onDelete?: () => void; // New prop for "Delete" action
 }
 
 const EmailGraphRightClick = ({
   ctxMenu,
   setCtxMenu,
   onGoBack,
+  onDelete,
 }: EmailGraphRightClickProps) => {
   const htmlRef = useRef<HTMLDivElement | null>(null);
 
@@ -74,7 +76,9 @@ const EmailGraphRightClick = ({
         <li
           className="px-4 py-2 text-red-600 hover:bg-gray-100 cursor-pointer"
           onClick={() => {
-            console.log("삭제 :", ctxMenu.node);
+            if (onDelete) {
+              onDelete();
+            }
             setCtxMenu((m) => ({ ...m, visible: false }));
           }}
         >

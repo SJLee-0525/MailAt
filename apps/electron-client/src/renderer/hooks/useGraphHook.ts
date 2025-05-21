@@ -22,77 +22,74 @@ import {
 
 // const PAGE_SIZE = 5;
 
-// 폴더 목록 조회
 export const useGetGraphNode = ({
   C_ID,
   C_type,
   IO_type,
-  enabled: hookEnabled = true, // Renamed to avoid conflict, defaults to true
+  enabled = true, // 추가: fetch 활성화 제어용 플래그
 }: {
-  C_ID: string;
+  C_ID: number;
   C_type: number;
   IO_type: number;
-  enabled?: boolean; // Make it optional
+  enabled?: boolean;
 }) => {
   const { user } = useAuthenticateStore();
   const { setGraphData } = useConversationsStore();
 
-  const userId = user?.userId; // userId can be undefined if user is null
+  const userId = user?.userId;
 
   const query = useQuery<RawNode[], Error>({
-    // Include C_ID, C_type, IO_type in the queryKey to refetch when they change
     queryKey: ["graph", userId, C_ID, C_type, IO_type],
     queryFn: () => {
-      if (!userId) {
-        // This case should ideally be prevented by the `enabled` option
+      if (!userId || !user) {
         return Promise.reject(
           new Error("User ID is required for graph query.")
         );
       }
+      console.log("Graph Node Params111111111111111:");
       return readGraphNode({ C_ID, C_type, IO_type });
     },
-    // Query is enabled if userId exists AND hookEnabled is true
-    enabled: !!userId && hookEnabled,
-    throwOnError: true, // Consider if this is always desired
+    enabled: !!userId && enabled, // userId가 있고, enabled 플래그가 true일 때만 fetch
+    throwOnError: true,
   });
 
   useEffect(() => {
+    console.log("Graph data u1111111111111pdated:", query.data);
     if (query.isSuccess && query.data) {
-      // Basic check for data structure, can be more specific
-      if (
-        typeof query.data === "object" &&
-        query.data !== null &&
-        "nodes" in query.data &&
-        "emails" in query.data
-      ) {
-        // setGraphData(query.data);
-      } else {
-        // console.warn("Data from readNode is not in the expected GraphData format:", query.data);
-        // Optionally handle incorrect data format, e.g., by setting graphData to null or an empty state
-        // setGraphData(null);
-      }
+      setGraphData(query.data);
     }
-  }, [query.isSuccess, query.data, setGraphData]);
+  }, [query.data, setGraphData]);
 
   return query;
 };
-
 export const useCreateGraphNode = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuthenticateStore();
+  const { user, authUsers } = useAuthenticateStore(); // authUsers is already here
 
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
+  // if (!user) { // This check is redundant due to how mutationFn is called
+  //   throw new Error("User not authenticated");
+  // }
 
-  const userId = user?.userId; // userId can be undefined if user is null
+  // if (!authUsers || (authUsers && authUsers.length === 0)) { // Redundant
+  //   throw new Error("User not authenticated");
+  // }
+
+  const userId = user?.userId;
 
   const mutation = useMutation<
     { status: "success" | "fail"; message: string },
     Error,
     { C_name: string }
   >({
-    mutationFn: createGraphNode,
+    mutationFn: (variables) => {
+      // Pass user to createGraphNode
+      if (!user) {
+        return Promise.reject(
+          new Error("User not authenticated for creating node.")
+        );
+      }
+      return createGraphNode({ ...variables, user });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["graph", userId] });
     },
@@ -108,18 +105,26 @@ export const useDeleteGraphNode = () => {
   const queryClient = useQueryClient();
   const { user } = useAuthenticateStore();
 
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
+  // if (!user) { // Redundant
+  //   throw new Error("User not authenticated");
+  // }
 
-  const userId = user?.userId; // userId can be undefined if user is null
+  const userId = user?.userId;
 
   const mutation = useMutation<
     GraphIpcResponse,
     Error,
-    { C_ID: string; C_type: number }
+    { C_ID: number; C_type: number }
   >({
-    mutationFn: deleteGraphNode,
+    mutationFn: (variables) => {
+      // Pass user to deleteGraphNode
+      if (!user) {
+        return Promise.reject(
+          new Error("User not authenticated for deleting node.")
+        );
+      }
+      return deleteGraphNode({ ...variables, user });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["graph", userId] });
     },
@@ -135,11 +140,11 @@ export const useRenameGraphNode = () => {
   const queryClient = useQueryClient();
   const { user } = useAuthenticateStore();
 
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
+  // if (!user) { // Redundant
+  //   throw new Error("User not authenticated");
+  // }
 
-  const userId = user?.userId; // userId can be undefined if user is null
+  const userId = user?.userId;
 
   const mutation = useMutation<
     GraphIpcResponse,
@@ -149,7 +154,15 @@ export const useRenameGraphNode = () => {
       after_name: string;
     }
   >({
-    mutationFn: renameGraphNode,
+    mutationFn: (variables) => {
+      // Pass user to renameGraphNode
+      if (!user) {
+        return Promise.reject(
+          new Error("User not authenticated for renaming node.")
+        );
+      }
+      return renameGraphNode({ ...variables, user });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["graph", userId] });
     },
@@ -165,18 +178,26 @@ export const useMergeGraphNode = () => {
   const queryClient = useQueryClient();
   const { user } = useAuthenticateStore();
 
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
+  // if (!user) { // Redundant
+  //   throw new Error("User not authenticated");
+  // }
 
-  const userId = user?.userId; // userId can be undefined if user is null
+  const userId = user?.userId;
 
   const mutation = useMutation<
     GraphIpcResponse,
     Error,
     { before_name1: string; before_name2: string; after_name: string }
   >({
-    mutationFn: mergeGraphNode,
+    mutationFn: (variables) => {
+      // Pass user to mergeGraphNode
+      if (!user) {
+        return Promise.reject(
+          new Error("User not authenticated for merging node.")
+        );
+      }
+      return mergeGraphNode({ ...variables, user });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["graph", userId] });
     },

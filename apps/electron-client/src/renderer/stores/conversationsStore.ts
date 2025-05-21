@@ -27,7 +27,7 @@ const useConversationsStore = create<ConversationsStore>((set) => ({
   setConversations: (conversations) => set({ conversations }),
   filters: {},
   setFilters: (filters) => set({ filters }),
-  graphData: GRAPH_EMAIL_DATA.result.nodes,
+  graphData: null,
   setGraphData: (data) => set({ graphData: data ? data : null }),
 }));
 

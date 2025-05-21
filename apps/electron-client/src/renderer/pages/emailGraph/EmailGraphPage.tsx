@@ -1,15 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // import { resetGraph } from "@apis/graphApi";
 // import { useGetGraphNode } from "@hooks/useGraphHook";
 
+import { GraphNode } from "@/types/graphType"; // Assuming GraphNode is exported from graphType
+
 import useAuthenticateStore from "@stores/authenticateStore";
 import useConversationsStore from "@stores/conversationsStore";
+
+import { useGetGraphNode, useMergeGraphNode } from "@hooks/useGraphHook";
 
 import EmailGraph from "@pages/emailGraph/EmailGraph";
 
 const NetworkPage = () => {
-  const { user, selectedUser, authUsers } = useAuthenticateStore();
+  const { user, authUsers } = useAuthenticateStore();
   const { graphData, setGraphData } = useConversationsStore();
 
   const [selected, setSelected] = useState<number | null>(null);
@@ -20,51 +24,61 @@ const NetworkPage = () => {
   const [queryParams, setQueryParams] = useState({
     C_ID: 0,
     C_type: 0,
-    IO_type: 0,
+    IO_type: 3,
   });
+  const [inParams, setInParams] = useState<{ C_ID: number; C_type: number }[]>(
+    []
+  );
 
-  // resetGraph(); // 그래프 초기화
-  // const { refetch: refetchNode } = useGetGraphNode({
-  //   ...queryParams,
-  //   enabled: enableInitialFetch, // Controlled by state
-  // });
+  const { refetch: refetchGraphNode } = useGetGraphNode({
+    ...queryParams,
+    enabled: enableInitialFetch, // 최초 1회만 fetch하도록 제어
+  });
+  const { mutateAsync: mergeGraphNode } = useMergeGraphNode();
 
-  // useEffect(() => {
-  //   // 최초 1회 fetch 시에만 refetchNode() 호출
-  //   if (enableInitialFetch) {
-  //     refetchNode();
-  //   }
-  // }, []);
-
-  // 파라미터 기반으로 새로운 노드를 수동 요청
-  async function fetchNodeWithNewParams(params: {
-    C_ID?: number;
-    C_type?: number;
-    IO_type?: number;
-  }) {
-    setEnableInitialFetch(false); // 수동 호출 시 자동 fetch 비활성화
-    setQueryParams((currentParams) => ({ ...currentParams, ...params }));
-    // 실제 API를 호출하려면 아래에 refetchNode() 삽입
-    console.log("Fetching new graph data with params:", params);
-    // TODO: 실제 데이터 요청 후 setGraphData(newData) 호출
-  }
+  useEffect(() => {
+    if (!enableInitialFetch) {
+      refetchGraphNode().finally(() => setEnableInitialFetch(false));
+    }
+  }, [enableInitialFetch]);
 
   // 뒤로가기 처리: 현재 그래프를 재설정 (새 ref로 전달)
-  const handleNavigateBack = () => {
+  async function handleNavigateBack() {
     console.log("Navigating back, simulating re-feed of graph data.");
-    if (graphData) {
-      setGraphData([...graphData]);
-    }
-    setSelected(null);
-  };
 
-  // 병합 이벤트 핸들러 (현재는 로깅만)
-  function handleMerge(srcId: number, tgtId: number) {
-    console.log("Merge", srcId, tgtId);
+    if (inParams.length === 0) {
+      console.log("No inParams to reset.");
+      return;
+    }
+
+    const latestNode = inParams[inParams.length - 1];
+    setInParams((prev) => prev.slice(0, -1)); // Remove last element
+
+    setQueryParams({
+      C_ID: latestNode.C_ID,
+      C_type: latestNode.C_type,
+      IO_type: 3,
+    });
+    setSelected(latestNode.C_ID); // Update selected node
+  }
+
+  // 병합 이벤트 핸들러
+  function handleMerge(srcName: string, tgtName: string) {
+    console.log("Merge", srcName, tgtName);
+
+    try {
+      const response = mergeGraphNode({
+        before_name1: srcName,
+        before_name2: tgtName,
+        after_name: srcName + tgtName,
+      });
+      console.log("Merge response:", response);
+    } catch (error) {
+      console.error("Error merging nodes:", error);
+    }
   }
 
   console.log("Graph data:", graphData);
-  console.log("!!!!", user, authUsers);
 
   return (
     <div className="flex w-full h-full justify-center items-center overflow-hidden">
@@ -78,15 +92,23 @@ const NetworkPage = () => {
       ) : (
         <EmailGraph
           rawNodes={graphData || []} // null 방지
-          onSelect={(id) => {
-            setSelected(id);
-            console.log(
-              "Node selected, simulating re-feed of graph data for node ID:",
-              id
-            );
-            if (graphData) {
-              setGraphData([...graphData]);
-            }
+          onSelect={(node: GraphNode) => {
+            setSelected(node.C_ID); // Assuming GraphNode has C_ID
+
+            const newParams = {
+              C_ID: node.C_ID, // Assuming GraphNode has C_ID
+              C_type: node.C_type, // Assuming GraphNode has C_type
+              IO_type: 2, // Keep IO_type as 2 (default)
+            };
+
+            console.log("Node selected. Updating queryParams to:", newParams);
+
+            setEnableInitialFetch(true); // Ensure useEffect will trigger refetch
+            setQueryParams(newParams);
+            setInParams((prev) => [
+              ...prev,
+              { C_ID: node.C_ID, C_type: node.C_type },
+            ]); // Add to inParams
           }}
           onMerge={handleMerge}
           onNavigateBack={handleNavigateBack} // 뒤로가기 핸들러 전달
