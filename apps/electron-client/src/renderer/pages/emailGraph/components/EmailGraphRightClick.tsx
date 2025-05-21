@@ -12,7 +12,7 @@ interface CtxMenuState {
 interface EmailGraphRightClickProps {
   ctxMenu: CtxMenuState;
   setCtxMenu: React.Dispatch<React.SetStateAction<CtxMenuState>>;
-  setRename: () => void; // New prop for renaming
+  setRename?: () => void; // New prop for renaming
   onGoBack?: () => void; // New prop for "Go Back" action
   onDelete?: () => void; // New prop for "Delete" action
 }
@@ -55,7 +55,7 @@ const EmailGraphRightClick = ({
         <li
           className="px-4 py-2 hover:bg-light1 cursor-pointer"
           onClick={() => {
-            setRename();
+            setRename?.();
             setCtxMenu((m) => ({ ...m, visible: false }));
           }}
         >

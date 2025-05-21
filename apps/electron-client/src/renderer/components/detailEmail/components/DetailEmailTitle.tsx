@@ -26,7 +26,7 @@ const DetailEmailTitle = ({
   date,
   fromName,
   fromEmail,
-  to,
+
   body,
   attachments,
   isFlagged,
@@ -40,7 +40,7 @@ const DetailEmailTitle = ({
   date: string;
   fromName: string;
   fromEmail: string;
-  to: string;
+
   body: string;
   attachments: DetailAttachment[];
   isFlagged: boolean;
