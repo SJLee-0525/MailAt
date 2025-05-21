@@ -57,22 +57,14 @@ export const useGetGraphNode = ({
     if (query.isSuccess && query.data) {
       setGraphData(query.data);
     }
-  }, [query.data, query.isSuccess, setGraphData]); // Added query.isSuccess to the dependency array
+  }, [query.data, query.isSuccess, setGraphData]);
 
   return query;
 };
 
 export const useCreateGraphNode = () => {
   const queryClient = useQueryClient();
-  const { user, authUsers } = useAuthenticateStore(); // authUsers is already here
-
-  // if (!user) { // This check is redundant due to how mutationFn is called
-  //   throw new Error("User not authenticated");
-  // }
-
-  // if (!authUsers || (authUsers && authUsers.length === 0)) { // Redundant
-  //   throw new Error("User not authenticated");
-  // }
+  const { user } = useAuthenticateStore();
 
   const userId = user?.userId;
 
@@ -140,10 +132,6 @@ export const useRenameGraphNode = () => {
   const queryClient = useQueryClient();
   const { user } = useAuthenticateStore();
 
-  // if (!user) { // Redundant
-  //   throw new Error("User not authenticated");
-  // }
-
   const userId = user?.userId;
 
   const mutation = useMutation<
@@ -155,7 +143,6 @@ export const useRenameGraphNode = () => {
     }
   >({
     mutationFn: (variables) => {
-      // Pass user to renameGraphNode
       if (!user) {
         return Promise.reject(
           new Error("User not authenticated for renaming node.")

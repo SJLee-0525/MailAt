@@ -1,13 +1,23 @@
 import { useEffect, useRef } from "react";
 
+import { searchGraphNode } from "@apis/graphApi";
+
 import useUserProgressStore from "@stores/userProgressStore";
+import useConversationsStore from "@stores/conversationsStore";
 
 import IconButton from "@components/common/button/IconButton";
 
 import SearchIcon from "@assets/icons/SearchIcon";
 
 const SearchBar = () => {
-  const { bottomNavProgress, setBottomNavProgress } = useUserProgressStore();
+  const {
+    bottomNavProgress,
+    setBottomNavProgress,
+    setLoading,
+    setLoadingMessage,
+    setCloseLoadingMessage,
+  } = useUserProgressStore();
+  const { setGraphData } = useConversationsStore();
 
   const wrapperRef = useRef<HTMLFormElement>(null);
 
@@ -31,7 +41,7 @@ const SearchBar = () => {
   }, [bottomNavProgress, setBottomNavProgress]);
 
   // 검색어 제출 시 처리
-  function handleSearch(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     const fd = new FormData(e.currentTarget);
@@ -39,7 +49,27 @@ const SearchBar = () => {
 
     if (searchQuery.trim() === "") return;
 
-    console.log("Search query:", searchQuery);
+    setLoading(true);
+    setLoadingMessage("검색 중입니다.");
+
+    // 검색어가 비어있지 않을 때만 검색 수행
+    try {
+      const response = await searchGraphNode({ keyword: searchQuery });
+      if (response) {
+        console.log("Search results:", response);
+        setGraphData(response);
+
+        setBottomNavProgress(null);
+        setLoading(false);
+        setLoadingMessage("검색 완료");
+      }
+    } catch (error) {
+      console.error("Error searching graph node:", error);
+      setLoading(false);
+      setLoadingMessage("검색 실패");
+    } finally {
+      setCloseLoadingMessage();
+    }
   }
 
   if (bottomNavProgress !== "search") return null;

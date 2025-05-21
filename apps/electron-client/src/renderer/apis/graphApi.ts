@@ -51,6 +51,7 @@ export const readGraphNode = async ({
   }
 };
 
+// 그래프 메일 목록 조회
 export const readGraphMessage = async ({
   C_ID,
   C_type,
@@ -273,6 +274,28 @@ export const moveGraphMessage = async ({
     }
   } catch (error) {
     console.error("Error moving graph message:", error);
+    throw error;
+  }
+};
+
+// 노드 검색
+export const searchGraphNode = async ({
+  keyword,
+}: {
+  keyword: string;
+}): Promise<RawNode[]> => {
+  try {
+    const response = await window.electronAPI.graph.searchByKeywordPy({
+      keyword,
+    });
+    console.error("Search Graph Node Response:", response);
+    if (response.status === "success") {
+      return response.result.nodes;
+    } else {
+      throw new Error("Failed to search node");
+    }
+  } catch (error) {
+    console.error("Error searching graph node:", error);
     throw error;
   }
 };

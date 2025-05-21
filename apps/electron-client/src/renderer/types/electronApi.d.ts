@@ -281,6 +281,17 @@ interface ElectronAPI {
       category_id: number;
       sub_category_id: number;
     }): Promise<GraphIpcResponse>;
+
+    // 그래프 노드 검색
+    searchByKeywordPy(json_obj: {
+      keyword: string; // 검색할 키워드
+    }): Promise<{
+      status: "success" | "fail";
+      message: string;
+      result: {
+        nodes: RawNode[];
+      };
+    }>;
   };
 
   // 이메일 전송
