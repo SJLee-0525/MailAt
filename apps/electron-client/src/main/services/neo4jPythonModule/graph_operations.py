@@ -25,7 +25,7 @@ NEO4J_PASS = "message-gustav-rufus-alex-roman-2104" # From other scripts
 script_dir = os.path.dirname(os.path.abspath(__file__))
 # Construct the absolute path to editemaildb.sqlite
 SQLITE_DB_PATH = os.path.abspath(os.path.join(script_dir, "..", "..", "..", "..", "emaildb.sqlite"))
-print(f"[Python] SQLITE_DB_PATH: {SQLITE_DB_PATH}")
+# print(f"[Python] SQLITE_DB_PATH: {SQLITE_DB_PATH}")
 
 
 # From search_node.py (for read_node_py)
@@ -503,7 +503,7 @@ def read_node_py(json_obj):
         #     'result': {'nodes': nodes}
         # }
         # print(json.dumps(result, ensure_ascii=False, indent=2))
-        print(nodes)
+        # print(nodes)
         return {'status': 'success', 'message': 'nodes fetched', 'result': {'nodes': nodes}}
 
     except Exception as e:
