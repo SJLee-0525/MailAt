@@ -1,6 +1,9 @@
-import useAuthenticateStore from "@stores/authenticateStore";
-
-import { RawNode, GraphEmail, GraphIpcResponse } from "@/types/graphType";
+import {
+  RawNode,
+  SelectedGraph,
+  GraphEmail,
+  GraphIpcResponse,
+} from "@/types/graphType";
 
 /*
 중심 노드 타입 - 0 : Root, 1 : Person, 2 : Category, 3 : Subcategory
@@ -29,7 +32,6 @@ export const readGraphNode = async ({
   "IO_type": inout 타입 
   */
   try {
-    console.log(111111111111);
     const response = await window.electronAPI.graph.readNodePy({
       C_ID,
       C_type,
@@ -54,26 +56,8 @@ export const readGraphMessage = async ({
   C_type,
   IO_type,
   In,
-  user, // Add user as a parameter
-  authUsers, // Add authUsers as a parameter
-}: {
-  C_ID: number; // 중심 노드 ID
-  C_type: number; // 중심 노드 타입
-  IO_type: number; // inout 타입
-  In: string[]; // 메일 필터링 조건
-  user: any; // Define a more specific type
-  authUsers: any[]; // Define a more specific type
-}): Promise<GraphEmail[]> => {
-  // const { user, authUsers } = useAuthenticateStore(); // Remove hook call
-
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
-  if (!authUsers || (authUsers && authUsers.length === 0)) {
-    throw new Error("User not authenticated");
-  }
-
+}: SelectedGraph): Promise<GraphEmail[]> => {
+  console.error("Graph Message Params:");
   /*
   "C_ID": 중심 노드 ID,
   "C_type": 중심 노드 타입,

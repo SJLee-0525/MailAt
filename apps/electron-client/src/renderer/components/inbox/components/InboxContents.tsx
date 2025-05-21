@@ -52,13 +52,13 @@ const InboxFolders = ({ folders }: { folders: Record<string, string[]> }) => {
 const InboxContents = () => {
   const { folders, conversations, selectedFolder } = useConservationsStore();
   const { selectedMail, setSelectedMail } = userProgressStore();
-  const { selectedUser } = useAuthenticateStore(); 
-  const [isSyncing, setIsSyncing] = useState(false); 
+  const { selectedUser } = useAuthenticateStore();
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const { fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
     useInfiniteEmails();
   const { mutateAsync: markEmailAsRead } = useMarkEmailAsRead();
-  
+
   // 동기화 훅
   const syncEmailMutation = useSyncEmail();
 
@@ -74,17 +74,19 @@ const InboxContents = () => {
   const syncEmails = async () => {
     // 계정 ID 또는 선택된 폴더가 없거나 이미 동기화 중인 경우 실행하지 않음
     if (!accountId || !selectedFolder || isSyncing) return;
-    
+
     try {
       setIsSyncing(true);
-      console.log(`[InboxContents] 폴더 동기화 시작: ${selectedFolder}, 계정 ID: ${accountId}`);
-      
+      console.log(
+        `[InboxContents] 폴더 동기화 시작: ${selectedFolder}, 계정 ID: ${accountId}`
+      );
+
       await syncEmailMutation.mutateAsync({
         accountId,
         folderName: selectedFolder,
-        limit: 20
+        limit: 20,
       });
-      
+
       // 동기화 후 이메일 목록 리프레시
       await refetch();
       console.log(`[InboxContents] 동기화 및 데이터 갱신 완료`);
@@ -98,15 +100,15 @@ const InboxContents = () => {
   // 5초마다 동기화 및 데이터 갱신
   useEffect(() => {
     if (!accountId || !selectedFolder) return;
-    
+
     // 초기 동기화
     syncEmails();
-    
+
     // 5초마다 동기화
     const intervalId = setInterval(() => {
       syncEmails();
     }, 5000);
-    
+
     return () => clearInterval(intervalId);
   }, [accountId, selectedFolder]);
 

@@ -10,14 +10,24 @@ import { useGetEmailFolders } from "@hooks/useGetConversations";
 
 import HoverZone from "@layouts/HoverZone";
 import SideNav from "@components/common/nav/SideNav";
+
 import Calendar from "@components/calendar/Calendar";
 import AttachmentViewer from "@/components/attachment/AttachmentViewer";
+
+import GraphInbox from "@pages/emailGraph/components/GraphInbox";
+
 import Inbox from "@components/inbox/Inbox";
 import DetailEmail from "@components/detailEmail/DetailEmail";
 
 const PopUpLayout = () => {
-  const { inboxIsOpen, calendarIsOpen, selectedMail, isReplying, attachmentViewerIsOpen } =
-    useUserProgressStore();
+  const {
+    inboxIsOpen,
+    graphInboxIsOpen,
+    calendarIsOpen,
+    selectedMail,
+    isReplying,
+    attachmentViewerIsOpen,
+  } = useUserProgressStore();
 
   if (calendarIsOpen) {
     return (
@@ -28,15 +38,23 @@ const PopUpLayout = () => {
   }
 
   if (attachmentViewerIsOpen) {
-  return (
-    <div className="absolute top-0 right-0 w-full h-full pointer-events-none z-50">
-      <div className="w-full h-full pointer-events-auto">
-        <AttachmentViewer />
+    return (
+      <div className="absolute top-0 right-0 w-full h-full pointer-events-none z-50">
+        <div className="w-full h-full pointer-events-auto">
+          <AttachmentViewer />
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
+  if (graphInboxIsOpen) {
+    return (
+      <div className="absolute top-0 right-0 flex flex-row-reverse p-1 w-full h-full pointer-events-none">
+        <GraphInbox />
+        {selectedMail !== null && <DetailEmail />}
+      </div>
+    );
+  }
 
   return (
     <div className="absolute top-0 right-0 flex flex-row-reverse w-full h-full pointer-events-none">
@@ -48,7 +66,7 @@ const PopUpLayout = () => {
 
 const MainLayout = () => {
   const { user, authUsers } = useAuthenticateStore();
-  const { inboxIsOpen } = useUserProgressStore();
+  const { inboxIsOpen, graphInboxIsOpen } = useUserProgressStore();
 
   useGetAccounts();
 
@@ -82,7 +100,7 @@ const MainLayout = () => {
   const sidePaneClass = clsx(
     "transition-[width,min-width] h-full duration-300 ease-in-out",
     "overflow-hidden", // 내용 잘림 방지
-    inboxIsOpen
+    inboxIsOpen || graphInboxIsOpen
       ? "w-md min-w-md" // 열렸을 때
       : "w-0 min-w-0" // 닫혔을 때
   );

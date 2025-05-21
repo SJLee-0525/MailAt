@@ -69,7 +69,7 @@ const EmailGraphRightClick = ({
               setCtxMenu((m) => ({ ...m, visible: false }));
             }}
           >
-            뒤로가기
+            홈으로
           </li>
         )}
 

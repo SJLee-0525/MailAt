@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 
-// import { resetGraph } from "@apis/graphApi";
-// import { useGetGraphNode } from "@hooks/useGraphHook";
-
-import { GraphNode } from "@/types/graphType"; // Assuming GraphNode is exported from graphType
+import { GraphNode, SelectedGraph } from "@/types/graphType"; // Assuming GraphNode is exported from graphType
 
 import useAuthenticateStore from "@stores/authenticateStore";
 import useConversationsStore from "@stores/conversationsStore";
+import useUserProgressStore from "@stores/userProgressStore";
 
 import { useGetGraphNode, useMergeGraphNode } from "@hooks/useGraphHook";
 
@@ -14,9 +12,9 @@ import EmailGraph from "@pages/emailGraph/EmailGraph";
 
 const NetworkPage = () => {
   const { user, authUsers } = useAuthenticateStore();
-  const { graphData, setGraphData } = useConversationsStore();
-
-  const [selected, setSelected] = useState<number | null>(null);
+  const { graphData, setSelectedGraph, setGraphConversations } =
+    useConversationsStore();
+  const { setGraphInboxIsOpen } = useUserProgressStore();
 
   // 최초 1회 fetch 여부 제어용 state
   const [enableInitialFetch, setEnableInitialFetch] = useState(true);
@@ -59,7 +57,34 @@ const NetworkPage = () => {
       C_type: latestNode.C_type,
       IO_type: 3,
     });
-    setSelected(latestNode.C_ID); // Update selected node
+  }
+
+  // 그래프 노드 선택 시 처리
+  function handleNodeSelect({ C_ID, C_type, IO_type, In }: SelectedGraph) {
+    setGraphConversations([]); // 선택된 노드에 따라 대화 내용 초기화
+    setSelectedGraph({ C_ID, C_type, IO_type, In });
+    setGraphInboxIsOpen(true);
+  }
+
+  // 노드 더블 클릭 시 처리
+  function handleNodeDoubleClick(node: GraphNode) {
+    const newParams = {
+      C_ID: node.C_ID,
+      C_type: node.C_type,
+      IO_type: 3,
+    };
+
+    setEnableInitialFetch(true); // Ensure useEffect will trigger refetch
+    setQueryParams(newParams);
+    setInParams((prev) => [...prev, { C_ID: node.C_ID, C_type: node.C_type }]); // Add to inParams
+  }
+
+  // 초기 화면으로
+  function handleInitialScreen() {
+    setGraphConversations([]); // 대화 내용 초기화
+    setSelectedGraph({ C_ID: 0, C_type: 0, IO_type: 3, In: [] }); // 초기화
+    setGraphInboxIsOpen(false); // 그래프 인박스 닫기
+    setInParams([]); // inParams 초기화
   }
 
   // 병합 이벤트 핸들러
@@ -78,7 +103,7 @@ const NetworkPage = () => {
     }
   }
 
-  console.log("Graph data:", graphData);
+  // console.log("Graph data:", graphData);
 
   return (
     <div className="flex w-full h-full justify-center items-center overflow-hidden">
@@ -92,24 +117,9 @@ const NetworkPage = () => {
       ) : (
         <EmailGraph
           rawNodes={graphData || []} // null 방지
-          onSelect={(node: GraphNode) => {
-            setSelected(node.C_ID); // Assuming GraphNode has C_ID
-
-            const newParams = {
-              C_ID: node.C_ID, // Assuming GraphNode has C_ID
-              C_type: node.C_type, // Assuming GraphNode has C_type
-              IO_type: 2, // Keep IO_type as 2 (default)
-            };
-
-            console.log("Node selected. Updating queryParams to:", newParams);
-
-            setEnableInitialFetch(true); // Ensure useEffect will trigger refetch
-            setQueryParams(newParams);
-            setInParams((prev) => [
-              ...prev,
-              { C_ID: node.C_ID, C_type: node.C_type },
-            ]); // Add to inParams
-          }}
+          onSelect={handleNodeSelect}
+          onDoubleClick={handleNodeDoubleClick}
+          onInitialScreen={handleInitialScreen}
           onMerge={handleMerge}
           onNavigateBack={handleNavigateBack} // 뒤로가기 핸들러 전달
         />

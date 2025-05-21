@@ -24,12 +24,19 @@ import FolderIcon from "@assets/icons/FolderIcon";
 
 import EmailGraphRightClick from "@pages/emailGraph/components/EmailGraphRightClick";
 
-import { RawNode, GraphNode } from "@/types/graphType";
+import { RawNode, SelectedGraph, GraphNode } from "@/types/graphType";
+
+// function onSelect({ C_ID, C_type, IO_type, In }: SelectedGraph) {
+//   setGraphInboxIsOpen(true);
+//   setSelectedGraph({ C_ID, C_type, IO_type, In });
+// }
 
 // Props 인터페이스
 interface Props {
   rawNodes: RawNode[];
-  onSelect?: (node: GraphNode) => void; // Changed from (idx: number) to (node: GraphNode)
+  onSelect: ({ C_ID, C_type, IO_type, In }: SelectedGraph) => void;
+  onDoubleClick: (node: GraphNode) => void; // Changed from (idx: number) to (node: GraphNode)
+  onInitialScreen: () => void;
   onMerge: (srcName: string, tgtName: string) => void;
   onNavigateBack?: () => void;
 }
@@ -57,7 +64,14 @@ const ME_LINK_MIN_DISTANCE = 15; // "me" 노드와의 최소 거리
 const ME_LINK_MAX_DISTANCE_CAP = 45; // "me" 노드와의 최대 거리 (val이 매우 작을 경우 대비)
 
 const EmailGraph = memo(
-  ({ rawNodes, onSelect, onMerge, onNavigateBack }: Props) => {
+  ({
+    rawNodes,
+    onSelect,
+    onDoubleClick,
+    onInitialScreen,
+    onMerge,
+    onNavigateBack,
+  }: Props) => {
     const { currentTheme } = useAuthenticateStore();
 
     const { mutateAsync: deleteGraphNode } = useDeleteGraphNode();
@@ -315,15 +329,6 @@ const EmailGraph = memo(
         if (clickTimerRef.current) {
           clearTimeout(clickTimerRef.current);
           clickTimerRef.current = null;
-          console.log("더블클릭!", node);
-          // Potentially handle double-click action here if needed
-          return;
-        }
-
-        clickTimerRef.current = setTimeout(() => {
-          clickTimerRef.current = null;
-          if (isTransitioning) return; // 이미 트랜지션 중이면 중복 실행 방지
-          setIsTransitioning(true);
 
           // 확대 줌 및 중앙 정렬 애니메이션
           if (fgRef.current) {
@@ -344,14 +349,26 @@ const EmailGraph = memo(
 
           // 페이드 아웃 후 API 호출
           animateGraphOpacity(0, FADE_DURATION, () => {
-            onSelect?.(node); // Changed from onSelect?.(node.id)
+            onDoubleClick(node); // Changed from onSelect?.(node.id)
           });
+          return;
+        }
 
-          console.log("단일클릭! (Zooming in or selecting Me)", node);
+        clickTimerRef.current = setTimeout(() => {
+          clickTimerRef.current = null;
+          if (isTransitioning) return; // 이미 트랜지션 중이면 중복 실행 방지
+          setIsTransitioning(true);
+
+          onSelect({
+            C_ID: node.C_ID,
+            C_type: node.C_type,
+            IO_type: 3,
+            In: [],
+          });
         }, DBL_GAP);
       },
       [
-        onSelect,
+        onDoubleClick,
         animateGraphOpacity, // stable
         isTransitioning, // guard clause용
         setIsTransitioning, // stable setter
@@ -368,26 +385,27 @@ const EmailGraph = memo(
       setIsTransitioning(true);
       setCtxMenu({ visible: false, x: 0, y: 0, node: null });
 
-      // 전체 보기로 줌 및 중앙 정렬
-      if (fgRef.current) {
-        fgRef.current.zoom(INITIAL_ZOOM_LEVEL, ZOOM_DURATION);
-        const meNode = graph.nodes.find((n) => n.id === ME_NODE_ID);
-        if (
-          meNode &&
-          typeof meNode.x === "number" &&
-          typeof meNode.y === "number"
-        ) {
-          fgRef.current.centerAt(meNode.x, meNode.y, ZOOM_DURATION);
-        } else {
-          // "me" 노드가 없거나 좌표가 없는 경우 그래프 중앙으로 정렬
-          const { x: screenCenterX, y: screenCenterY } =
-            fgRef.current.screen2GraphCoords(w / 2, h / 2);
-          fgRef.current.centerAt(screenCenterX, screenCenterY, ZOOM_DURATION);
-        }
-      }
+      // // 전체 보기로 줌 및 중앙 정렬
+      // if (fgRef.current) {
+      //   fgRef.current.zoom(INITIAL_ZOOM_LEVEL, ZOOM_DURATION);
+      //   const meNode = graph.nodes.find((n) => n.id === ME_NODE_ID);
+      //   if (
+      //     meNode &&
+      //     typeof meNode.x === "number" &&
+      //     typeof meNode.y === "number"
+      //   ) {
+      //     fgRef.current.centerAt(meNode.x, meNode.y, ZOOM_DURATION);
+      //   } else {
+      //     // "me" 노드가 없거나 좌표가 없는 경우 그래프 중앙으로 정렬
+      //     const { x: screenCenterX, y: screenCenterY } =
+      //       fgRef.current.screen2GraphCoords(w / 2, h / 2);
+      //     fgRef.current.centerAt(screenCenterX, screenCenterY, ZOOM_DURATION);
+      //   }
+      // }
 
       // 페이드 아웃 후 API 호출
       animateGraphOpacity(0, FADE_DURATION, () => {
+        onInitialScreen(); // 초기 화면으로 복원
         onNavigateBack?.();
       });
     }, [

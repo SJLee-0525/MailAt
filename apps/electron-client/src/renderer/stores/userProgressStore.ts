@@ -12,6 +12,8 @@ interface UserProgressStore {
   inboxIsClosing: boolean;
   attachmentViewerIsOpen: boolean;
   attachmentViewerIsClosing: boolean; // 닫기 애니메이션 상태 추가
+  graphInboxIsOpen: boolean;
+  graphInboxIsClosing: boolean;
   selectedMail: { messageId: number; fromEmail: string } | null;
   selectedMailIsClosing: boolean;
   isReplying: boolean;
@@ -23,6 +25,7 @@ interface UserProgressStore {
   setBottomNavProgress: (progress: "search" | null) => void;
   setMailFormIsOpen: (isOpen: boolean) => void;
   setInboxIsOpen: (isOpen: boolean) => void;
+  setGraphInboxIsOpen: (isOpen: boolean) => void;
   setCalendarIsOpen: (isOpen: boolean) => void;
   setAttachmentViewerIsOpen: (isOpen: boolean) => void;
   setSelectedMail: (
@@ -40,6 +43,8 @@ const useUserProgressStore = create<UserProgressStore>((set) => ({
   mailFormIsClosing: false,
   inboxIsOpen: false,
   inboxIsClosing: false,
+  graphInboxIsOpen: false,
+  graphInboxIsClosing: false,
   calendarIsOpen: false,
   calendarIsClosing: false,
   attachmentViewerIsOpen: false,
@@ -79,6 +84,17 @@ const useUserProgressStore = create<UserProgressStore>((set) => ({
       }, 300);
     }
   },
+  setGraphInboxIsOpen: (isOpen) => {
+    if (isOpen) {
+      set({ graphInboxIsOpen: isOpen });
+    } else {
+      set({ graphInboxIsClosing: true });
+
+      setTimeout(() => {
+        set({ graphInboxIsOpen: false, graphInboxIsClosing: false });
+      }, 300);
+    }
+  },
   setCalendarIsOpen: (isOpen) => {
     if (isOpen) {
       set({ calendarIsOpen: isOpen });
@@ -97,7 +113,10 @@ const useUserProgressStore = create<UserProgressStore>((set) => ({
       set({ attachmentViewerIsClosing: true });
 
       setTimeout(() => {
-        set({ attachmentViewerIsOpen: false, attachmentViewerIsClosing: false });
+        set({
+          attachmentViewerIsOpen: false,
+          attachmentViewerIsClosing: false,
+        });
       }, 300);
     }
   },

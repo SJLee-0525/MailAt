@@ -6,6 +6,13 @@ export interface RawNode {
   count: number;
 }
 
+export interface SelectedGraph {
+  C_ID: number; // 중심 노드 ID
+  C_type: number; // 중심 노드 타입
+  IO_type: number; // inout 타입
+  In: string[];
+}
+
 export interface GraphEmail {
   message_id: string;
   threadId: string;

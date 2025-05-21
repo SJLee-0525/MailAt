@@ -18,7 +18,7 @@ import traceback
 # --- Configuration ---
 NEO4J_URI = "bolt://localhost:7687"
 NEO4J_USER = "neo4j"
-NEO4J_PASS = "message-gustav-rufus-alex-roman-2104" # From other scripts
+NEO4J_PASS = "12345678" # From other scripts
 #FINAL_MAP_PATH = "final_name_map.json"
 
 # Determine the absolute path to the script's directory
