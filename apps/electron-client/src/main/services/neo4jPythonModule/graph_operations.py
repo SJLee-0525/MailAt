@@ -34,338 +34,353 @@ CTYPE_MAP_SN = {v: k for k, v in LABEL_MAP_SN.items()}
 
 # embedding 부분 - sqlite가 만들어졌다면 바로 실행(category 생성)
 def process_and_embed_messages_py(DB_PATH=SQLITE_DB_PATH):
-    # --- 측정 시작 ---
-    total_start = time.time()
-    tracemalloc.start()
+    try:
+        # --- 측정 시작 ---
+        total_start = time.time()
+        tracemalloc.start()
 
-    # --- 모델 로드 ---
-    clf = joblib.load("xgb_model_384to64_miniLM.pkl")
-    pca = joblib.load("pca_64_from_384_miniLM.pkl")
-    le = joblib.load("label_encoder_384to64_miniLM.pkl")
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(f"✅ SBERT device: {device}")
-    sbert = SentenceTransformer("sbert_model_miniLM.pkl", device=device)
+        # --- 모델 로드 ---
+        clf = joblib.load("xgb_model_384to64_miniLM.pkl")
+        pca = joblib.load("pca_64_from_384_miniLM.pkl")
+        le = joblib.load("label_encoder_384to64_miniLM.pkl")
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        print(f"✅ SBERT device: {device}")
+        sbert = SentenceTransformer("sbert_model_miniLM.pkl", device=device)
 
-    # --- HTML → 텍스트 변환 함수 ---
-    def html_to_text(html: str) -> str:
-        if not html:
-            return ''
-        return BeautifulSoup(html, 'html.parser').get_text(separator='\n', strip=True)
+        # --- HTML → 텍스트 변환 함수 ---
+        def html_to_text(html: str) -> str:
+            if not html:
+                return ''
+            return BeautifulSoup(html, 'html.parser').get_text(separator='\n', strip=True)
 
-    # --- 조직명 추출 도구 ---
-    org_keywords = [
-        "대학교", "대학", "캠퍼스", "학교", "중학교", "고등학교",
-        "전자", "자동차", "화학", "건설", "통신", "제약", "바이오",
-        "연구소", "인사팀", "그룹", "센터", "병원", "협회", "기관"
-    ]
-    org_pattern = re.compile(r"(?:\(?주\)?식회사|\(?주\)|㈜)[\s]*([가-힣A-Za-z0-9&·]+)")
+        # --- 조직명 추출 도구 ---
+        org_keywords = [
+            "대학교", "대학", "캠퍼스", "학교", "중학교", "고등학교",
+            "전자", "자동차", "화학", "건설", "통신", "제약", "바이오",
+            "연구소", "인사팀", "그룹", "센터", "병원", "협회", "기관"
+        ]
+        org_pattern = re.compile(r"(?:\(?주\)?식회사|\(?주\)|㈜)[\s]*([가-힣A-Za-z0-9&·]+)")
 
-    def extract_signature(text: str) -> list[str]:
-        tail = text[-300:]
-        blocks = [tail[i:i+50] for i in range(0, len(tail), 50)]
-        org_lines = []
-        for line in blocks:
-            if any(kw in line for kw in org_keywords) or org_pattern.search(line):
-                org_lines.append(line)
-        return org_lines
+        def extract_signature(text: str) -> list[str]:
+            tail = text[-300:]
+            blocks = [tail[i:i+50] for i in range(0, len(tail), 50)]
+            org_lines = []
+            for line in blocks:
+                if any(kw in line for kw in org_keywords) or org_pattern.search(line):
+                    org_lines.append(line)
+            return org_lines
 
-    def extract_organization(org_lines: list[str]) -> str | None:
-        for line in org_lines:
-            match = org_pattern.search(line)
-            if match:
-                return match.group(1).strip()
-        return None
+        def extract_organization(org_lines: list[str]) -> str | None:
+            for line in org_lines:
+                match = org_pattern.search(line)
+                if match:
+                    return match.group(1).strip()
+            return None
 
-    # --- 룰 기반 분류 설정 ---
-    RULES = [
-        ("주소를 찾을 수 없음", "개인:알림"), ("메일을 전송하지 못했습니다", "개인:알림"),
-        ("지원 결과", "채용:결과"), ("면접 일정", "채용:결과"),
-        ("채용공고", "채용:공고"), ("공고", "채용:공고"), ("모집", "채용:공고"),
-        ("(광고)", "광고:교육"), ("인프런", "광고:교육"), ("강의", "광고:교육"),
-        ("워크샵", "회사:공지"), ("연차", "회사:공지"), ("휴가", "회사:공지"),
-        ("회식", "회사:공지"), ("문의드립니다", "회사:업무"),
-        ("회신 부탁", "회사:업무"), ("회의 요청", "회사:일정"),
-        ("미팅 일정", "회사:일정"), ("자료 요청", "회사:업무"),
-        ("보고서", "회사:업무"), ("협조 요청", "회사:업무"), ("Jira", "JIRA"),
-    ]
+        # --- 룰 기반 분류 설정 ---
+        RULES = [
+            ("주소를 찾을 수 없음", "개인:알림"), ("메일을 전송하지 못했습니다", "개인:알림"),
+            ("지원 결과", "채용:결과"), ("면접 일정", "채용:결과"),
+            ("채용공고", "채용:공고"), ("공고", "채용:공고"), ("모집", "채용:공고"),
+            ("(광고)", "광고:교육"), ("인프런", "광고:교육"), ("강의", "광고:교육"),
+            ("워크샵", "회사:공지"), ("연차", "회사:공지"), ("휴가", "회사:공지"),
+            ("회식", "회사:공지"), ("문의드립니다", "회사:업무"),
+            ("회신 부탁", "회사:업무"), ("회의 요청", "회사:일정"),
+            ("미팅 일정", "회사:일정"), ("자료 요청", "회사:업무"),
+            ("보고서", "회사:업무"), ("협조 요청", "회사:업무"), ("Jira", "JIRA"),
+        ]
 
-    def apply_rules(text: str) -> str | None:
-        for keyword, label in RULES:
-            if keyword in text:
-                return label
-        return None
+        def apply_rules(text: str) -> str | None:
+            for keyword, label in RULES:
+                if keyword in text:
+                    return label
+            return None
 
-    def predict_label(text: str) -> str:
-        emb = sbert.encode([text])
-        emb_pca = pca.transform(emb)
-        pred_num = clf.predict(emb_pca)[0]
-        return le.inverse_transform([pred_num])[0]
+        def predict_label(text: str) -> str:
+            emb = sbert.encode([text])
+            emb_pca = pca.transform(emb)
+            pred_num = clf.predict(emb_pca)[0]
+            return le.inverse_transform([pred_num])[0]
 
-    # --- DB 연결 및 테이블/컬럼 확인 ---
-    conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
+        # --- DB 연결 및 테이블/컬럼 확인 ---
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
 
-    # Category 테ーブル: 생성 및 after_category_id 컬럼 확인/추가
-    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='Category';")
-    if not cur.fetchone():
-        cur.execute("""
-            CREATE TABLE Category (
-                category_id INTEGER PRIMARY KEY,
-                category_name TEXT NOT NULL,
-                category_type INTEGER NOT NULL DEFAULT 1,
-                after_category_id INTEGER
-            );
-        """)
-    else:
-        # 컬럼 확인
-        cur.execute("PRAGMA table_info(Category);")
-        cols = [row[1] for row in cur.fetchall()]
-        if 'category_type' not in cols:
-            cur.execute("ALTER TABLE Category ADD COLUMN category_type INTEGER NOT NULL DEFAULT 1;")
-        if 'after_category_id' not in cols:
-            cur.execute("ALTER TABLE Category ADD COLUMN after_category_id INTEGER;")
-    conn.commit()
+        # Category 테ーブル: 생성 및 after_category_id 컬럼 확인/추가
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='Category';")
+        if not cur.fetchone():
+            cur.execute("""
+                CREATE TABLE Category (
+                    category_id INTEGER PRIMARY KEY,
+                    category_name TEXT NOT NULL,
+                    category_type INTEGER NOT NULL DEFAULT 1,
+                    after_category_id INTEGER
+                );
+            """)
+        else:
+            # 컬럼 확인
+            cur.execute("PRAGMA table_info(Category);")
+            cols = [row[1] for row in cur.fetchall()]
+            if 'category_type' not in cols:
+                cur.execute("ALTER TABLE Category ADD COLUMN category_type INTEGER NOT NULL DEFAULT 1;")
+            if 'after_category_id' not in cols:
+                cur.execute("ALTER TABLE Category ADD COLUMN after_category_id INTEGER;")
+        conn.commit()
 
-    # EmailContact 테이블: after_contact_id 컬럼 확인/추가
-    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='EmailContact';")
-    if cur.fetchone():
-        cur.execute("PRAGMA table_info(EmailContact);")
-        cols_ec = [row[1] for row in cur.fetchall()]
-        if 'after_contact_id' not in cols_ec:
-            cur.execute("ALTER TABLE EmailContact ADD COLUMN after_contact_id INTEGER;")
-    conn.commit()
+        # EmailContact 테이블: after_contact_id 컬럼 확인/추가
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='EmailContact';")
+        if cur.fetchone():
+            cur.execute("PRAGMA table_info(EmailContact);")
+            cols_ec = [row[1] for row in cur.fetchall()]
+            if 'after_contact_id' not in cols_ec:
+                cur.execute("ALTER TABLE EmailContact ADD COLUMN after_contact_id INTEGER;")
+        conn.commit()
 
-    # self-reference 초기화: after_ 컬럼이 NULL인 경우 자기 자신의 ID로 설정
-    cur.execute("UPDATE Category SET after_category_id = category_id WHERE after_category_id IS NULL;")
-    cur.execute("UPDATE EmailContact SET after_contact_id = contact_id WHERE after_contact_id IS NULL;")
-    conn.commit()
+        # self-reference 초기화: after_ 컬럼이 NULL인 경우 자기 자신의 ID로 설정
+        cur.execute("UPDATE Category SET after_category_id = category_id WHERE after_category_id IS NULL;")
+        cur.execute("UPDATE EmailContact SET after_contact_id = contact_id WHERE after_contact_id IS NULL;")
+        conn.commit()
 
-    # Category 캐시
-    cur.execute("SELECT category_id, category_name FROM Category;")
-    category_cache: dict[str, int] = {name: cid for cid, name in cur.fetchall()}
+        # Category 캐시
+        cur.execute("SELECT category_id, category_name FROM Category;")
+        category_cache: dict[str, int] = {name: cid for cid, name in cur.fetchall()}
 
-    def get_or_create_category_id(name: str, type_: int) -> int:
-        name = name.strip()
-        if name in category_cache:
-            cid = category_cache[name]
+        def get_or_create_category_id(name: str, type_: int) -> int:
+            name = name.strip()
+            if name in category_cache:
+                cid = category_cache[name]
+                cur.execute(
+                    "UPDATE Category SET category_type = ? WHERE category_id = ?;",
+                    (type_, cid)
+                )
+                conn.commit()
+                return cid
             cur.execute(
-                "UPDATE Category SET category_type = ? WHERE category_id = ?;",
-                (type_, cid)
+                "INSERT INTO Category (category_name, category_type, after_category_id) VALUES (?, ?, NULL);",
+                (name, type_)
             )
+            cid = cur.lastrowid
+            # self-link
+            cur.execute(
+                "UPDATE Category SET after_category_id = ? WHERE category_id = ?;",
+                (cid, cid)
+            )
+            category_cache[name] = cid
             conn.commit()
             return cid
-        cur.execute(
-            "INSERT INTO Category (category_name, category_type, after_category_id) VALUES (?, ?, NULL);",
-            (name, type_)
-        )
-        cid = cur.lastrowid
-        # self-link
-        cur.execute(
-            "UPDATE Category SET after_category_id = ? WHERE category_id = ?;",
-            (cid, cid)
-        )
-        category_cache[name] = cid
-        conn.commit()
-        return cid
 
-    # after_chain 해제 함수
-    def resolve_category_id(cid: int) -> int:
-        current = cid
-        while True:
-            cur.execute(
-                "SELECT after_category_id FROM Category WHERE category_id = ?;",
-                (current,)
-            )
-            row = cur.fetchone()
-            if not row:
-                break
-            next_id = row[0]
-            if next_id == current:
-                break
-            current = next_id
-        return current
+        # after_chain 해제 함수
+        def resolve_category_id(cid: int) -> int:
+            current = cid
+            while True:
+                cur.execute(
+                    "SELECT after_category_id FROM Category WHERE category_id = ?;",
+                    (current,)
+                )
+                row = cur.fetchone()
+                if not row:
+                    break
+                next_id = row[0]
+                if next_id == current:
+                    break
+                current = next_id
+            return current
 
-    def resolve_contact_id(contact_id: int) -> int:
-        current = contact_id
-        while True:
-            cur.execute(
-                "SELECT after_contact_id FROM EmailContact WHERE contact_id = ?;",
-                (current,)
-            )
-            row = cur.fetchone()
-            if not row:
-                break
-            next_id = row[0]
-            if next_id == current:
-                break
-            current = next_id
-        return current
+        def resolve_contact_id(contact_id: int) -> int:
+            current = contact_id
+            while True:
+                cur.execute(
+                    "SELECT after_contact_id FROM EmailContact WHERE contact_id = ?;",
+                    (current,)
+                )
+                row = cur.fetchone()
+                if not row:
+                    break
+                next_id = row[0]
+                if next_id == current:
+                    break
+                current = next_id
+            return current
 
-    # Message.body_html → body_text 변환
-    cur.execute("SELECT rowid, body_html FROM Message;")
-    rows = cur.fetchall()
-    text_updates = [(html_to_text(html), rowid) for rowid, html in rows]
-    cur.executemany(
-        "UPDATE Message SET body_text = ? WHERE rowid = ?;",
-        text_updates
-    )
-    conn.commit()
-
-    # 메시지 분류 및 Category/Subcategory 할당
-    cur.execute("SELECT message_id, body_text FROM Message;")
-    messages = cur.fetchall()
-    updates: list[tuple[int, int | None, int]] = []
-
-    for mid, text in messages:
-        if not text or not text.strip():
-            continue
-        plain_text = text
-        org_lines = extract_signature(plain_text)
-        org_name = extract_organization(org_lines)
-        base_label = apply_rules(plain_text) or predict_label(plain_text)
-
-        if org_name and ":" in base_label:
-            _, sub = base_label.split(":", 1)
-            cat = org_name
-        elif ":" in base_label:
-            cat, sub = base_label.split(":", 1)
-        else:
-            cat, sub = base_label, None
-
-        cat_id = get_or_create_category_id(cat, 2)
-        cat_id = resolve_category_id(cat_id)
-        sub_id = None
-        if sub:
-            sid = get_or_create_category_id(sub, 3)
-            sub_id = resolve_category_id(sid)
-
-        updates.append((cat_id, sub_id, mid))
-
-    cur.executemany(
-        "UPDATE Message SET category_id=?, sub_category_id=? WHERE message_id=?;",
-        updates
-    )
-    conn.commit()
-
-    # MessageContact.contact_id 해제 및 업데이트
-    cur.execute("SELECT rowid, contact_id FROM MessageContact;")
-    mc_rows = cur.fetchall()
-    mc_updates: list[tuple[int, int]] = []
-    for rowid, cid in mc_rows:
-        new_cid = resolve_contact_id(cid)
-        if new_cid != cid:
-            mc_updates.append((new_cid, rowid))
-    if mc_updates:
+        # Message.body_html → body_text 변환
+        cur.execute("SELECT rowid, body_html FROM Message;")
+        rows = cur.fetchall()
+        text_updates = [(html_to_text(html), rowid) for rowid, html in rows]
         cur.executemany(
-            "UPDATE MessageContact SET contact_id=? WHERE rowid=?;",
-            mc_updates
+            "UPDATE Message SET body_text = ? WHERE rowid = ?;",
+            text_updates
         )
         conn.commit()
 
-    conn.close()
+        # 메시지 분류 및 Category/Subcategory 할당
+        cur.execute("SELECT message_id, body_text FROM Message;")
+        messages = cur.fetchall()
+        updates: list[tuple[int, int | None, int]] = []
 
-    # --- 측정 종료 ---
-    total_end = time.time()
-    current_mem, peak_mem = tracemalloc.get_traced_memory()
-    tracemalloc.stop()
+        for mid, text in messages:
+            if not text or not text.strip():
+                continue
+            plain_text = text
+            org_lines = extract_signature(plain_text)
+            org_name = extract_organization(org_lines)
+            base_label = apply_rules(plain_text) or predict_label(plain_text)
 
-    print(f"✅ 총 {len(updates)}개 메시지 분류 완료")
-    print(f"⏱️ 처리 시간: {total_end - total_start:.2f}초")
-    print(f"💾 메모리 사용: 현재 {current_mem/1024/1024:.2f}MB / 최대 {peak_mem/1024/1024:.2f}MB")
+            if org_name and ":" in base_label:
+                _, sub = base_label.split(":", 1)
+                cat = org_name
+            elif ":" in base_label:
+                cat, sub = base_label.split(":", 1)
+            else:
+                cat, sub = base_label, None
+
+            cat_id = get_or_create_category_id(cat, 2)
+            cat_id = resolve_category_id(cat_id)
+            sub_id = None
+            if sub:
+                sid = get_or_create_category_id(sub, 3)
+                sub_id = resolve_category_id(sid)
+
+            updates.append((cat_id, sub_id, mid))
+
+        cur.executemany(
+            "UPDATE Message SET category_id=?, sub_category_id=? WHERE message_id=?;",
+            updates
+        )
+        conn.commit()
+
+        # MessageContact.contact_id 해제 및 업데이트
+        cur.execute("SELECT rowid, contact_id FROM MessageContact;")
+        mc_rows = cur.fetchall()
+        mc_updates: list[tuple[int, int]] = []
+        for rowid, cid in mc_rows:
+            new_cid = resolve_contact_id(cid)
+            if new_cid != cid:
+                mc_updates.append((new_cid, rowid))
+        if mc_updates:
+            cur.executemany(
+                "UPDATE MessageContact SET contact_id=? WHERE rowid=?;",
+                mc_updates
+            )
+            conn.commit()
+
+        conn.close()
+
+        # --- 측정 종료 ---
+        total_end = time.time()
+        current_mem, peak_mem = tracemalloc.get_traced_memory()
+        tracemalloc.stop()
+
+        print(f"✅ 총 {len(updates)}개 메시지 분류 완료")
+        print(f"⏱️ 처리 시간: {total_end - total_start:.2f}초")
+        print(f"💾 메모리 사용: 현재 {current_mem/1024/1024:.2f}MB / 최대 {peak_mem/1024/1024:.2f}MB")
+
+        return {"status": "success"}
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {"status": "fail", "message": str(e)}
 
 # --- Function from make_node.py ---
 # graphdb 생성 - embedding 이후에 바로 실행
 def initialize_graph_from_sqlite_py():
-    conn = sqlite3.connect(SQLITE_DB_PATH)
-    cur = conn.cursor()
+    try:
+        conn = sqlite3.connect(SQLITE_DB_PATH)
+        cur = conn.cursor()
 
-    # 계정 이메일 조회
-    cur.execute("SELECT email FROM Account;")
-    account_emails = [row[0].lower() for row in cur.fetchall()]
+        # 계정 이메일 조회
+        cur.execute("SELECT email FROM Account;")
+        account_emails = [row[0].lower() for row in cur.fetchall()]
 
-    # 메시지 정보 조회
-    cur.execute("SELECT message_id, category_id, sub_category_id FROM Message;")
-    messages = cur.fetchall()
+        # 메시지 정보 조회
+        cur.execute("SELECT message_id, category_id, sub_category_id FROM Message;")
+        messages = cur.fetchall()
 
-    # 메일-연락처 관계 조회
-    msg_contacts = {}
-    cur.execute("SELECT message_id, contact_id, type FROM MessageContact;")
-    for mid, cid, typ in cur.fetchall():
-        msg_contacts.setdefault(mid, {}).setdefault(typ, []).append(cid)
+        # 메일-연락처 관계 조회
+        msg_contacts = {}
+        cur.execute("SELECT message_id, contact_id, type FROM MessageContact;")
+        for mid, cid, typ in cur.fetchall():
+            msg_contacts.setdefault(mid, {}).setdefault(typ, []).append(cid)
 
-    # 연락처 정보 조회
-    cur.execute("SELECT contact_id, name, email FROM EmailContact;")
-    email_contacts = {cid: (name, email.lower()) for cid, name, email in cur.fetchall()}
+        # 연락처 정보 조회
+        cur.execute("SELECT contact_id, name, email FROM EmailContact;")
+        email_contacts = {cid: (name, email.lower()) for cid, name, email in cur.fetchall()}
 
-    # 카테고리 이름 매핑 조회
-    cur.execute("SELECT category_id, category_name FROM Category;")
-    category_map = {cid: name for cid, name in cur.fetchall()}
+        # 카테고리 이름 매핑 조회
+        cur.execute("SELECT category_id, category_name FROM Category;")
+        category_map = {cid: name for cid, name in cur.fetchall()}
 
-    conn.close()
+        conn.close()
 
-    driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASS))
-    with driver.session() as sess:
-        # 기존 그래프 삭제
-        sess.run("MATCH (n) DETACH DELETE n")
+        driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASS))
+        with driver.session() as sess:
+            # 기존 그래프 삭제
+            sess.run("MATCH (n) DETACH DELETE n")
 
-        # Root 노드 생성
-        sess.run("""
-            MERGE (root:Root {name: '나'})
-            ON CREATE SET root.emails = $emails,
-                          root.contact_id = 0
-        """, emails=account_emails)
+            # Root 노드 생성
+            sess.run("""
+                MERGE (root:Root {name: '나'})
+                ON CREATE SET root.emails = $emails,
+                            root.contact_id = 0
+            """, emails=account_emails)
 
-        # 메시지별 노드 및 관계 생성
-        for msg_id, cat_id, subcat_id in messages:
-            category_name = category_map.get(cat_id)
-            subcategory_name = category_map.get(subcat_id) if subcat_id is not None else None
+            # 메시지별 노드 및 관계 생성
+            for msg_id, cat_id, subcat_id in messages:
+                category_name = category_map.get(cat_id)
+                subcategory_name = category_map.get(subcat_id) if subcat_id is not None else None
 
-            contacts = msg_contacts.get(msg_id, {})
-            recips = [
-                cid for cid in contacts.get('TO', [])
-                if email_contacts.get(cid, ('', ''))[1] not in account_emails
-            ]
-            if not recips:
-                recips = contacts.get('FROM', [])
+                contacts = msg_contacts.get(msg_id, {})
+                recips = [
+                    cid for cid in contacts.get('TO', [])
+                    if email_contacts.get(cid, ('', ''))[1] not in account_emails
+                ]
+                if not recips:
+                    recips = contacts.get('FROM', [])
 
-            for cid in recips:
-                person_name, _ = email_contacts.get(cid, (None, None))
-                if not person_name:
-                    continue
+                for cid in recips:
+                    person_name, _ = email_contacts.get(cid, (None, None))
+                    if not person_name:
+                        continue
 
-                sess.run("""
-                    MATCH (root:Root {name: '나'})
-                    MERGE (p:Person {name: $person_name})
-                      SET p.contact_id = $cid
-                    MERGE (root)-[r1:INTERACTS_WITH]->(p)
-                    SET r1.msg_ids = coalesce(r1.msg_ids, []) + [$msg_id]
+                    sess.run("""
+                        MATCH (root:Root {name: '나'})
+                        MERGE (p:Person {name: $person_name})
+                        SET p.contact_id = $cid
+                        MERGE (root)-[r1:INTERACTS_WITH]->(p)
+                        SET r1.msg_ids = coalesce(r1.msg_ids, []) + [$msg_id]
 
-                    MERGE (c:Category {name: $category_name})
-                    MERGE (p)-[r2:HAS_CATEGORY]->(c)
-                    SET
-                      r2.msg_ids    = coalesce(r2.msg_ids, []) + [$msg_id],
-                      c.category_id = $category_id
+                        MERGE (c:Category {name: $category_name})
+                        MERGE (p)-[r2:HAS_CATEGORY]->(c)
+                        SET
+                        r2.msg_ids    = coalesce(r2.msg_ids, []) + [$msg_id],
+                        c.category_id = $category_id
 
-                    WITH c, $subcategory_name AS subcat, $cid AS cid, $msg_id AS mid, $subcategory_id AS scid
-                    WHERE subcat IS NOT NULL
-                    MERGE (s:Subcategory {name: subcat})
-                    MERGE (c)-[sr:HAS_SUBCATEGORY]->(s)
-                    SET
-                      sr.cids         = coalesce(sr.cids, []) + [cid],
-                      sr.msg_ids      = coalesce(sr.msg_ids, []) + [mid],
-                      s.subcategory_id = scid
-                """, {
-                    'person_name':      person_name,
-                    'cid':              cid,
-                    'msg_id':           msg_id,
-                    'category_name':    category_name,
-                    'category_id':      cat_id,
-                    'subcategory_name': subcategory_name,
-                    'subcategory_id':   subcat_id or 0
-                })
+                        WITH c, $subcategory_name AS subcat, $cid AS cid, $msg_id AS mid, $subcategory_id AS scid
+                        WHERE subcat IS NOT NULL
+                        MERGE (s:Subcategory {name: subcat})
+                        MERGE (c)-[sr:HAS_SUBCATEGORY]->(s)
+                        SET
+                        sr.cids         = coalesce(sr.cids, []) + [cid],
+                        sr.msg_ids      = coalesce(sr.msg_ids, []) + [mid],
+                        s.subcategory_id = scid
+                    """, {
+                        'person_name':      person_name,
+                        'cid':              cid,
+                        'msg_id':           msg_id,
+                        'category_name':    category_name,
+                        'category_id':      cat_id,
+                        'subcategory_name': subcategory_name,
+                        'subcategory_id':   subcat_id or 0
+                    })
 
-    driver.close()
-    print("✅ 그래프 생성 완료.")
+        driver.close()
+        print("✅ 그래프 생성 완료.")
+        return {"status": "success"}
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {"status": "fail", "message": str(e)}
 
 # --- Function from search_node.py (for read_node_py) ---
 # 주변 노드 조회 - front에서 해당 노드 주변의 노드를 요청할때 실행
@@ -1069,7 +1084,7 @@ if __name__ == "__main__":
         result = None
 
         if operation == "createNode":
-            create_node_py(args)
+            result = create_node_py(args)
         elif operation == "deleteNode":
             result = delete_node_py(args)
         elif operation == "readNode":
