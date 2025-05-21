@@ -30,13 +30,7 @@ const useAuthenticateStore = create<AuthenticateStore>()(
       },
       authUsers: [],
       setAuthUsers: (users) => set({ authUsers: users }),
-      selectedUser: {
-        accountId: 1,
-        email: "hong.jiwoo@example.com",
-        username: "홍지우",
-        imapHost: "imap.example.com",
-        smtpHost: "smtp.example.com",
-      },
+      selectedUser: null,
       deleteAuthUser: (user) =>
         set((state) => ({
           authUsers: state.authUsers.filter(

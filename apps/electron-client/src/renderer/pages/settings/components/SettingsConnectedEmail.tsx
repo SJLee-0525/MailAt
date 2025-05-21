@@ -4,7 +4,7 @@ import { CreateAccountResponse } from "@/types/authType";
 
 import useAuthenticateStore from "@stores/authenticateStore";
 
-import { useGetAccounts } from "@hooks/useGetUser";
+// import { useGetAccounts } from "@hooks/useGetUser";
 
 import SettingsMailList from "@pages/settings/components/SettingsMailList";
 import SettingsAddAccount from "@pages/settings/components/SettingsAddAcount";
@@ -19,10 +19,7 @@ const SettingConnectedEmail = () => {
   const [isEditAccount, setIsEditAccount] =
     useState<CreateAccountResponse | null>(null);
 
-  const accountsQuery = useGetAccounts();
-  if (accountsQuery.isLoading) return <div>Loading...</div>;
-  if (accountsQuery.isError)
-    return <div>Error: {accountsQuery.error.message}</div>;
+  // const accountsQuery = useGetAccounts();
 
   return (
     <>

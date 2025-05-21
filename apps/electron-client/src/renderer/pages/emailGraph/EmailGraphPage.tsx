@@ -3,12 +3,15 @@ import { useState } from "react";
 // import { resetGraph } from "@apis/graphApi";
 // import { useGetGraphNode } from "@hooks/useGraphHook";
 
+import useAuthenticateStore from "@stores/authenticateStore";
 import useConversationsStore from "@stores/conversationsStore";
 
 import EmailGraph from "@pages/emailGraph/EmailGraph";
 
 const NetworkPage = () => {
+  const { user, selectedUser, authUsers } = useAuthenticateStore();
   const { graphData, setGraphData } = useConversationsStore();
+
   const [selected, setSelected] = useState<number | null>(null);
 
   // 최초 1회 fetch 여부 제어용 state
@@ -61,24 +64,34 @@ const NetworkPage = () => {
   }
 
   console.log("Graph data:", graphData);
+  console.log("!!!!", user, authUsers);
 
   return (
     <div className="flex w-full h-full justify-center items-center overflow-hidden">
-      <EmailGraph
-        rawNodes={graphData || []} // null 방지
-        onSelect={(id) => {
-          setSelected(id);
-          console.log(
-            "Node selected, simulating re-feed of graph data for node ID:",
-            id
-          );
-          if (graphData) {
-            setGraphData([...graphData]);
-          }
-        }}
-        onMerge={handleMerge}
-        onNavigateBack={handleNavigateBack} // 뒤로가기 핸들러 전달
-      />
+      {!user || authUsers.length === 0 ? (
+        <div className="flex flex-col items-center justify-center w-full h-full bg-white rounded-lg">
+          <h1 className="text-2xl font-bold">이메일 계정 추가가 필요합니다.</h1>
+          <p className="text-gray-500">
+            이메일 그래프를 확인하려면 로그인하세요.
+          </p>
+        </div>
+      ) : (
+        <EmailGraph
+          rawNodes={graphData || []} // null 방지
+          onSelect={(id) => {
+            setSelected(id);
+            console.log(
+              "Node selected, simulating re-feed of graph data for node ID:",
+              id
+            );
+            if (graphData) {
+              setGraphData([...graphData]);
+            }
+          }}
+          onMerge={handleMerge}
+          onNavigateBack={handleNavigateBack} // 뒤로가기 핸들러 전달
+        />
+      )}
     </div>
   );
 };

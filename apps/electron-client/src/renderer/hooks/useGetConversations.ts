@@ -164,7 +164,7 @@ export const useInfiniteEmails = () => {
       }),
     initialPageParam: 0, // Added: initial page parameter
     getNextPageParam: (lastPage, allPages) =>
-      lastPage.length < PAGE_SIZE
+      lastPage && lastPage.length < PAGE_SIZE
         ? undefined // 더 없음
         : allPages.length * PAGE_SIZE, // 다음 offset
   });
