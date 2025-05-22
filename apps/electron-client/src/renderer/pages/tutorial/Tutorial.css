@@ -1,0 +1,5 @@
+@import url("../../styles/animations.css");
+
+.init-message {
+  animation: fadeIn 1s forwards;
+}

@@ -1,0 +1,287 @@
+/* styles.css */
+
+@import "tailwindcss";
+
+@font-face {
+  font-family: Pretendard-Light;
+  font-weight: 300;
+  src:
+    local("Pretendard Light"),
+    url("./assets/fonts/Pretendard-Light.woff") format("woff"),
+    url("./assets/fonts/Pretendard-Light.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Pretendard-Regular;
+  font-weight: 300;
+  src:
+    local("Pretendard Regular"),
+    url("./assets/fonts/Pretendard-Regular.woff") format("woff"),
+    url("./assets/fonts/Pretendard-Regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Pretendard-Medium;
+  font-weight: 300;
+  src:
+    local("Pretendard Medium"),
+    url("./assets/fonts/Pretendard-Medium.woff") format("woff"),
+    url("./assets/fonts/Pretendard-Medium.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Pretendard-SemiBold;
+  font-weight: 300;
+  src:
+    local("Pretendard SemiBold"),
+    url("./assets/fonts/Pretendard-SemiBold.woff") format("woff"),
+    url("./assets/fonts/Pretendard-SemiBold.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Pretendard-Bold;
+  font-weight: 300;
+  src:
+    local("Pretendard Bold"),
+    url("./assets/fonts/Pretendard-Bold.woff") format("woff"),
+    url("./assets/fonts/Pretendard-Bold.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Pretendard-ExtraBold;
+  font-weight: 300;
+  src:
+    local("Pretendard ExtraBold"),
+    url("./assets/fonts/Pretendard-ExtraBold.woff") format("woff"),
+    url("./assets/fonts/Pretendard-ExtraBold.woff2") format("woff2");
+}
+
+@theme {
+  --font-pre-light: "Pretendard-Light";
+  --font-pre-regular: "Pretendard-Regular";
+  --font-pre-medium: "Pretendard-Medium";
+  --font-pre-semi-bold: "Pretendard-SemiBold";
+  --font-pre-bold: "Pretendard-Bold";
+  --font-pre-extra-bold: "Pretendard-ExtraBold";
+
+  /* Colors */
+  --color-white: #ffffff;
+  --color-light: #ededed;
+  --color-light1: #edeef7;
+  --color-light2: #dfe0e2;
+  --color-light3: #bcc0c3;
+  --color-bg: #0f0f41;
+  --color-bg-dark: #040412;
+  --color-icon: #7d7983;
+  --color-text: #000000;
+  --color-theme: #072491;
+  --color-theme-dark: #022a44;
+  --color-header: #edeef7;
+  --color-title: #505050;
+  --color-content: #686868;
+  --color-default: #bcc0c3;
+  --color-accept: #0a5685;
+  --color-disable: #dddddd;
+  --color-cancel: #d60000;
+  --color-success: #0094ff;
+  --color-warning: #ffb45c;
+  --color-error: #ee5c5c;
+  --color-calendardisalbed: #dddddd;
+}
+
+/* 다크 테마 */
+html.theme-night {
+  --color-white: #101420;
+  --color-light: #333333;
+  --color-light1: #5a5a5a;
+  --color-light2: #777777;
+  --color-light3: #858585;
+  --color-bg: #0f0f41; /* 유지 */
+  --color-bg-dark: #040412; /* 유지 */
+  --color-icon: #e9e9e9; /* 약간 더 푸르게 조정 */
+  --color-text: #ffffff; /* 유지 */
+  --color-theme: #072491; /* 유지 */
+  --color-theme-dark: #021a60; /* 조금 더 어둡고 진하게 조정 */
+  --color-header: #3d425a;
+  --color-title: #cdd3f1; /* 연한 블루화이트 */
+  --color-content: #b6b6b6; /* 중간 톤의 푸른 회색 */
+  --color-default: #606885; /* 중립적인 푸른 회색 */
+  --color-accept: #0a5685; /* 유지 */
+  --color-disable: #3d425a; /* 어두운 회색 블루 */
+  --color-cancel: #c04a4a; /* 기존보다 어둡고 채도 낮춤 */
+  --color-success: #0094ff; /* 유지 */
+  --color-warning: #ffb45c; /* 유지 */
+  --color-error: #ee5c5c; /* 유지 */
+  --color-calendardisalbed: #24262c;
+}
+
+html.theme-night #root {
+  background: linear-gradient(270deg, #022a44, #011725, #000);
+  background-size: 600% 600%;
+  animation: spaceBackground 16s ease infinite;
+}
+
+/* 주황색 따뜻한 테마 */
+html.theme-orange-warm {
+  --color-white: #ffffff;
+  --color-light: #fdf3ed;
+  --color-light1: #fae7dc;
+  --color-light2: #f1d6c4;
+  --color-light3: #d9b7a6;
+  --color-bg: #fffaf6;
+  --color-bg-dark: #f5eae0;
+  --color-icon: #a78c80;
+  --color-theme: #c1562e; /* 따뜻한 브릭/테라코타 오렌지 */
+  --color-theme-dark: #8b3b20;
+  --color-title: #5c4033;
+  --color-content: #7a5b4b;
+  --color-default: #d9b7a6;
+  --color-accept: #a8451e;
+  --color-disable: #e0d3ca;
+  --color-cancel: #b32222;
+  --color-success: #ff8b5c;
+  --color-warning: #ffb45c;
+  --color-error: #ee5c5c;
+}
+
+html.theme-orange-warm #root {
+  background: linear-gradient(270deg, #ffd180, #ffab40, #ffd180);
+  background-size: 600% 600%;
+  animation: spaceBackground 16s ease infinite;
+}
+
+/*
+이 파일 하나만 import("tailwindcss") 하시면,
+Tailwind 플러그인이 자동으로 @theme 블록을 읽어
+text-primary, bg-error 같은 유틸리티에 위 변수들을 매핑해 줍니다.
+
+container.center 설정, 스크롤바 숨기기 플러그인(scrollbarHide) 등
+Tailwind 자체 플러그인 설정은 여전히 JS config에서 해 주셔야 합니다.
+*/
+
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE, Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* 애니메이션 추가 - 이메일 자동완성 기능을 위한 효과 */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes spaceBackground {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* #root {
+  background: linear-gradient(270deg, #022a44, #011725, #000);
+  background-size: 600% 600%;
+  animation: spaceBackground 16s ease infinite;
+} */
+
+#root {
+  background: linear-gradient(270deg, #ededed, #e5ebff, #ededed);
+  background-size: 600% 600%;
+  animation: spaceBackground 16s ease infinite;
+}
+
+.animate-fade-out {
+  animation: fadeOut 0.3s ease-in-out;
+}
+
+/* Quill 에디터 스타일 오버라이드 - 더 깔끔한 UI를 위해 */
+.ql-toolbar.ql-snow {
+  border-color: #edeef7 !important;
+  border-radius: 4px 4px 0 0;
+}
+
+.ql-container.ql-snow {
+  border-color: #edeef7 !important;
+  border-radius: 0 0 4px 4px;
+  min-height: 150px;
+}
+
+.ql-editor {
+  font-family: "Pretendard-Regular", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.ql-editor:focus {
+  outline: 2px solid rgba(2, 45, 72, 0.1);
+}
+
+/* AI 로딩 애니메이션 */
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-bounce {
+  animation: bounce 0.6s infinite;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out forwards;
+}
+
+.slide-down {
+  animation: slideDown 0.3s ease-out forwards;
+}

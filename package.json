@@ -1,0 +1,34 @@
+{
+    "name": "mailat",
+    "version": "1.0.0",
+    "private": true,
+    "workspaces": [
+        "apps/electron-client",
+        "apps/electron-client/src"
+    ],
+    "engines": {
+        "node": ">=20.0.0"
+    },
+    "scripts": {
+        "dev": "npm run --workspace=electron-client dev",
+        "build": "npm run --workspace=electron-client build",
+        "lint": "npm run --workspaces --if-present lint"
+    },
+    "devDependencies": {
+        "electron-rebuild": "^3.2.9",
+        "eslint": "^9.25.1",
+        "eslint-config-prettier": "^10.1.2",
+        "eslint-plugin-prettier": "^5.2.6",
+        "prettier": "^3.5.3"
+    },
+    "dependencies": {
+        "clsx": "^2.1.1",
+        "d3-force-3d": "^3.0.6",
+        "date-fns": "^4.1.0",
+        "force-graph": "^1.49.6",
+        "mime-types": "^3.0.1",
+        "react-force-graph": "^1.47.6",
+        "react-force-graph-2d": "^1.27.1",
+        "react-intersection-observer": "^9.16.0"
+    }
+}

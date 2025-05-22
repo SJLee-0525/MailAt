@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mail@ - 메일을 새롭게 정의하다</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="brand_char.png" />
+    <style>
+        /* Custom Tailwind utilities for precise colors */
+        body {
+            color: #121212; /* Default dark text */
+            font-family: 'Noto Sans KR', sans-serif; /* Apply Noto Sans KR */
+            background-image: url('background.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .bg-brand-accent { background-color: #3A8DFF; }
+        .text-brand-accent { color: #3A8DFF; }
+        .border-brand-accent { border-color: #3A8DFF; }
+        .hover\:bg-brand-accent-dark:hover { background-color: #2a78e0; } /* Darker shade for hover */
+
+        /* Optional: Smooth scrolling & Custom Scrollbar */
+        html {
+            /* scroll-behavior: smooth; */ /* Removed for custom JS scroll */
+            /* Firefox scrollbar initial state: hidden */
+            scrollbar-width: thin; /* can be auto, thin, or none */
+            scrollbar-color: transparent transparent; /* thumb color, track color */
+        }
+
+        /* Firefox scrollbar on hover: show thumb */
+        html:hover {
+            scrollbar-color: rgba(0, 0, 0, 0.3) transparent; /* thumb visible, track transparent */
+        }
+
+        /* Webkit (Chrome, Safari, Edge) scrollbar base */
+        html::-webkit-scrollbar {
+            width: 10px; /* Adjust width as needed */
+        }
+
+        html::-webkit-scrollbar-track {
+            background: transparent; /* Track transparent by default */
+        }
+
+        html::-webkit-scrollbar-thumb {
+            background-color: transparent; /* Thumb transparent by default */
+            border-radius: 10px;
+        }
+
+        /* Webkit scrollbar thumb on page hover: show thumb */
+        html:hover::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.3); /* Semi-transparent dark color */
+        }
+
+        /* Webkit scrollbar thumb on direct thumb hover (for a darker effect) */
+        html::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(0, 0, 0, 0.5); /* Darker color when hovering over thumb */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header/Navigation -->
+    <header class="sticky top-0 z-50 bg-white backdrop-blur-md shadow-sm">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="flex items-center space-x-2">
+                <img src="brandlogo_ penguin_black.png" alt="Mail@ Logo" class="h-8 md:h-10">
+            </a>
+            <nav class="hidden md:flex space-x-6 items-center">
+                <a href="#" class="text-gray-700 hover:text-brand-accent">홈</a>
+                <a href="#features" class="text-gray-700 hover:text-brand-accent">주요 기능</a>
+                <a href="#demo" class="text-gray-700 hover:text-brand-accent">제품</a>
+                <a href="#download" class="text-gray-700 hover:text-brand-accent">다운로드</a>
+                <a href="#download" class="bg-brand-accent text-white px-5 py-2 rounded-lg font-medium hover:bg-brand-accent-dark transition-colors">
+                    지금 시작하기
+                </a>
+            </nav>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-gray-700 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="md:hidden hidden bg-white shadow-lg">
+            <a href="#" class="block px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-brand-accent">홈</a>
+            <a href="#features" class="block px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-brand-accent">주요 기능</a>
+            <a href="#demo" class="block px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-brand-accent">제품 모습</a>
+            <a href="#download" class="block px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-brand-accent">다운로드</a>
+            <a href="#download" class="block px-6 py-3 bg-brand-accent text-white font-medium hover:bg-brand-accent-dark transition-colors text-center rounded-b-lg">지금 시작하기</a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="py-20 md:py-32 text-center bg-gray-50 bg-opacity-50">
+        <div class="container mx-auto px-6">
+            <img src="brandlogo_ penguin_black.png" alt="Mail@ Logo" class="h-60 md:h-100 mx-auto mb-8">
+            <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold text-[#121212] mb-6">"메일을 새롭게 정의하다"</h1>
+            <br />
+            <p class="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
+                인간 관계 중심의 새로운 메일 In-Box <br> 당신의 일상과 업무를 보다 더 편안하게<br/>
+            </p>
+            <a href="#download" class="bg-brand-accent text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-brand-accent-dark transition-colors shadow-md hover:shadow-lg transform hover:scale-105">
+                무료로 시작하기
+            </a>
+        </div>
+    </section>
+
+    <!-- Key Features Section -->
+    <section id="features" class="py-16 md:py-24 bg-gray-50 bg-opacity-50">
+        <div class="container mx-auto px-6">
+            <h2 class="text-4xl md:text-5xl font-bold text-[#121212] text-center mb-10">주요 기능</h2>
+            <p class="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto text-center">
+                강력한 AI 기능이 탑재되어 사용자의 편의를 극대화했습니다. <br/>
+            </p>
+            <div class="grid md:grid-cols-3 gap-8 md:gap-12">
+                <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 flex flex-col items-center text-center">
+                    <div class="text-5xl mb-5 text-brand-accent">✨</div>
+                    <h3 class="text-2xl font-semibold text-[#121212] mb-3">AI 스마트 필터</h3>
+                    <p class="text-gray-700 leading-relaxed">머신러닝 기술로 메일을 자동으로 분류, 요약</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 flex flex-col items-center text-center">
+                    <div class="text-5xl mb-5 text-brand-accent">✏️</div>
+                    <h3 class="text-2xl font-semibold text-[#121212] mb-3">메일 자동완성</h3>
+                    <p class="text-gray-700 leading-relaxed">작성하기 힘든 비즈니스 메일을 LLM이 알아서 작성</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 flex flex-col items-center text-center">
+                    <div class="text-5xl mb-5 text-brand-accent">🛡️</div>
+                    <h3 class="text-2xl font-semibold text-[#121212] mb-3">온 디바이스 기술</h3>
+                    <p class="text-gray-700 leading-relaxed">데이터 유출 걱정 없는 로컬 sLLM 탑재</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product UI Screenshot/Demo Section -->
+    <section id="demo" class="py-16 md:py-24">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-4xl md:text-5xl font-bold text-[#121212] mb-12">직관적인 사용성</h2>
+            <div class="">
+                <img src="UI_Screenshot.png" alt="Mail@ UI Screenshot" class="rounded-md w-full md:w-3/4 mx-auto">
+            </div>
+            <p class="mt-10 text-gray-700 text-lg">깔끔하고 효율적인 UI를 통해 이메일 관리가 얼마나 쉬워지는지 확인해보세요.</p>
+        </div>
+    </section>
+
+    <!-- Pricing/CTA Section -->
+    <section id="download" class="py-16 md:py-24 bg-gray-50 bg-opacity-50">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-4xl md:text-5xl font-bold text-[#121212] mb-8">다운로드</h2>
+            <p class="text-lg text-gray-700 mb-12 max-w-xl mx-auto">
+                사용 환경에 맞는 버전을 선택하여 지금 바로 경험해보세요.
+            </p>
+            <div class="flex flex-col md:flex-row justify-center items-stretch gap-8">
+                <!-- Online Version Card -->
+                <div class="bg-white border border-gray-200 rounded-xl p-8 w-full md:max-w-sm shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
+                    <h3 class="text-2xl font-semibold text-[#121212] mb-3">온라인용</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed flex-grow">
+                        LLM과 연결될 강력한 AI 기능을 느껴보세요
+                    </p>
+                    <a href="testfile.zip" class="w-full block bg-brand-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-brand-accent-dark transition-colors mt-auto">
+                        오픈 버전 사용하기
+                    </a>
+                </div>
+
+                <!-- Offline Version Card -->
+                <div class="bg-white border border-gray-200 rounded-xl p-8 w-full md:max-w-sm shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
+                    <h3 class="text-2xl font-semibold text-[#121212] mb-3">보안 네트워크용</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed flex-grow">
+                        회사와 같은 제한된 네트워크 상황에서도 사용가능한 온디바이스 기술 적용
+                    </p>
+                    <a href="testfile.zip" download class="w-full block bg-gray-800 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-700 transition-colors mt-auto">
+                        데스크톱 앱 다운로드
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Brand Character Introduction -->
+    <section id="character" class="py-16 md:py-24">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row items-center justify-center gap-10 md:gap-16">
+                <div class="md:w-1/2 text-center md:text-left">
+                    <h2 class="text-3xl md:text-4xl font-bold text-[#121212] mb-6">우리의 친절한 도우미, '엣리'</h2>
+                    <p class="text-lg text-gray-700 mb-4 leading-relaxed">
+                        '엣리'는 여러분의 이메일 경험을 즐겁게 만들어 줄 우리의 마스코트입니다.
+                        <br>복잡한 기능도 메일리와 함께라면 쉽고 재미있게 활용할 수 있습니다.
+                    </p>
+                    <p class="text-lg text-gray-700 leading-relaxed">
+                        받은 편지함을 깔끔하게, 중요한 메일을 놓치지 않도록 메일리가 항상 곁에서 도와줄 거예요!
+                    </p>
+                </div>
+                <div class="md:w-1/3 flex justify-center">
+                    <img src="brand_char.png" alt="Mail@ Character '메일리'" class="h-64 md:h-80 object-contain">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 bg-gray-900 text-gray-400">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex space-x-6 mb-6 md:mb-0">
+                    <a href="#" class="hover:text-white">회사소개</a>
+                    <a href="#" class="hover:text-white">이용약관</a>
+                    <a href="#" class="hover:text-white">개인정보처리방침</a>
+                </div>
+                <div class="mb-6 md:mb-0 text-center md:text-left">
+                    <p>관계 중심의 메일 시스템</p>
+                </div>
+                <div class="text-center md:text-right">
+                    <p>&copy; 2025 Mail@. All Rights Reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Q&A Floating Button -->
+    <button id="qa-button" class="fixed bottom-8 right-8 bg-brand-accent text-white w-16 h-16 rounded-full shadow-lg hover:bg-brand-accent-dark transition-colors flex items-center justify-center text-2xl font-bold z-50">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01"></path></svg>   
+    </button>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Close mobile menu when a link is clicked
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+
+        // Custom Smooth Scroll Function
+        function smoothScrollTo(targetPosition, duration) {
+            const startPosition = window.pageYOffset;
+            const distance = targetPosition - startPosition;
+            let startTime = null;
+
+            function animation(currentTime) {
+                if (startTime === null) startTime = currentTime;
+                const timeElapsed = currentTime - startTime;
+                const run = easeInOutQuad(timeElapsed, startPosition, distance, duration);
+                window.scrollTo(0, run);
+                if (timeElapsed < duration) requestAnimationFrame(animation);
+            }
+
+            // Easing function for smooth animation
+            function easeInOutQuad(t, b, c, d) {
+                t /= d / 2;
+                if (t < 1) return c / 2 * t * t + b;
+                t--;
+                return -c / 2 * (t * (t - 2) - 1) + b;
+            }
+
+            requestAnimationFrame(animation);
+        }
+
+        // Smooth scroll to section center
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            if (anchor.pathname === window.location.pathname) { // Ensure links are on the same page
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    // Ensure targetId is not just "#" to prevent errors with document.querySelector
+                    if (targetId && targetId.length > 1) {
+                        const targetElement = document.querySelector(targetId);
+
+                        if (targetElement) {
+                            const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
+                            const offsetPosition = targetPosition - (window.innerHeight / 2) + (targetElement.offsetHeight / 2);
+                            
+                            let finalPosition = offsetPosition;
+                            // For very tall sections that are larger than the viewport, scroll to the top of the section
+                            if (targetElement.offsetHeight > window.innerHeight) {
+                               finalPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
+                            }
+
+                            // Use custom smooth scroll function
+                            smoothScrollTo(finalPosition, 800); // 800ms duration
+
+                            // If it's a mobile menu link, close the menu
+                            if (mobileMenu && !mobileMenu.classList.contains('hidden') && this.closest('#mobile-menu')) {
+                                mobileMenu.classList.add('hidden');
+                            }
+                        }
+                    } else if (targetId === "#") { // Handle links that are just "#"
+                         smoothScrollTo(0, 800); // Scroll to top
+                         // If it's a mobile menu link, close the menu
+                         if (mobileMenu && !mobileMenu.classList.contains('hidden') && this.closest('#mobile-menu')) {
+                                mobileMenu.classList.add('hidden');
+                         }
+                    }
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>

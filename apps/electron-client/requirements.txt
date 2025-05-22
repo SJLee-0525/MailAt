@@ -1,0 +1,6 @@
+neo4j
+beautifulsoup4
+joblib
+torch
+numpy
+sentence-transformers

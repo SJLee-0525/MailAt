@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    // --- 기본 설정들 (프로젝트에 맞게 조정) ---
+    "target": "ESNext", // 또는 "ES2020" 등
+    "module": "ESNext",
+    "moduleResolution": "node", // 또는 "bundler"
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    // --- 경로 별칭 설정 ---
+    "baseUrl": ".", // 프로젝트 루트 기준
+    "paths": {
+      // src/tsconfig.app.json의 baseUrl("renderer")을 고려하여 경로 수정
+      "@/*": ["src/renderer/*"],
+      "@apis/*": ["src/renderer/apis/*"],
+      "@assets/*": ["src/renderer/assets/*"],
+      "@components/*": ["src/renderer/components/*"],
+      "@data/*": ["src/renderer/data/*"],
+      "@hooks/*": ["src/renderer/hooks/*"],
+      "@layouts/*": ["src/renderer/layouts/*"],
+      "@mocks/*": ["src/renderer/mocks/*"], // @mocks 추가 (tsconfig.app.json 참고)
+      "@pages/*": ["src/renderer/pages/*"],
+      "@stores/*": ["src/renderer/stores/*"],
+      "@utils/*": ["src/renderer/utils/*"],
+      "@types/*": ["src/renderer/types/*"] // @types 추가 (Vite 설정 참고)
+    }
+  },
+  // --- 포함/제외 설정 (프로젝트에 맞게 조정) ---
+  "include": ["src/**/*", "electron/**/*", "*.ts", "*.js", "preload.cjs"], // 예시: src, electron 폴더 및 루트의 ts/js 파일 포함
+  "exclude": ["node_modules", "dist"] // 예시: 제외할 폴더
+}

@@ -1,0 +1,21 @@
+@import url("../../../styles/animations.css");
+
+#alert[open] {
+  position: fixed !important;
+  top: -40% !important;
+  margin-top: 0 !important;
+  animation: slideDownAlert 0.5s forwards;
+}
+
+.alert-is-closing {
+  animation: slideUpClose 0.3s forwards !important;
+  transition: all 0.3s ease;
+}
+
+dialog::backdrop {
+  animation: fadeBackdrop 0.5s forwards;
+}
+
+dialog.is-closing::backdrop {
+  animation: fadeBackdropOut 0.3s forwards;
+}

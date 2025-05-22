@@ -1,0 +1,49 @@
+# stages: [build_web, deploy_web, build_client, deploy_client]
+
+# variables:
+#   BASE_DIR: $CI_PROJECT_DIR/apps
+
+# # ── WEB ─────────────────────────────────────
+# build_web:
+#   stage: build_web
+#   rules:
+#     - changes: ["apps/web-site/**"]
+#   script:
+#     - cd $BASE_DIR/web-site
+#     - npm ci
+#     - npm run build         # 결과: dist/
+#   artifacts:
+#     paths: [apps/web-site/dist]
+
+# deploy_web:
+#   stage: deploy_web
+#   needs: [build_web]
+#   rules:
+#     - changes: ["apps/web-site/**"]
+#   script:
+#     - rsync -az --delete apps/web-site/dist/ $EC2_USER@$EC2_HOST:/var/www/html/
+
+# # ── ELECTRON ────────────────────────────────
+# build_client:
+#   stage: build_client
+#   image: electronuserland/builder:wine-mono
+#   rules:
+#     - changes: ["apps/electron-client/**"]
+#   script:
+#     - cd $BASE_DIR/electron-client
+#     - npm ci
+#     - npm run build:addon
+#     - npm run build:win
+#   artifacts:
+#     paths: [apps/electron-client/dist/*.exe]
+
+# deploy_client:
+#   stage: deploy_client
+#   needs: [build_client]
+#   rules:
+#     - changes: ["apps/electron-client/**"]
+#   script:
+#     - rsync -az apps/electron-client/dist/*.exe \
+#         $EC2_USER@$EC2_HOST:/var/www/html/downloads/
+#     - ssh $EC2_USER@$EC2_HOST \
+#         "ln -sf $(ls /var/www/html/downloads/*.exe | sort -r | head -n1) /var/www/html/downloads/latest.exe"
